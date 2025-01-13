@@ -15,6 +15,12 @@ export default function Home() {
             <li>
               <a href="/church-creation" className="text-blue-500 hover:underline">Go to Church Registration</a>
             </li>
+            <li>
+              <a href="/super-homepage" className="text-blue-500 hover:underline">Go to SuperUser Homepage</a>
+            </li>
+            <li>
+              <a href="/user-homepage" className="text-blue-500 hover:underline">Go to Regular User Homepage</a>
+            </li>
           </ul>
         </nav>
       </div>
