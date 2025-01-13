@@ -254,6 +254,11 @@ export default function ChurchCreationForm() {
                             )}
                         </div>
                     </form>
+
+                    {/* Move the "Back to Home" link inside the form container */}
+                    <div className="mt-4 text-center">
+                        <a href="/" className="text-blue-500 hover:underline">Back to Home</a>
+                    </div>
                 </div>
             </div>
         </div>
