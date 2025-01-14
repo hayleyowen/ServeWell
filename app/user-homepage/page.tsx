@@ -1,15 +1,28 @@
-import styles from './styles/user-homepage.module.css';  
+import clsx from 'clsx';
+import '@/app/globals.css';
 
 export default function UserHomepage() {
   return (
-    <section className={styles.container}>
-      <div className={styles.topBar}>
-        <h1 className={styles.title}>ServeWell</h1>
+    <section className="h-screen flex flex-col">
+      <div className="bg-white p-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
       </div>
-      <div className={styles.formContainer}>
-        <div className={styles.formWrapper}>
-          <h2 className={styles.formTitle}>User Homepage</h2>
-          <a href="/" className={styles.button}>Go Back</a>
+      <div className="flex-1 flex flex-col bg-blue-500">
+        <div className="flex flex-col items-center justify-center pt-8">
+          <h2 className="text-2xl font-bold text-white mb-8">User Homepage</h2>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+            <a href="/adult" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <h3 className="text-xl font-bold mb-2">Adults Ministry</h3>
+            </a>
+            <a href="/children" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <h3 className="text-xl font-bold mb-2">Children's Ministry</h3>
+            </a>
+            <a href="/youth" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <h3 className="text-xl font-bold mb-2">Youth Ministry</h3>
+            </a>
+          </div>
         </div>
       </div>
     </section>
