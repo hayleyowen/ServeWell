@@ -1,9 +1,9 @@
+'use client';
 import Link from 'next/link';
-import clsx from 'clsx';
 
 const SideNav = () => {
   return (
-    <nav className={clsx("w-64 fixed top-20 left-0 h-full bg-blue-300 p-4")}>
+    <nav className="w-64 fixed top-20 left-0 h-full bg-blue-300 p-4">
       <ul className="space-y-4">
         <li className="group">
           <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
