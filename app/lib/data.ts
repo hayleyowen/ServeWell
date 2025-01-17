@@ -3,7 +3,7 @@ import { Church } from './defintions';
 
 export async function getChurches() {
   try {
-    const data = await sql<Church>`SELECT * FROM church`;
+    const data = await sql<Church>`SELECT * FROM "Church"`;
     return data.rows;
   } catch (err) {
     console.error('Database Error', err);
