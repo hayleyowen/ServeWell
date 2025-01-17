@@ -43,3 +43,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 To be able to use the spreadsheets you need to install these:
 npm install xlsx
 npm install scheduler react-spreadsheet
+npm install chart.js
+npm install react-chartjs-2
