@@ -1,7 +1,7 @@
 export type Church = {
-    id: number;
-    name: string;
-    phone: string;
+    church_id: number;
+    churchname: string;
+    churchphone: string;
     address: string;
     postalcode: string;
     city: string;

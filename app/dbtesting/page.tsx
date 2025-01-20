@@ -12,17 +12,17 @@ export default async function dbTestingPage() {
             <div className="flex flex-col items-center justify-center pt-8">
                 <h2 className="text-2xl font-bold text-white mb-8">Database Testing Page</h2>
             </div>
+            <div className="flex flex-col items-center justify-center text-white">
+                {churches.map((churchname, church_id) => (
+                    <div key={church_id}>
+                        <h3>{churchname.churchname}</h3>
+                        <p>{churchname.address}</p>
+                        <p>{churchname.city}, {churchname.postalcode}</p>
+                        <p>{churchname.churchphone}</p>
+                    </div>
+                ))}
+            </div> 
         </div>
-        <div>
-            {churches.map((id) => (
-                <div key={id.name}>
-                    <h3>{id.name}</h3>
-                    <p>{id.address}</p>
-                    <p>{id.city}, {id.postalcode}</p>
-                    <p>{id.phone}</p>
-                </div>
-            ))}
-        </div>  
     </section>
     );
     }
