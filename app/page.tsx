@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import '@/app/globals.css';
 
 export default function Home() {
@@ -15,6 +14,9 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
             <a href="/church-creation" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
               <h3 className="text-xl font-bold mb-2">Church Registration Page</h3>
+            </a>
+            <a href="/login" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <h3 className="text-xl font-bold mb-2">Login Page</h3>
             </a>
             <a href="/super-homepage" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
               <h3 className="text-xl font-bold mb-2">SuperUser Homepage</h3>
