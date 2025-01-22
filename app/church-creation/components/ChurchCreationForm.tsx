@@ -8,7 +8,6 @@ export default function ChurchCreationForm() {
     const [formData, setFormData] = useState({
         churchName: '',
         denomination: '',
-        contactName: '',
         email: '',
         phone: '',
         address: '',
@@ -68,7 +67,6 @@ export default function ChurchCreationForm() {
                 setFormData({
                     churchName: '',
                     denomination: '',
-                    contactName: '',
                     email: '',
                     phone: '',
                     address: '',
@@ -139,15 +137,6 @@ export default function ChurchCreationForm() {
                                         style={{ width: `${progress}%` }}
                                     />
                                 </div>
-                                <input
-                                    type="text"
-                                    name="contactName"
-                                    placeholder="Contact Name"
-                                    value={formData.contactName}
-                                    onChange={handleChange}
-                                    className={styles.input}
-                                    required
-                                />
                                 <input
                                     type="email"
                                     name="email"
