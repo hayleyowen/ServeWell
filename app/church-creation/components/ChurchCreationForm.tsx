@@ -18,16 +18,25 @@ export default function ChurchCreationForm() {
         admin: '',
         password: '',
         confirmPassword: '',
-        agreeToTerms: false,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value,
-        });
+        const { name, value } = e.target;
+    
+        if (e.target.type === 'checkbox') {
+            const { checked } = e.target as HTMLInputElement; // Type assertion for checkbox
+            setFormData({
+                ...formData,
+                [name]: checked,
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value,
+            });
+        }
     };
+    
 
     const handleNext = () => {
         if (step < 3) {
@@ -69,7 +78,6 @@ export default function ChurchCreationForm() {
                     admin: '',
                     password: '',
                     confirmPassword: '',
-                    agreeToTerms: false,
                 });
                 setStep(1); // Reset to first step after submission
             } else {
@@ -286,19 +294,6 @@ export default function ChurchCreationForm() {
                                     className={styles.input}
                                     required
                                 />
-                                <div className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        name="agreeToTerms"
-                                        checked={formData.agreeToTerms}
-                                        onChange={handleChange}
-                                        className="mr-2"
-                                        required
-                                    />
-                                    <label htmlFor="agreeToTerms" className="text-sm">
-                                        I agree to the terms and conditions
-                                    </label>
-                                </div>
                             </div>
                         )}
 
