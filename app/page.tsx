@@ -10,7 +10,7 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-2">Church Registration Page</h3>
             </a>
             <a href="/login" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
-              <h3 className="text-xl font-bold mb-2">Login</h3>
+              <h3 className="text-xl font-bold mb-2">Login Page</h3>
             </a>
             <a href="/super-homepage" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
               <h3 className="text-xl font-bold mb-2">SuperUser Homepage</h3>
