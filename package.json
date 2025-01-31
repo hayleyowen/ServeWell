@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^3.6.0",
     "@neondatabase/serverless": "^0.10.4",
     "@vercel/postgres": "^0.10.0",
     "@vercel/sdk": "^1.3.0",
