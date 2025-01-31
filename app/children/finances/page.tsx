@@ -5,6 +5,7 @@ import Spreadsheet from "react-spreadsheet";
 import * as XLSX from "xlsx";
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement } from 'chart.js';
+import { Alert, Snackbar } from "@mui/material";
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
@@ -17,6 +18,7 @@ export default function FinancesTrackingPage() {
   const [showChart, setShowChart] = useState(false);
   const [chartType, setChartType] = useState("pie");
   const [chartData, setChartData] = useState(null);
+  const [alertOpen, setAlertOpen] = useState(false);
 
   function generateData(rows, cols) {
     return Array.from({ length: rows }, () =>
@@ -56,7 +58,6 @@ export default function FinancesTrackingPage() {
     if (spreadsheetData.length < 2) return;
 
     setChartLoading(true);
-
     setTimeout(() => {
       const labels = spreadsheetData[0].map(cell => cell.value);
       const datasets = spreadsheetData[0].map((_, colIndex) => {
@@ -80,24 +81,20 @@ export default function FinancesTrackingPage() {
       });
 
       setChartLoading(false);
-    }, 500); // Simulate processing delay
+    }, 500);
   };
 
   useEffect(() => {
     if (showChart) {
-      setChartLoading(true);  // Start loading spinner when switching to chart view
-      updateChartData(data);  // Recalculate chart data
+      if (!chartData) {
+        setAlertOpen(true);
+        setShowChart(false);
+      } else {
+        setChartLoading(true);
+        updateChartData(data);
+      }
     }
   }, [showChart]);
-
-  useEffect(() => {
-    if (chartType) {
-      setChartLoading(true);  // Start loading spinner when changing chart type
-      setTimeout(() => {
-        setChartLoading(false);  // Stop the spinner after chart type change
-      }, 500);  // Simulate a slight delay for effect
-    }
-  }, [chartType]);
 
   return (
     <section className="h-screen flex flex-col">
@@ -108,7 +105,6 @@ export default function FinancesTrackingPage() {
         <div className="bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto w-full max-w-screen-lg mx-auto">
           <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
           
-          {/* Loading spinner for file upload */}
           {isLoading ? (
             <div className="flex justify-center items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
@@ -120,17 +116,9 @@ export default function FinancesTrackingPage() {
                   <input type="checkbox" checked={showChart} onChange={() => setShowChart(!showChart)} className="mr-2" />
                   Show Chart
                 </label>
-                {showChart && (
-                  <select onChange={(e) => setChartType(e.target.value)} value={chartType} className="ml-4 p-2 border rounded">
-                    <option value="pie">Pie Chart</option>
-                    <option value="bar">Bar Chart</option>
-                    <option value="line">Line Chart</option>
-                  </select>
-                )}
               </div>
 
-              {/* Loading spinner for chart rendering */}
-              {showChart ? (
+              {showChart && chartData ? (
                 chartLoading ? (
                   <div className="flex justify-center items-center h-96">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
@@ -143,22 +131,19 @@ export default function FinancesTrackingPage() {
                   </div>
                 )
               ) : (
-                <div className="w-full overflow-auto border border-gray-300 rounded-lg relative">
-                  {/* Loading spinner for the spreadsheet */}
-                  {(isLoading || chartLoading) && (
-                    <div className="flex justify-center items-center absolute top-0 left-0 right-0 bottom-0">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
-                    </div>
-                  )}
-                  <div className="overflow-auto max-w-full max-h-[500px]">
-                    <Spreadsheet data={data} onChange={(updatedData) => setData(updatedData)} />
-                  </div>
+                <div className="w-full overflow-auto border border-gray-300 rounded-lg">
+                  <Spreadsheet data={data} onChange={setData} />
                 </div>
               )}
             </>
           )}
         </div>
       </div>
+      <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
+        <Alert onClose={() => setAlertOpen(false)} severity="warning">
+          Upload data before showing charts!
+        </Alert>
+      </Snackbar>
     </section>
   );
 }
