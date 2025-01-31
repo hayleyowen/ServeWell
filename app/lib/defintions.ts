@@ -19,3 +19,11 @@ export type ChurchMember = {
     church_id: number;
     church_join_date: string;
 }
+
+export interface Ministry {
+    ministry_id: number;
+    ministryname: string;
+    church_id: number;
+    budget: number;
+    description: string;
+  }

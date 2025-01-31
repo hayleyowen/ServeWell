@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link';
 
 const TopNav = () => {
@@ -69,6 +71,14 @@ const TopNav = () => {
                             <Link href="/youth" className="text-gray-800 hover:text-gray-500">Youth Ministry</Link>
                         </li>
                     </ul>
+                </div>
+                <div>
+                    <Link 
+                        href="/ministry-creation"
+                        className="text-blue-500 hover:text-blue-600 font-medium"
+                    >
+                        + Add Ministry
+                    </Link>
                 </div>
                 <div>
                     <button className="bg-blue-500 text-white text-sm rounded-lg shadow-sm px-4 p-2 transition-transform transform hover:scale-105">Sign Out</button>
