@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogoutButton } from './buttons/LogoutButton';
 
 const TopNav = () => {
     return (
@@ -71,7 +72,7 @@ const TopNav = () => {
                     </ul>
                 </div>
                 <div>
-                    <button className="bg-blue-500 text-white text-sm rounded-lg shadow-sm px-4 p-2 transition-transform transform hover:scale-105">Sign Out</button>
+                    <LogoutButton />
                 </div>            
             </nav>
         </header>
