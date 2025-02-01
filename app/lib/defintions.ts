@@ -8,7 +8,7 @@ export type Church = {
 }
 
 export type ChurchMember = {
-    id: number;
+    member_id: number;
     FirstName: string;
     MiddleName: string;
     LastName: string;
@@ -18,4 +18,13 @@ export type ChurchMember = {
     activity_status: 'active' | 'inactive';
     church_id: number;
     church_join_date: string;
+}
+
+export type Admin = {
+    admin_id: number;
+    adminusername: string;
+    adminpassword: string;
+    date_started: Date;
+    ministry_id: number;
+    superadmin_id: number;
 }
