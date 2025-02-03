@@ -6,16 +6,16 @@ import styles from '../styles/MinistryCreationForm.module.css'
 
 interface MinistryFormData {
   MinistryName: string;
-  description: string;
   Church_ID: number;
   Budget: number;
+  Description: string;
 }
 
 export default function MinistryCreationForm() {
   const router = useRouter()
   const [formData, setFormData] = useState<MinistryFormData>({
     MinistryName: '',
-    description: '',
+    Description: '',
     Church_ID: 1, // We might want to make this dynamic later
     Budget: 0  // Make sure this is initialized as a number
   })
@@ -100,9 +100,9 @@ export default function MinistryCreationForm() {
             />
 
             <textarea
-              name="description"
+              name="Description"
               placeholder="Ministry Description"
-              value={formData.description}
+              value={formData.Description}
               onChange={handleChange}
               className={styles.input}
               rows={4}

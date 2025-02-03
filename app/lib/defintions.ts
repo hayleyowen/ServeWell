@@ -25,5 +25,5 @@ export interface Ministry {
     ministryname: string;
     church_id: number;
     budget: number;
-    description: string;
-  }
+    description: string | null;
+}

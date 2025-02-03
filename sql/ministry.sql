@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS ministry (
     FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
--- Insert data into ministry table (no need to specify ministry_id)
-INSERT INTO ministry (ministryname, church_id, budget) VALUES
-('Children''s Ministry', 2, 5000.00),
-('Youth Ministry', 2, 10000.00),
-('Adults Ministry', 3, 7500.00);
+-- Insert sample data
+INSERT INTO ministry (ministryname, church_id, budget, description) VALUES
+('Children''s Ministry', 1, 5000.00, 'Ministry focused on children''s spiritual growth'),
+('Youth Ministry', 1, 10000.00, 'Engaging young people in church activities'),
+('Adults Ministry', 1, 7500.00, 'Adult spiritual development and fellowship');

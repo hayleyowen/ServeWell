@@ -6,6 +6,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     console.log('Received data:', body)
 
+    const { MinistryName, Church_ID, Budget, description } = body;
+
     const ministry = await createMinistry(body)
     console.log('Created ministry:', ministry)
 
