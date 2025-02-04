@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS ChurchMember (
     Fname VARCHAR(50) NOT NULL,
     Mname VARCHAR(50),
     Lname VARCHAR(50) NOT NULL,
+    Role VARCHAR(20) NOT NULL CHECK (Role IN ('member', 'admin', 'superadmin')),
     Sex CHAR(1),
     Email VARCHAR(100),
     MemberPhone VARCHAR(15) NOT NULL,

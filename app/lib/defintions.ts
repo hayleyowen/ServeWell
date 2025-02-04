@@ -24,7 +24,7 @@ export type Admin = {
     admin_id: number;
     adminusername: string;
     adminpassword: string;
-    date_started: Date;
+    // date_started: Date;
     ministry_id: number;
     superadmin_id: number;
 }

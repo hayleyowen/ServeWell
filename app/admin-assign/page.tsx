@@ -1,5 +1,6 @@
 import '@/app/globals.css';
 import { getUnAssignedAdmins } from '@/app/lib/data';
+import { isUserSuperAdmin } from '@/actions/isUserSuperAdmin';
 
 /* 
     When an admin creates their account, they will not be assigned to any
@@ -13,6 +14,11 @@ import { getUnAssignedAdmins } from '@/app/lib/data';
 
 
 export default async function AdminAssignPage() {
+
+    const isSuperAdmin = await isUserSuperAdmin();
+    if (!isSuperAdmin) {
+        return <h1>Access Denied</h1>
+    }
     // retrieve all the admins that haven't been assigned to any ministry
     const admins = await getUnAssignedAdmins();
 
@@ -38,6 +44,21 @@ export default async function AdminAssignPage() {
                             <th>Assignment Status</th>
                         </tr>
                     </thead>
+                    <tbody className="text-center">
+                        {admins.map((admin) => (
+                            <tr key={admin.member_id}>
+                                <td>{admin.fname}</td>
+                                <td>{admin.lname}</td>
+                                <td>{admin.email}</td>
+                                <td>{admin.memberphone}</td>
+                                {/* <td>{admin.date_started}</td> */}
+                                <td>{admin.ministry_id}</td>
+                                {/* <td>{admin.ministryRequested}</td>
+                                <td>{admin.church_join_date}</td>
+                                <td>{admin.assignmentStatus}</td> */}
+                            </tr>
+                        ))}
+                    </tbody>    
                 </table>
             </div>
         </div>
