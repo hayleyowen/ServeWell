@@ -2,13 +2,11 @@
 
 import { getSession } from "@auth0/nextjs-auth0";
 
-
-export async function getUserRoles() {
+export async function getUserEmail() {
     const session = await getSession();
     const user = session?.user;
     if (!user) {
         throw new Error("User not authenticated");
     }
-    console.log('user', user.sub);
-    return user;
+    return user.email;
 }

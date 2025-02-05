@@ -22,6 +22,11 @@ export default async function AdminAssignPage() {
     // retrieve all the admins that haven't been assigned to any ministry
     const admins = await getUnAssignedAdmins();
 
+    const handleAssign = (memberId: number) => {
+        // Handle the assignment logic here
+        console.log(`Assign admin with member ID: ${memberId}`);
+    };
+
     return (
         <section className="h-screen flex flex-col">
         <div className="flex-1 flex flex-col bg-blue-500 p-20">
@@ -53,6 +58,18 @@ export default async function AdminAssignPage() {
                                 <td>{admin.memberphone}</td>
                                 {/* <td>{admin.date_started}</td> */}
                                 <td>{admin.ministry_id}</td>
+                                <td>
+                                    {admin.assignmentStatus ? (
+                                        "Assigned"
+                                    ) : (
+                                        <button 
+                                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                                            onClick={() => handleAssign(admin.member_id)}
+                                        >
+                                            Assign
+                                        </button>
+                                    )}
+                                </td>
                                 {/* <td>{admin.ministryRequested}</td>
                                 <td>{admin.church_join_date}</td>
                                 <td>{admin.assignmentStatus}</td> */}
