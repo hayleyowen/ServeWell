@@ -1,3 +1,4 @@
+"use server";
 import { neon } from '@neondatabase/serverless';
 import { Church, Ministry } from './defintions';
 
@@ -47,33 +48,94 @@ export async function getMinistries() {
   }
 }
 
-export async function testConnection() {
-  try {
-    console.log('Testing database connection...');
-    
-    // Test ministry table
-    const ministryResult = await sql`
-      SELECT table_name, column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'ministry';
+export async function createChurch(churchData: {
+    churchName: string;
+    denomination: string;
+    email: string;
+    phone: string;
+    address: string;
+    postalCode: string;
+    city: string;
+}): Promise<Church> {
+    const result = await sql`
+        INSERT INTO church (
+            churchname,
+            denomination,
+            email,
+            churchphone,
+            streetaddress,
+            postalcode,
+            city
+        ) VALUES (
+            ${churchData.churchName},
+            ${churchData.denomination},
+            ${churchData.email},
+            ${churchData.phone},
+            ${churchData.address},
+            ${churchData.postalCode},
+            ${churchData.city}
+        )
+        RETURNING *;
     `;
-    console.log('Ministry table structure:', ministryResult);
 
-    // Test church table
-    const churchResult = await sql`SELECT * FROM church`;
-    console.log('Church data:', churchResult);
+    return result[0] as Church;
+}
 
-    // Test ministry data
-    const ministryData = await sql`SELECT * FROM ministry`;
-    console.log('Ministry data:', ministryData);
+export async function createSuperAdmin(data: {
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    username: string;
+    password: string;
+    church_id: number;
+}) {
+    // First create the church member
+    const memberResult = await sql`
+        INSERT INTO churchmember (
+            fname,
+            mname,
+            lname,
+            email,
+            memberphone,
+            church_id,
+            church_join_date,
+            activity_status
+        ) VALUES (
+            ${data.firstName},
+            ${data.middleName || null},
+            ${data.lastName},
+            ${data.email},
+            ${data.phoneNumber},
+            ${data.church_id},
+            CURRENT_DATE,
+            'Active'
+        ) 
+        RETURNING member_id;
+    `;
+
+    const member_id = memberResult[0].member_id;
+
+    // Then create the superadmin
+    const superAdminResult = await sql`
+        INSERT INTO superadmin (
+            member_id,
+            superusername,
+            superpassword,
+            church_id
+        ) VALUES (
+            ${member_id},
+            ${data.username},
+            ${data.password},
+            ${data.church_id}
+        )
+        RETURNING superadmin_id;
+    `;
 
     return {
-      ministryStructure: ministryResult,
-      churchData: churchResult,
-      ministryData: ministryData
+        success: true,
+        member_id: member_id,
+        superadmin_id: superAdminResult[0].superadmin_id
     };
-  } catch (err) {
-    console.error('Database connection error:', err);
-    throw err;
-  }
 }

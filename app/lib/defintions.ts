@@ -2,10 +2,12 @@ export type Church = {
     church_id: number;
     churchname: string;
     churchphone: string;
-    address: string;
+    email: string;
+    streetaddress: string;
     postalcode: string;
     city: string;
-}
+    denomination: string;
+};
 
 export type ChurchMember = {
     id: number;

@@ -1,34 +1,29 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/data';
-import { Church } from '@/lib/defintions';
+import { createChurch } from '../../lib/data';
 
 export async function POST(request: Request) {
-  try {
-    const data = await request.json();
-    
-    const church = await sql<Church>`
-      INSERT INTO church (
-        churchname,
-        churchphone,
-        streetaddress,
-        postalcode,
-        city
-      ) VALUES (
-        ${data.churchName},
-        ${data.phone},
-        ${data.address},
-        ${data.postalCode},
-        ${data.city}
-      )
-      RETURNING *
-    `;
+    try {
+        const data = await request.json();
+        console.log('Received church data:', data);
 
-    return NextResponse.json({ success: true, church: church[0] });
-  } catch (error) {
-    console.error('Failed to create church:', error);
-    return NextResponse.json(
-      { error: 'Failed to create church' },
-      { status: 500 }
-    );
-  }
+        const result = await createChurch({
+            churchName: data.churchName,
+            denomination: data.denomination,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            postalCode: data.postalCode,
+            city: data.city
+        });
+        
+        console.log('Church creation result:', result);
+        return NextResponse.json(result);
+
+    } catch (error) {
+        console.error('Detailed Error:', error);
+        return NextResponse.json(
+            { error: 'Failed to register church', details: error instanceof Error ? error.message : 'Unknown error' },
+            { status: 500 }
+        );
+    }
 } 
