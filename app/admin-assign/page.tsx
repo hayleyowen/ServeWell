@@ -1,6 +1,9 @@
+'use server';
+
 import '@/app/globals.css';
-import { getUnAssignedAdmins } from '@/app/lib/data';
-import { isUserSuperAdmin } from '@/actions/isUserSuperAdmin';
+import { getUnAssignedAdmins } from '@/app/actions';
+import { AssignAdmins }  from '@/app/components/buttons/assignAdmins';
+// import { isUserSuperAdmin } from '@/actions/isUserSuperAdmin';
 
 /* 
     When an admin creates their account, they will not be assigned to any
@@ -12,20 +15,14 @@ import { isUserSuperAdmin } from '@/actions/isUserSuperAdmin';
     select an admin and assign them to a ministry.
 */
 
-
 export default async function AdminAssignPage() {
 
-    const isSuperAdmin = await isUserSuperAdmin();
-    if (!isSuperAdmin) {
-        return <h1>Access Denied</h1>
-    }
-    // retrieve all the admins that haven't been assigned to any ministry
     const admins = await getUnAssignedAdmins();
 
-    const handleAssign = (memberId: number) => {
-        // Handle the assignment logic here
-        console.log(`Assign admin with member ID: ${memberId}`);
-    };
+    // const handleAssign = (memberId: number) => {
+    //     // Handle the assignment logic here
+    //     console.log(`Assign admin with member ID: ${memberId}`);
+    // };
 
     return (
         <section className="h-screen flex flex-col">
@@ -34,9 +31,6 @@ export default async function AdminAssignPage() {
             <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
             </div>
             <div className="items-center justify-center">
-                {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-                    <div className="bg-white p-4 rounded-lg shadow-md"/>
-                </div> */}
                 <table className="table-auto flex-initial w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr className="bg-gray-200">
@@ -45,7 +39,6 @@ export default async function AdminAssignPage() {
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Ministry Requested</th>
-                            <th>Join Date</th>
                             <th>Assignment Status</th>
                         </tr>
                     </thead>
@@ -56,23 +49,14 @@ export default async function AdminAssignPage() {
                                 <td>{admin.lname}</td>
                                 <td>{admin.email}</td>
                                 <td>{admin.memberphone}</td>
-                                {/* <td>{admin.date_started}</td> */}
                                 <td>{admin.ministry_id}</td>
                                 <td>
                                     {admin.assignmentStatus ? (
                                         "Assigned"
                                     ) : (
-                                        <button 
-                                            className="bg-blue-500 text-white px-4 py-2 rounded"
-                                            onClick={() => handleAssign(admin.member_id)}
-                                        >
-                                            Assign
-                                        </button>
+                                        <AssignAdmins />
                                     )}
                                 </td>
-                                {/* <td>{admin.ministryRequested}</td>
-                                <td>{admin.church_join_date}</td>
-                                <td>{admin.assignmentStatus}</td> */}
                             </tr>
                         ))}
                     </tbody>    
