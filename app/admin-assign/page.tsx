@@ -2,8 +2,7 @@
 
 import '@/app/globals.css';
 import { getUnAssignedAdmins } from '@/app/actions';
-import { AssignAdmins }  from '@/app/components/buttons/assignAdmins';
-// import { isUserSuperAdmin } from '@/actions/isUserSuperAdmin';
+import { AssignAdmins }  from '@/app/components/buttons/AssignAdmins';
 
 /* 
     When an admin creates their account, they will not be assigned to any
@@ -19,10 +18,7 @@ export default async function AdminAssignPage() {
 
     const admins = await getUnAssignedAdmins();
 
-    // const handleAssign = (memberId: number) => {
-    //     // Handle the assignment logic here
-    //     console.log(`Assign admin with member ID: ${memberId}`);
-    // };
+
 
     return (
         <section className="h-screen flex flex-col">
