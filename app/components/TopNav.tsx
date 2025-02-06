@@ -1,8 +1,34 @@
 'use client'
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+interface Ministry {
+    ministry_id: number;
+    ministryname: string;
+    church_id: number;
+    budget: number;
+    description: string | null;
+}
 
 const TopNav = () => {
+    const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
+
+    useEffect(() => {
+        // Fetch custom ministries from your API/database
+        const fetchCustomMinistries = async () => {
+            try {
+                const response = await fetch('/api/ministries');
+                const data = await response.json();
+                setCustomMinistries(data);
+            } catch (error) {
+                console.error('Error fetching ministries:', error);
+            }
+        };
+
+        fetchCustomMinistries();
+    }, []);
+
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4">
             <nav className="flex justify-between items-center">
@@ -70,6 +96,16 @@ const TopNav = () => {
                         <li>
                             <Link href="/youth" className="text-gray-800 hover:text-gray-500">Youth Ministry</Link>
                         </li>
+                        {customMinistries.map((ministry) => (
+                            <li key={ministry.ministry_id}>
+                                <Link 
+                                    href={`/ministry/${ministry.ministry_id}`} 
+                                    className="text-gray-800 hover:text-gray-500"
+                                >
+                                    {ministry.ministryname}
+                                </Link>
+                            </li>
+                        ))}
                     </ul>
                 </div>
                 <div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createMinistry } from '@/app/lib/data'
+import { createMinistry, getMinistries } from '@/app/lib/data'
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +22,22 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { 
         error: 'Failed to create ministry',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function GET() {
+  try {
+    const ministries = await getMinistries()
+    return NextResponse.json(ministries)
+  } catch (error) {
+    console.error('Error fetching ministries:', error)
+    return NextResponse.json(
+      { 
+        error: 'Failed to fetch ministries',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
