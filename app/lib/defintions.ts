@@ -19,3 +19,20 @@ export type ChurchMember = {
     church_id: number;
     church_join_date: string;
 }
+
+export interface Ministry {
+    ministry_id: number;
+    ministryname: string;
+    church_id: number;
+    budget: number;
+    description: string | null;
+}
+
+export type SpreadsheetData = {
+    id: number;
+    superadmin_id: number;
+    file_name: string;
+    data: Buffer;
+    uploaded_at: string;
+};
+

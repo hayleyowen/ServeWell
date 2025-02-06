@@ -61,19 +61,51 @@ export default function FinancesTrackingPage() {
   };
 
   const saveToComputer = () => {
-    const worksheetData = data.map(row => row.map(cell => cell.value));
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, "updated_finances.xlsx");
-    handleClose();
+      const worksheetData = data.map(row => row.map(cell => cell.value));
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      XLSX.writeFile(workbook, "updated_finances.xlsx");
+      handleClose();
+    };
+
+    const saveToCloud = async () => {
+      if (!data || data.length === 0) {
+          console.error("No data to save");
+          return;
+      }
+
+      const worksheetData = data.map(row => row.map(cell => cell.value));
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+      const fileBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([fileBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+      const formData = new FormData();
+      formData.append("file", blob, "finances.xlsx");
+
+      try {
+          const response = await fetch("/api/uploadFile", {
+              method: "POST",
+              body: formData,
+          });
+
+          const result = await response.json();
+          if (result.success) {
+              console.log("File uploaded successfully");
+          } else {
+              console.error("Upload failed:", result.error);
+          }
+      } catch (error) {
+          console.error("Error saving file:", error);
+      }
+
+      handleClose();
   };
 
-  const saveToCloud = () => {
-    // Placeholder for cloud saving functionality
-    console.log("Save to cloud functionality not implemented yet");
-    handleClose();
-  };
+  
 
   const updateChartData = useCallback((spreadsheetData) => {
     if (spreadsheetData.length < 2) {
@@ -104,12 +136,39 @@ export default function FinancesTrackingPage() {
   }, []);
 
   useEffect(() => {
-    if (showChart) {
-      setChartLoading(true);
-      updateChartData(data);
-      setTimeout(() => setChartLoading(false), 500);
-    }
-  }, [showChart, data, updateChartData]);
+      const fetchStoredFile = async () => {
+          try {
+              const response = await fetch("/api/getFile");
+              const result = await response.json();
+
+              if (response.ok && result.success && result.fileData) {
+                  const binaryStr = atob(result.fileData);
+                  const byteArray = new Uint8Array(binaryStr.length);
+                  for (let i = 0; i < binaryStr.length; i++) {
+                      byteArray[i] = binaryStr.charCodeAt(i);
+                  }
+
+                  const workbook = XLSX.read(byteArray, { type: "array" });
+                  const firstSheetName = workbook.SheetNames[0];
+                  const worksheet = workbook.Sheets[firstSheetName];
+                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                  const formattedData = jsonData.map(row =>
+                      row.map(cell => ({ value: cell || "" }))
+                  );
+
+                  setData(formattedData);
+                  updateChartData(formattedData);
+              }
+          } catch (error) {
+              console.error("Error fetching stored file:", error);
+          }
+      };
+
+      fetchStoredFile();
+  }, []);
+
+  
 
   const toggleChart = () => {
     if (!showChart && !chartData) {

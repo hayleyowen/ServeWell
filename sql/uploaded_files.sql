@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS UploadedFiles (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
-    file_name VARCHAR(255) NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data JSONB NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
-);
