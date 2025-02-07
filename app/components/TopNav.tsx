@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link';
+
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
+import { LogoutButton } from './buttons/LogoutButton';
 
 interface Ministry {
     ministry_id: number;
@@ -11,6 +13,7 @@ interface Ministry {
     budget: number;
     description: string | null;
 }
+
 
 const TopNav = () => {
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
@@ -114,6 +117,7 @@ const TopNav = () => {
                     </ul>
                 </div>
                 <div>
+
                     <Link 
                         href="/ministry-creation"
                         className="text-blue-500 hover:text-blue-600 font-medium"
@@ -123,6 +127,9 @@ const TopNav = () => {
                 </div>
                 <div>
                     <button className="bg-blue-500 text-white text-sm rounded-lg shadow-sm px-4 p-2 transition-transform transform hover:scale-105">Sign Out</button>
+
+                    <LogoutButton />
+
                 </div>            
             </nav>
         </header>
