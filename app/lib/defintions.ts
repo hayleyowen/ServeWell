@@ -2,10 +2,12 @@ export type Church = {
     church_id: number;
     churchname: string;
     churchphone: string;
-    address: string;
+    email: string;
+    streetaddress: string;
     postalcode: string;
     city: string;
-}
+    denomination: string;
+};
 
 export type ChurchMember = {
     id: number;
@@ -18,4 +20,12 @@ export type ChurchMember = {
     activity_status: 'active' | 'inactive';
     church_id: number;
     church_join_date: string;
+}
+
+export interface Ministry {
+    ministry_id: number;
+    ministryname: string;
+    church_id: number;
+    budget: number;
+    description: string | null;
 }
