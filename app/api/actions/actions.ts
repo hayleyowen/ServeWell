@@ -5,7 +5,7 @@ import { neon } from "@neondatabase/serverless";
 export async function getUnAssignedAdmins() {
     const sql = neon(process.env.DATABASE_URL!);
     try {
-        const admins = await sql`SELECT cm.* FROM churchmember  cm JOIN admin a ON cm.member_id = a.member_id WHERE a.admin_id = admin_id`;
+        const admins = await sql`SELECT cm.* FROM churchmember cm JOIN admin a ON cm.member_id = a.member_id WHERE a.admin_id = admin_id`;
         return admins;
     } catch (err) {
         console.error('Database Error', err);
