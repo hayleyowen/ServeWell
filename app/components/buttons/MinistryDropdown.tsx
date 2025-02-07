@@ -20,7 +20,7 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
   useEffect(() => {
     async function fetchMinistries() {
       try {
-        const response = await fetch("/api/ministries");
+        const response = await fetch("/api/ministry-assign");
         const data = await response.json();
         setMinistries(data);
       } catch (error) {
