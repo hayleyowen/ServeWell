@@ -2,7 +2,6 @@
 import { neon } from '@neondatabase/serverless';
 import { Church, Ministry } from './defintions';
 
-
 const sql = neon(process.env.DATABASE_URL!);
 
 // Church-related functions
