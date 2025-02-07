@@ -1,9 +1,9 @@
 'use server';
 
 import '@/app/globals.css';
-import { getUnAssignedAdmins } from '@/app/actions';
-import { AssignAdmins }  from '@/app/components/buttons/AssignAdmins';
-const { checksuperadmin } = await import('@/app/actions');
+import { getUnAssignedAdmins } from '@/app/api/actions/actions';
+import MinistryDropdown from '../components/buttons/MinistryDropdown';
+
 
 /* 
     When an admin creates their account, they will not be assigned to any
@@ -21,7 +21,8 @@ export default async function AdminAssignPage() {
     const adminIds = admins.map(admin => admin.member_id);
     console.log(adminIds);
 
-    const superadmin = await checksuperadmin(adminIds[0]);
+    // this will be used in a future sprint to authenticate the superadmin
+
 
     return (
         <section className="flex flex-col h-screen">
@@ -51,7 +52,7 @@ export default async function AdminAssignPage() {
                                     {admin.assignmentStatus ? (
                                         "Assigned"
                                     ) : (
-                                        <AssignAdmins />
+                                        <MinistryDropdown member_id={admin.member_id} />
                                     )}
                                 </td>
                             </tr>

@@ -29,7 +29,6 @@ export async function checksuperadmin(memberId: number) {
     const sql = neon(process.env.DATABASE_URL!);
     try {
         const result = await sql`SELECT * FROM superadmin WHERE member_id = ${memberId}`;
-        console.log(result);
         return result;
     } catch (err) {
         console.error('Database Error', err);
@@ -40,7 +39,7 @@ export async function checksuperadmin(memberId: number) {
 export async function getMinistries() {
     const sql = neon(process.env.DATABASE_URL!);
     try {
-        const ministries = await sql`SELECT * FROM ministry`;
+        const ministries = await sql`SELECT ministry_id, ministryname FROM ministry`;
         console.log(ministries);
         return ministries;
     } catch (err) {
