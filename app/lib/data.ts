@@ -4,9 +4,6 @@ import { Church, Ministry } from './defintions';
 
 const sql = neon(process.env.DATABASE_URL!);
 
-
-const sql = neon(process.env.DATABASE_URL!);
-
 // Church-related functions
 export async function getChurches() {
     try {
