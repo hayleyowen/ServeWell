@@ -19,6 +19,7 @@ export default function FinancesTrackingPage() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [switchingView, setSwitchingView] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   function generateData(rows, cols) {
     return Array.from({ length: rows }, () =>
@@ -203,7 +204,30 @@ export default function FinancesTrackingPage() {
       </div>
       
       <div className="flex-1 flex flex-col bg-blue-500">
-        <div className="bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto w-full max-w-screen-lg mx-auto">
+        <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
+          <div className="flex justify-between items-center w-full mb-4">
+            <h1 className="text-xl font-semibold text-gray-700">
+              Customizable Spreadsheet
+            </h1>
+            <div className="flex gap-4">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={showChart}
+                  onChange={() => setShowChart(!showChart)}
+                  className="mr-2"
+                />
+                Show Chart
+              </label>
+              <button
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                {isFullScreen ? "Exit Full Screen" : "Full Screen"}
+              </button>
+            </div>
+          </div>
+          
           <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
           <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save File</button>
           <Menu
@@ -218,12 +242,6 @@ export default function FinancesTrackingPage() {
             <LoadingSpinner />
           ) : (
             <>
-              <div className="flex justify-between items-center w-full mb-4">
-                <label className="flex items-center text-sm font-medium text-gray-700">
-                  <input type="checkbox" checked={showChart} onChange={toggleChart} className="mr-2" />
-                  Show Chart
-                </label>
-              </div>
               {showChart && chartData ? (
                 <div className="w-full h-96 flex flex-col items-center">
                   <select
@@ -261,4 +279,4 @@ export default function FinancesTrackingPage() {
       </Snackbar>
     </section>
   );
-}
+  
