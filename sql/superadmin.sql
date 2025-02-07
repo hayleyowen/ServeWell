@@ -1,18 +1,12 @@
 -- Create SuperAdmin table
-CREATE TABLE IF NOT EXISTS SuperAdmin (
-    SuperAdmin_ID INT PRIMARY KEY,
-    Member_ID INT NOT NULL,
-    SuperUsername VARCHAR(50) UNIQUE NOT NULL,
-    SuperPassword VARCHAR(255) NOT NULL,
-    FOREIGN KEY (Member_ID) REFERENCES ChurchMember(Member_ID)
+CREATE TABLE IF NOT EXISTS superadmin (
+    superadmin_id SERIAL PRIMARY KEY,
+    member_id INTEGER NOT NULL,
+    superusername VARCHAR(50) NOT NULL UNIQUE,
+    superpassword VARCHAR(255) NOT NULL,
+    church_id INTEGER NOT NULL,
+    CONSTRAINT superadmin_member_id_fkey FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
+    CONSTRAINT superadmin_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
-
--- Insert data into SuperAdmin table
--- need to flesh this out more as well
-
-INSERT INTO SuperAdmin (SuperAdmin_ID, Member_ID, SuperUsername, SuperPassword) VALUES
-(1, 1, 'superadmin1', 'superadmin1'),
-(2, 2, 'superadmin2', 'superadmin2'),
-(3, 3, 'superadmin3', 'superadmin3'),
-(4, 4, 'superadmin4', 'superadmin4');
+-- No need for test inserts right now since we'll create records through the form

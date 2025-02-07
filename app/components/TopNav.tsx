@@ -1,6 +1,42 @@
+'use client'
+
 import Link from 'next/link';
 
+import { useEffect, useState } from 'react';
+import { getMinistries } from '@/app/lib/data';
+import { LogoutButton } from './buttons/LogoutButton';
+
+interface Ministry {
+    ministry_id: number;
+    ministryname: string;
+    church_id: number;
+    budget: number;
+    description: string | null;
+}
+
+
 const TopNav = () => {
+    const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
+
+    const fetchMinistries = async () => {
+        try {
+            const ministries = await getMinistries();
+            setCustomMinistries(ministries);
+        } catch (error) {
+            console.error('Failed to fetch ministries:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchMinistries();
+
+        // Set up an interval to check for new ministries every few seconds
+        const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4">
             <nav className="flex justify-between items-center">
@@ -68,10 +104,32 @@ const TopNav = () => {
                         <li>
                             <Link href="/youth" className="text-gray-800 hover:text-gray-500">Youth Ministry</Link>
                         </li>
+                        {customMinistries.map((ministry) => (
+                            <li key={ministry.ministry_id}>
+                                <Link 
+                                    href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                                    className="text-gray-800 hover:text-gray-500"
+                                >
+                                    {ministry.ministryname}
+                                </Link>
+                            </li>
+                        ))}
                     </ul>
                 </div>
                 <div>
+
+                    <Link 
+                        href="/ministry-creation"
+                        className="text-blue-500 hover:text-blue-600 font-medium"
+                    >
+                        + Add Ministry
+                    </Link>
+                </div>
+                <div>
                     <button className="bg-blue-500 text-white text-sm rounded-lg shadow-sm px-4 p-2 transition-transform transform hover:scale-105">Sign Out</button>
+
+                    <LogoutButton />
+
                 </div>            
             </nav>
         </header>
