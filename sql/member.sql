@@ -1,16 +1,17 @@
 -- Create Member table
-CREATE TABLE IF NOT EXISTS churchmember (
-    member_id SERIAL PRIMARY KEY,
-    fname VARCHAR(50) NOT NULL,
-    mname VARCHAR(50),
-    lname VARCHAR(50) NOT NULL,
-    sex CHAR(1),
-    email VARCHAR(100),
-    memberphone VARCHAR(15) NOT NULL,
-    activity_status VARCHAR(20),
-    church_id INTEGER NOT NULL,
-    church_join_date DATE,
-    CONSTRAINT churchmember_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
+CREATE TABLE IF NOT EXISTS ChurchMember (
+    Member_ID INT PRIMARY KEY,
+    Fname VARCHAR(50) NOT NULL,
+    Mname VARCHAR(50),
+    Lname VARCHAR(50) NOT NULL,
+    Role VARCHAR(20) NOT NULL CHECK (Role IN ('member', 'admin', 'superadmin')),
+    Sex CHAR(1),
+    Email VARCHAR(100),
+    MemberPhone VARCHAR(15) NOT NULL,
+    Activity_Status VARCHAR(20),
+    Church_ID INT NOT NULL,
+    Church_Join_Date DATE,
+    FOREIGN KEY (Church_ID) REFERENCES Church(Church_ID)
 );
 
 -- Remove test inserts as we'll create real data through the form

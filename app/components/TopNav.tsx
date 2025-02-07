@@ -31,10 +31,10 @@ const TopNav = () => {
         fetchMinistries();
 
         // Set up an interval to check for new ministries every few seconds
-        const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
+        // const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
 
         // Cleanup interval on component unmount
-        return () => clearInterval(intervalId);
+        // return () => clearInterval(intervalId);
     }, []);
 
     return (
