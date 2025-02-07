@@ -29,3 +29,12 @@ export interface Ministry {
     budget: number;
     description: string | null;
 }
+
+export type SpreadsheetData = {
+    id: number;
+    superadmin_id: number;
+    file_name: string;
+    data: Buffer;
+    uploaded_at: string;
+};
+
