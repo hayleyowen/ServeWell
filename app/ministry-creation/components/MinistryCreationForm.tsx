@@ -50,7 +50,16 @@ export default function MinistryCreationForm() {
         throw new Error(data.details || data.error || 'Failed to create ministry')
       }
 
-      router.push('/ministries')
+      // Create URL-friendly version of the ministry name
+      const urlFriendlyName = formData.MinistryName.toLowerCase().replace(/[^a-z0-9]/g, '')
+      
+      // First refresh to update the TopNav
+      router.refresh()
+      
+      // Then redirect to the new ministry's homepage
+      router.push(`/ministry/${urlFriendlyName}`)
+      
+      // Additional refresh after navigation to ensure everything is updated
       router.refresh()
     } catch (error) {
       console.error('Submission error:', error)

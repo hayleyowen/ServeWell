@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { getMinistries } from '@/app/lib/data';
 
 interface Ministry {
     ministry_id: number;
@@ -14,19 +15,23 @@ interface Ministry {
 const TopNav = () => {
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
 
-    useEffect(() => {
-        // Fetch custom ministries from your API/database
-        const fetchCustomMinistries = async () => {
-            try {
-                const response = await fetch('/api/ministries');
-                const data = await response.json();
-                setCustomMinistries(data);
-            } catch (error) {
-                console.error('Error fetching ministries:', error);
-            }
-        };
+    const fetchMinistries = async () => {
+        try {
+            const ministries = await getMinistries();
+            setCustomMinistries(ministries);
+        } catch (error) {
+            console.error('Failed to fetch ministries:', error);
+        }
+    };
 
-        fetchCustomMinistries();
+    useEffect(() => {
+        fetchMinistries();
+
+        // Set up an interval to check for new ministries every few seconds
+        const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
     }, []);
 
     return (
@@ -99,7 +104,7 @@ const TopNav = () => {
                         {customMinistries.map((ministry) => (
                             <li key={ministry.ministry_id}>
                                 <Link 
-                                    href={`/ministry/${ministry.ministry_id}`} 
+                                    href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
                                     className="text-gray-800 hover:text-gray-500"
                                 >
                                     {ministry.ministryname}
