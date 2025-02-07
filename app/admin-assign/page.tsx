@@ -3,6 +3,7 @@
 import '@/app/globals.css';
 import { getUnAssignedAdmins } from '@/app/actions';
 import { AssignAdmins }  from '@/app/components/buttons/AssignAdmins';
+const { checksuperadmin } = await import('@/app/actions');
 
 /* 
     When an admin creates their account, they will not be assigned to any
@@ -17,11 +18,13 @@ import { AssignAdmins }  from '@/app/components/buttons/AssignAdmins';
 export default async function AdminAssignPage() {
 
     const admins = await getUnAssignedAdmins();
+    const adminIds = admins.map(admin => admin.member_id);
+    console.log(adminIds);
 
-
+    const superadmin = await checksuperadmin(adminIds[0]);
 
     return (
-        <section className="h-screen flex flex-col">
+        <section className="flex flex-col h-screen">
         <div className="flex-1 flex flex-col bg-blue-500 p-20">
             <div className="flex flex-col items-center justify-center pt-8">
             <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
@@ -34,7 +37,6 @@ export default async function AdminAssignPage() {
                             <th>Last Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Ministry Requested</th>
                             <th>Assignment Status</th>
                         </tr>
                     </thead>
@@ -45,7 +47,6 @@ export default async function AdminAssignPage() {
                                 <td>{admin.lname}</td>
                                 <td>{admin.email}</td>
                                 <td>{admin.memberphone}</td>
-                                <td>{admin.ministry_id}</td>
                                 <td>
                                     {admin.assignmentStatus ? (
                                         "Assigned"
@@ -59,6 +60,6 @@ export default async function AdminAssignPage() {
                 </table>
             </div>
         </div>
-        </section>
+    </section>
     );
-    }
+}
