@@ -17,7 +17,21 @@ export default function ChurchCreationForm() {
         admin: '',
         password: '',
         confirmPassword: '',
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        username: '',
+        phoneNumber: '',
     });
+
+    // Add state to store the registered church info
+    const [registeredChurch, setRegisteredChurch] = useState({
+        id: '',
+        name: ''
+    });
+
+    // Add state to store church_id
+    const [churchId, setChurchId] = useState<number | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -49,37 +63,77 @@ export default function ChurchCreationForm() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleChurchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match!');
-            return;
-        }
+
+        const formattedCity = `${formData.city}, ${formData.state}`;
+        const churchData = {
+            churchName: formData.churchName,
+            denomination: formData.denomination,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            city: formattedCity,
+        };
 
         try {
             const response = await fetch('/api/churches', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(churchData)
             });
+
             if (response.ok) {
-                alert('Church registered successfully!');
-                setFormData({
-                    churchName: '',
-                    denomination: '',
-                    email: '',
-                    phone: '',
-                    address: '',
-                    postalCode: '',
-                    city: '',
-                    state: '',
-                    admin: '',
-                    password: '',
-                    confirmPassword: '',
+                const result = await response.json();
+                setChurchId(result.church_id); // Store the church_id
+                setRegisteredChurch({
+                    id: result.id,
+                    name: formData.churchName
                 });
-                setStep(1); // Reset to first step after submission
+                setStep(3);
             } else {
                 alert('Failed to register the church.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        }
+    };
+
+    const handleSuperAdminSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!churchId) {
+            console.error('No church ID available');
+            return;
+        }
+
+        const superAdminData = {
+            firstName: formData.firstName,
+            middleName: formData.middleName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            username: formData.username,
+            password: formData.password,
+            church_id: churchId  // Add the stored church_id
+        };
+
+        console.log('Sending SuperAdmin data:', superAdminData); // Debug log
+
+        try {
+            const response = await fetch('/api/superadmin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(superAdminData),
+            });
+            
+            if (response.ok) {
+                alert('SuperAdmin registered successfully!');
+                window.location.href = '/';
+            } else {
+                const error = await response.json();
+                console.error('Registration failed:', error);
+                alert('Failed to register SuperAdmin.');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -98,7 +152,7 @@ export default function ChurchCreationForm() {
 
             <div className={styles.formContainer}>
                 <div className={styles.formWrapper}>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleChurchSubmit}>
                         {step === 1 && (
                             <div>
                                 <h2 className={styles.formTitle}>Church Details</h2>
@@ -125,6 +179,18 @@ export default function ChurchCreationForm() {
                                     onChange={handleChange}
                                     className={styles.input}
                                 />
+                                
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    className={styles.button}
+                                >
+                                    Next
+                                </button>
+
+                                <a href="/" className={styles.backLink}>
+                                    Back to Home
+                                </a>
                             </div>
                         )}
 
@@ -244,23 +310,93 @@ export default function ChurchCreationForm() {
                                 <option value="WY">Wyoming</option>
                             </select>
 
+                            <div className={styles.buttonGroup}>
+                                <button
+                                    type="button"
+                                    onClick={handlePrevious}
+                                    className={styles.buttonHalf}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    type="submit"
+                                    className={styles.buttonHalf}
+                                >
+                                    Register Church
+                                </button>
+                            </div>
+
+                            <a href="/" className={styles.backLink}>
+                                Back to Home
+                            </a>
                             </div>
                         )}
 
                         {step === 3 && (
                             <div>
-                                <h2 className={styles.formTitle}>Account Settings</h2>
+                                <h2 className={styles.formTitle}>SuperAdmin Registration</h2>
                                 <div className={styles.progressBarContainer}>
                                     <div
                                         className={styles.progressBar}
-                                        style={{ width: `${progress}%` }}
+                                        style={{ width: `100%` }}
                                     />
                                 </div>
+                                
+                                {/* Display registered church name */}
+                                <div className={styles.registeredChurchInfo}>
+                                    <h3>Registering SuperAdmin for:</h3>
+                                    <p className={styles.churchName}>{registeredChurch.name}</p>
+                                </div>
+
                                 <input
                                     type="text"
-                                    name="admin"
-                                    placeholder="Admin Name"
-                                    value={formData.admin}
+                                    name="firstName"
+                                    placeholder="First Name"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    className={styles.input}
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    name="middleName"
+                                    placeholder="Middle Name"
+                                    value={formData.middleName}
+                                    onChange={handleChange}
+                                    className={styles.input}
+                                />
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    placeholder="Last Name"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    className={styles.input}
+                                    required
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className={styles.input}
+                                    required
+                                />
+                                <input
+                                    type="tel"
+                                    name="phoneNumber"
+                                    placeholder="Phone Number"
+                                    value={formData.phoneNumber}
+                                    onChange={handleChange}
+                                    className={styles.input}
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    name="username"
+                                    placeholder="Username"
+                                    value={formData.username}
                                     onChange={handleChange}
                                     className={styles.input}
                                     required
@@ -283,42 +419,16 @@ export default function ChurchCreationForm() {
                                     className={styles.input}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onClick={handleSuperAdminSubmit}
+                                    className={styles.button}
+                                >
+                                    Register SuperAdmin
+                                </button>
                             </div>
                         )}
-
-                        <div className="flex justify-between">
-                            {step > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={handlePrevious}
-                                    className={styles.button}
-                                >
-                                    Previous
-                                </button>
-                            )}
-                            {step < 3 ? (
-                                <button
-                                    type="button"
-                                    onClick={handleNext}
-                                    className={styles.button}
-                                >
-                                    Next
-                                </button>
-                            ) : (
-                                <button
-                                    type="submit"
-                                    className={styles.button}
-                                >
-                                    Register Church
-                                </button>
-                            )}
-                        </div>
                     </form>
-
-                    {/* Move the "Back to Home" link inside the form container */}
-                    <div className="mt-4 text-center">
-                        <a href="/" className="text-blue-500 hover:underline">Back to Home</a>
-                    </div>
                 </div>
             </div>
         </div>
