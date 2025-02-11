@@ -17,7 +17,6 @@
     "@mui/material": "^6.4.2",
     "@auth0/nextjs-auth0": "^3.6.0",
     "@clerk/nextjs": "^6.11.1",
-
     "@mui/material": "^6.4.3",
 
     "@neondatabase/serverless": "^0.10.4",
