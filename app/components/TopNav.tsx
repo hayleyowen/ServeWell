@@ -52,7 +52,36 @@ const TopNav = () => {
                                 <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
                             </li>
                             <li className="group">
+                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Adult's Ministry</Link>
                                 <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="group">
+                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Children's Ministry</Link>
+                                <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="group">
+                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Youth Ministry</Link>
+                                <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
+                                    </li>
                                 </ul>
                             </li>
                             <li className="group">
