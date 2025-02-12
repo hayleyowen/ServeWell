@@ -1,11 +1,15 @@
 FROM node:22.13.0-alpine
 
-WORKDIR /app
+WORKDIR /
 
-COPY ./package.json ./pnpm-lock.yaml 
+COPY package.json ./ 
+COPY pnpm-lock.yaml ./
+COPY /app /app
+COPY .env ./
 
 RUN npm install -g pnpm
+RUN npm install 
 
-COPY ./app .
+EXPOSE ${APP_PORT}
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "run", "dev"]
