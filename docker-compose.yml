@@ -27,3 +27,7 @@ services:
       - build:/app/.next
     env_file:
       - .env
+
+volumes:
+  node_modules:
+  build:
