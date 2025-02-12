@@ -1,29 +1,13 @@
-import { NextResponse } from 'next/server';
-import { createChurch } from '../../lib/data';
+import pool from '../../lib/database';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+
+export default async function handler(req, res) {
     try {
-        const data = await request.json();
-        console.log('Received church data:', data);
-
-        const result = await createChurch({
-            churchName: data.churchName,
-            denomination: data.denomination,
-            email: data.email,
-            phone: data.phone,
-            address: data.address,
-            postalCode: data.postalCode,
-            city: data.city
-        });
-        
-        console.log('Church creation result:', result);
-        return NextResponse.json(result);
-
-    } catch (error) {
-        console.error('Detailed Error:', error);
-        return NextResponse.json(
-            { error: 'Failed to register church', details: error instanceof Error ? error.message : 'Unknown error' },
-            { status: 500 }
-        );
+        const [churches] = await pool.query('SELECT * FROM church');
+        res.status(200).json(churches);
+    } catch (err) {
+        console.error('Database query Error', err);
+        res.status(500).json({ error: 'Failed to fetch church data' });
     }
-} 
+}
