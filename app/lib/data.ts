@@ -47,17 +47,17 @@
 //     return result[0] as Church;
 // }
 
-// // Ministry-related functions
-// export async function getMinistries() {
-//     try {
-//         const data = await sql<Ministry>`SELECT * FROM ministry`;
-//         console.log('Fetched ministries:', data);
-//         return data;
-//     } catch (err) {
-//         console.error('Database Error:', err);
-//         throw new Error('Failed to fetch ministry data');
-//     }
-// }
+// Ministry-related functions
+export async function getMinistries() {
+    try {
+        const data = await sql<Ministry>`SELECT * FROM ministry`;
+        console.log('Fetched ministries:', data);
+        return data;
+    } catch (err) {
+        console.error('Database Error:', err);
+        throw new Error('Failed to fetch ministry data');
+    }
+}
 
 // export async function getMinistryByUrlPath(urlPath: string) {
 //     try {
