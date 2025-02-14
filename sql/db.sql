@@ -2,7 +2,7 @@ Create database ServeWell;
 Use ServeWell;
 
 CREATE TABLE church (
-    church_id INT PRIMARY KEY,
+    church_id INT PRIMARY KEY AUTO_INCREMENT,
     churchname VARCHAR(100) NOT NULL,
     churchphone VARCHAR(15) NOT NULL,
     streetaddress VARCHAR(255),
@@ -13,16 +13,17 @@ CREATE TABLE church (
 );
 
 CREATE TABLE IF NOT EXISTS ministry (
-    ministry_id INT PRIMARY KEY,
+    ministry_id INT PRIMARY KEY AUTO_INCREMENT,
     ministryname VARCHAR(100) NOT NULL,
     church_id INT NOT NULL,
     budget DECIMAL(10, 2),
     description TEXT,
+    url_path TEXT,
     CONSTRAINT ministry_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
 CREATE TABLE IF NOT EXISTS churchmember (
-    member_id INT PRIMARY KEY,
+    member_id INT PRIMARY KEY AUTO_INCREMENT,
     fname VARCHAR(50) NOT NULL,
     mname VARCHAR(50),
     lname VARCHAR(50) NOT NULL,
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS churchmember (
 );
 
 CREATE TABLE IF NOT EXISTS superadmin (
-    superadmin_id INT PRIMARY KEY,
+    superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
     member_id INTEGER NOT NULL,
     superusername VARCHAR(50) NOT NULL UNIQUE,
     superpassword VARCHAR(255) NOT NULL,
@@ -46,7 +47,7 @@ CREATE TABLE IF NOT EXISTS superadmin (
 );
 
 CREATE TABLE IF NOT EXISTS Admin (
-    Admin_ID INT PRIMARY KEY,
+    Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
     AdminUsername VARCHAR(50) UNIQUE NOT NULL,
     AdminPassword VARCHAR(255) NOT NULL,
     Date_Started DATE NOT NULL,
@@ -66,7 +67,7 @@ CREATE TABLE IF NOT EXISTS Ministry_Admin (
 );
 
 CREATE TABLE files (
-    id INT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     filename TEXT NOT NULL,
     file_data BYTEA NOT NULL,
     uploaded_at TIMESTAMP DEFAULT NOW()

@@ -1,18 +1,20 @@
 import { NextResponse } from 'next/server';
-import pool from '@/app/lib/database'; // Ensure this is the correct path to your MySQL pool
+import pool from '@/app/lib/database'; 
+import { createMinistry } from '@/app/lib/data';
 
 export async function POST(request: Request) {
+
+  // the POST request will create a new ministry in the database
   try {
-    const body = await request.json();
-    console.log('Received data:', body);
+    const data = await request.json();
+    console.log('Received Ministry registration data:', data);
 
-    const { MinistryName, Church_ID, Budget, description } = body;
-
-    // Insert into the database
-    const [result] = await pool.query(
-      `INSERT INTO ministries (MinistryName, Church_ID, Budget, description) VALUES (?, ?, ?, ?)`,
-      [MinistryName, Church_ID, Budget, description]
-    );
+    const result = await createMinistry({
+      MinistryName: data.ministryName,
+      Description: data.Description,
+      Church_ID: data.Church_ID,
+      Budget: data.Budget,
+    });
 
     console.log('Created ministry:', result);
 
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    // Fetch ministries from the database
+    // The GET request will fetch all ministries from the database
     const [ministries] = await pool.query('SELECT * FROM ministries');
 
     return NextResponse.json(ministries);

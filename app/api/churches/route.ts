@@ -1,13 +1,56 @@
-import pool from '../../lib/database';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import pool from '@/app/lib/database'; 
+import { createChurch } from '@/app/lib/data';
 
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    console.log('Received data:', data);
 
-export default async function handler(req, res) {
-    try {
-        const [churches] = await pool.query('SELECT * FROM church');
-        res.status(200).json(churches);
-    } catch (err) {
-        console.error('Database query Error', err);
-        res.status(500).json({ error: 'Failed to fetch church data' });
-    }
+    const result = await createChurch({
+      churchName: data.churchName,
+      denomination: data.denomination,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      postalCode: data.postalCode,
+      city: data.city,
+    })
+
+    console.log('Created church:', result);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Church created successfully',
+      churchId: result.insertId,
+    });
+
+  } catch (error) {
+    console.error('Detailed error:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to create church',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
 }
+
+export async function GET() {
+    try {
+      // Fetch churches from the database
+      const [churches] = await pool.query('SELECT * FROM church');
+  
+      return NextResponse.json(churches);
+    } catch (error) {
+      console.error('Error fetching churches:', error);
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch churches',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
+  }
