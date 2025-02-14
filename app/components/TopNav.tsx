@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link';
-import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
@@ -30,12 +29,6 @@ const TopNav = () => {
 
     useEffect(() => {
         fetchMinistries();
-
-        // Set up an interval to check for new ministries every few seconds
-        // const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
-
-        // Cleanup interval on component unmount
-        // return () => clearInterval(intervalId);
     }, []);
 
     return (
@@ -52,39 +45,34 @@ const TopNav = () => {
                             <li className="group">
                                 <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
                             </li>
-                            <li className="group">
-                                <Link href="/adult" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Adult's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/adult/finances" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/adult/members" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/children" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Children's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/children/finances" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/children/members" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/youth" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Youth Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/youth/finances" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/youth/members" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
+                            {customMinistries.map((ministry) => (
+                                <li key={ministry.ministry_id} className="group">
+                                    <Link 
+                                        href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`} 
+                                        className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                    >
+                                        {ministry.ministryname}
+                                    </Link>
+                                    <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Finances
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Members
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                            ))}
                             <li className="group">
                                 <Link href="/settings" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
                             </li>
@@ -92,19 +80,11 @@ const TopNav = () => {
                     </nav>
                 </div>
                 <div>
-                    <Link href="/"><Image src="/logo.png" width={75} height={75} alt="Logo"/></Link>
+                    <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
                 </div>
                 <div className="flex justify-between">   
                     <ul className="flex right-0 space-x-4">
-                        <li>
-                            <Link href="/adult" className="text-gray-800 hover:text-gray-500">Adult's Ministry</Link>
-                        </li>
-                        <li>
-                            <Link href="/children" className="text-gray-800 hover:text-gray-500">Children's Ministry</Link>
-                        </li>
-                        <li>
-                            <Link href="/youth" className="text-gray-800 hover:text-gray-500">Youth Ministry</Link>
-                        </li>
+
                         {customMinistries.map((ministry) => (
                             <li key={ministry.ministry_id}>
                                 <Link 
