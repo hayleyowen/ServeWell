@@ -51,41 +51,36 @@ const TopNav = () => {
                             <li className="group">
                                 <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
                             </li>
+                            {customMinistries.map((ministry) => (
+                                <li key={ministry.ministry_id} className="group">
+                                    <Link 
+                                        href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`} 
+                                        className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                    >
+                                        {ministry.ministryname}
+                                    </Link>
+                                    <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Finances
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Members
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                            ))}
                             <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Adult's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Children's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Youth Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
+                                <Link href="/settings" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
                             </li>
                         </ul>
                     </nav>
