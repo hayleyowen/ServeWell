@@ -1,5 +1,9 @@
+-- SQL code to create the database
+
 Create database ServeWell;
 Use ServeWell;
+
+-- Creating the tables within the db
 
 CREATE TABLE church (
     church_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -69,6 +73,36 @@ CREATE TABLE IF NOT EXISTS Ministry_Admin (
 CREATE TABLE files (
     id INT PRIMARY KEY AUTO_INCREMENT,
     filename TEXT NOT NULL,
-    file_data BYTEA NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT NOW()
+    file_data LONGBLOB NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Inserting data into the tables
+
+INSERT INTO church (churchname, churchphone, streetaddress, postalcode, city, denomination, email) 
+VALUES ('Temple Baptist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Baptist', 'hello@temple.life'),
+('First United Methodist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Methodist', 'hello@first.united'),
+('St. Mary''s Catholic Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Catholic', 'hello@st.marys');
+
+INSERT INTO ministry (ministryname, church_id, budget, description, url_path) VALUES 
+('Youth Ministry', 1, 1000.00, 'Ministry for the youth', 'youthministry'),
+('Children''s Ministry', 1, 500.00, 'Ministry for the children', 'childrensministry'),
+('Worship Ministry', 2, 2000.00, 'Ministry for the worship team', 'worshipministry'),
+('Missions Ministry', 3, 1500.00, 'Ministry for the missions team', 'missionsministry');
+
+INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity_status, church_id, church_join_date) VALUES 
+('John', 'Doe', 'Smith', 'M', 'jsmith@email.com', '318-555-5444', 'Active', 1, '2020-01-01'),
+('Jane', 'Doe', 'Smith', 'F', 'jdsmith@email.com', '318-555-5555', 'Active', 1, '2010-01-01'),
+('Mary', 'Ann', 'Johnson', 'F', 'mjohnson@email.com', '318-555-5333', 'Active', 2, '2021-01-01'),
+('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3, '2019-01-01');
+
+INSERT INTO superadmin (member_id, superusername, superpassword, church_id) VALUES 
+(1, 'superadmin1', 'password1', 1),
+(2, 'superadmin2', 'password2', 2),
+(3, 'superadmin3', 'password3', 3);
+
+INSERT INTO Admin (AdminUsername, AdminPassword, Date_Started, Ministry_ID, SuperAdmin_ID) VALUES 
+('admin1', 'password1', '2020-01-01', 1, 1),
+('admin2', 'password2', '2021-01-01', 2, 2),
+('admin3', 'password3', '2019-01-01', 3, 3);
