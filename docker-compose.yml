@@ -24,5 +24,6 @@ services:
     volumes:
       - .:/app
       - /app/.next
+      - /app/node_modules
     env_file:
       - .env

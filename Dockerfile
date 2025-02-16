@@ -2,13 +2,13 @@ FROM node:22.13.0-alpine
 
 WORKDIR /
 
-COPY package.json ./ 
-COPY pnpm-lock.yaml ./
-COPY /app /app
-COPY .env ./
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-RUN npm install -g pnpm
-RUN npm install 
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install --frozen-lockfile
+
+COPY . .
 
 EXPOSE ${APP_PORT}
 
