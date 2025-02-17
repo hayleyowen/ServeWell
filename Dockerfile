@@ -2,9 +2,9 @@ FROM node:22.13.0-alpine
 
 WORKDIR /
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 COPY package.json pnpm-lock.yaml ./
+
+RUN npm install -g pnpm
 
 RUN pnpm install --frozen-lockfile
 
