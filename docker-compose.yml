@@ -13,9 +13,8 @@ services:
       - ./sql/db.sql:/docker-entrypoint-initdb.d/db.sql:ro
     # (this is just an example, not intended to be a production configuration)
 
-  nextjs-app:
-    image: nextjs-app
-    container_name: "NextJs"
+  frontend:
+    container_name: "Nextjs"
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,7 +22,16 @@ services:
       - '${APP_PORT}:${APP_PORT}'
     volumes:
       - .:/app
-      - /app/.next
+      - ./package.json:/app/package.json
+      - ./next.config.ts:/app/next.config.ts
+      - ./next-env.d.ts:/app/next-env.d.ts
+      - ./tsconfig.json:/app/tsconfig.json
       - /app/node_modules
-    env_file:
-      - .env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - next-net
+
+networks:
+  next-net:
+    driver: bridge
