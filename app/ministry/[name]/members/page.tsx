@@ -8,6 +8,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScal
 import { Alert, Snackbar, Menu, MenuItem } from "@mui/material";
 import clsx from "clsx";
 import "@/app/globals.css";
+import { FaSearch } from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
@@ -22,6 +23,9 @@ export default function FinancesTrackingPage() {
   const [switchingView, setSwitchingView] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [filteredData, setFilteredData] = useState(data);
 
   function generateData(rows, cols) {
     return Array.from({ length: rows }, () =>
@@ -199,6 +203,34 @@ export default function FinancesTrackingPage() {
     </div>
   );
 
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredData(data);
+      return;
+    }
+
+    const searchTerm = searchQuery.toLowerCase();
+    const filtered = data.filter((row) => {
+      return row.some((cell) => 
+        cell.value?.toString().toLowerCase().includes(searchTerm)
+      );
+    }).map(row => {
+      return row.map(cell => {
+        const value = cell.value?.toString() || "";
+        if (value.toLowerCase().includes(searchTerm)) {
+          // Add a background color directly to matching cells
+          return {
+            value: value,
+            className: 'bg-yellow-200' // Tailwind class for yellow highlight
+          };
+        }
+        return { value };
+      });
+    });
+
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
+
   return (
     <section className="h-screen flex flex-col">
       <div className="bg-white p-4 text-center">
@@ -211,7 +243,25 @@ export default function FinancesTrackingPage() {
             <h1 className="text-xl font-semibold text-gray-700">
               Customizable Spreadsheet
             </h1>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex items-center">
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <FaSearch className="text-gray-600" />
+                </button>
+                {showSearch && (
+                  <input
+                    type="text"
+                    placeholder="Search members..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="absolute right-10 w-64 p-2 border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                )}
+              </div>
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <input
                   type="checkbox"
@@ -267,7 +317,11 @@ export default function FinancesTrackingPage() {
                 </div>
               ) : (
                 <div className="w-full overflow-auto border border-gray-300 rounded-lg">
-                  <Spreadsheet data={data} onChange={setData} />
+                  <Spreadsheet 
+                    data={searchQuery ? filteredData : data} 
+                    onChange={setData}
+                    className="highlighted-cells"
+                  />
                 </div>
               )}
             </>
