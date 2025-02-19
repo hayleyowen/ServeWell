@@ -1,5 +1,5 @@
 # Use root/example as user/password credentials
-version: '3.1'
+version: '3'
 
 services:
 
@@ -11,27 +11,28 @@ services:
       MYSQL_ROOT_PASSWORD: example
     volumes:
       - ./sql/db.sql:/docker-entrypoint-initdb.d/db.sql:ro
-    # (this is just an example, not intended to be a production configuration)
-
-  frontend:
-    container_name: "Nextjs"
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - '${APP_PORT}:${APP_PORT}'
-    volumes:
-      - .:/app
-      - ./package.json:/app/package.json
-      - ./next.config.ts:/app/next.config.ts
-      - ./next-env.d.ts:/app/next-env.d.ts
-      - ./tsconfig.json:/app/tsconfig.json
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
     networks:
-      - next-net
+      - ServeWell-net
 
 networks:
-  next-net:
+  ServeWell-net:
     driver: bridge
+
+  # frontend:
+  #   container_name: "Nextjs"
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '${APP_PORT}:${APP_PORT}'
+  #   volumes:
+  #     - .:/app
+  #     - ./package.json:/app/package.json
+  #     - ./next.config.ts:/app/next.config.ts
+  #     - ./next-env.d.ts:/app/next-env.d.ts
+  #     - ./tsconfig.json:/app/tsconfig.json
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #   env_file:
+  #     - .env

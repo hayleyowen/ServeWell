@@ -1,3 +1,9 @@
+USE mysql;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+ALTER USER 'root'@'%' IDENTIFIED BY 'example';
+FLUSH PRIVILEGES;
+
+
 -- SQL code to create the database
 
 Create database ServeWell;
