@@ -59,3 +59,84 @@
 .button:hover {
     background-color: #2563eb; 
 }
+
+.tabs-container {
+    display: flex;
+    overflow-x: auto;  /* Enables horizontal scrolling */
+    white-space: nowrap; /* Prevents wrapping */
+    gap: 10px;  /* Adds spacing between tabs */
+    padding-bottom: 8px;
+    max-width: 100%;
+    scrollbar-width: thin;  /* Optional: makes scrollbar thinner */
+  }
+  
+  .tabs-container::-webkit-scrollbar {
+    height: 6px;  /* Controls scrollbar thickness */
+  }
+  
+  .tabs-container::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+  
+  .calendar-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .calendar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .calendar-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 1000px; /* Adjust this value as needed */
+    height: auto;
+    min-height: 600px; /* Minimum height for the calendar */
+  }
+  
+  .fc {
+    height: 100% !important;
+  }
+  
+  .fc .fc-view-harness {
+    height: 530px !important; /* Adjust this value to fit your needs */
+  }
+  
+  .event-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.event-content:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.delete-btn {
+    visibility: hidden;
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.event-content:hover .delete-btn {
+    visibility: visible;
+}
