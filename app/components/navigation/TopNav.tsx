@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
-import { LogoutButton } from './buttons/LogoutButton';
+import { LogoutButton } from '../buttons/LogoutButton';
 
 interface Ministry {
     ministry_id: number;

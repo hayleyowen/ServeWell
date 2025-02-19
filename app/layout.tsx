@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import TopNav from '@/app/components/TopNav';
+import TopNav from '@/app/components/navigation/TopNav';
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 
 const geistSans = Geist({
