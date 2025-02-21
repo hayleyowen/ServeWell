@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
-import { LogoutButton } from './buttons/LogoutButton';
+
 import { usePathname } from 'next/navigation';
+import { LogoutButton } from '../buttons/LogoutButton';
 
 interface Ministry {
     ministry_id: number;
@@ -89,7 +91,7 @@ const TopNav = () => {
                     </nav>
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
+                    <Link href="/"><Image src="/logo.png" width={75} height={75} alt="Logo"/></Link>
                 </div>
                 <div className="flex justify-between">   
                     <ul className="flex right-0 space-x-4">
@@ -116,9 +118,7 @@ const TopNav = () => {
                     </Link>
                 </div>
                 <div>
-                    
                     <LogoutButton />
-
                 </div>            
             </nav>
         </header>
