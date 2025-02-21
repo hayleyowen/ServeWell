@@ -232,12 +232,8 @@ export default function FinancesTrackingPage() {
   }, [searchQuery, data]);
 
   return (
-    <section className="h-screen flex flex-col">
-      <div className="bg-white p-4 text-center">
-        <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
-      </div>
-      
-      <div className="flex-1 flex flex-col bg-blue-500">
+    <section className="t-20 min-h-screen flex flex-col pt-20">
+      <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
         <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
           <div className="flex justify-between items-center w-full mb-4">
             <h1 className="text-xl font-semibold text-gray-700">
