@@ -70,11 +70,11 @@ CREATE TABLE IF NOT EXISTS Ministry_Admin (
     FOREIGN KEY (Member_ID) REFERENCES churchmember(Member_ID)
 );
 
-CREATE TABLE files (
+CREATE TABLE uploaded_files (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    filename TEXT NOT NULL,
+    file_name TEXT NOT NULL,
     file_data LONGBLOB NOT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 

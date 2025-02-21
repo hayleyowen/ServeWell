@@ -11,7 +11,7 @@ export default function ChurchCreationForm() {
         email: '',
         phone: '',
         address: '',
-        postalCode: '',
+        postalcode: '',
         city: '',
         state: '',
         admin: '',
@@ -73,6 +73,7 @@ export default function ChurchCreationForm() {
             email: formData.email,
             phone: formData.phone,
             address: formData.address,
+            postalcode: formData.postalcode,
             city: formattedCity,
         };
 

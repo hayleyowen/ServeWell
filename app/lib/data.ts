@@ -24,7 +24,7 @@ export async function getChurches() {
 
 // Create a new church
 export async function createChurch(churchData: {
-    churchName: string;
+    churchname: string;
     denomination: string;
     email: string;
     phone: string;
@@ -39,7 +39,7 @@ export async function createChurch(churchData: {
             `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
-                churchData.churchName,
+                churchData.churchname,
                 churchData.denomination,
                 churchData.email,
                 churchData.phone,
@@ -68,7 +68,7 @@ export async function getMinistries() {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [data] = await connection.execute("SELECT * FROM ministry");
+        const [data] = await connection.execute("SELECT ministry_id, ministryname, url_path FROM ministry");
         connection.release();
 
         console.log("Fetched ministries:", data);
@@ -107,7 +107,7 @@ export async function getMinistryByName(name: string) {
         console.log("Fetching ministry with name:", name);
         connection = await pool.getConnection();
         const [ministry] = await connection.execute(
-            "SELECT * FROM ministry WHERE LOWER(ministryname) LIKE LOWER(?) LIMIT 1",
+            "SELECT * FROM ministry WHERE LOWER(url_path) LIKE LOWER(?) LIMIT 1",
             [`%${name}%`]
         );
         connection.release();

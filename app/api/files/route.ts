@@ -15,11 +15,11 @@ export async function GET() {
         // Release the connection
         connection.release();
 
-        if (rows.length === 0) {
+        if (!rows || rows.length === 0) {
             return NextResponse.json({ success: false, message: "No file found" });
         }
 
-        const fileData = rows[0].file_data.toString("base64");
+        const fileData = rows[0].file_data ? rows[0].file_data.toString("base64"): null;
 
         return NextResponse.json({ success: true, filename: rows[0].file_name, fileData });
     } catch (error) {

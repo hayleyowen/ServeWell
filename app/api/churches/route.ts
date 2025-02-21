@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     console.log('Received data:', data);
 
     const result = await createChurch({
-      churchName: data.churchName,
+      churchname: data.churchname,
       denomination: data.denomination,
       email: data.email,
       phone: data.phone,
