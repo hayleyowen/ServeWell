@@ -4,19 +4,18 @@ version: '3'
 services:
 
   db: 
-    container_name: "ServeWell"
-    image: mysql
+    container_name: ServeWell
+    image: mysql:8
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: example
+    env_file:
+      - .env
     volumes:
       - ./sql/db.sql:/docker-entrypoint-initdb.d/db.sql:ro
-    networks:
-      - ServeWell-net
+    ports:
+      - "3307:3306"
 
-networks:
-  ServeWell-net:
-    driver: bridge
 
   # frontend:
   #   container_name: "Nextjs"
