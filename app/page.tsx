@@ -1,5 +1,6 @@
 import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
+import { AssignmentPage } from './components/buttons/AssignmentPage';
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
             <a href="/super-homepage" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
               <h3 className="text-xl font-bold mb-2">SuperUser Homepage</h3>
             </a>
+            <AssignmentPage />
             <a href="/user-homepage" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
               <h3 className="text-xl font-bold mb-2">Regular User Homepage</h3>
             </a>

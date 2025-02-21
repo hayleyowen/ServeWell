@@ -4,4 +4,4 @@ export const GET = handleAuth({
     login: handleLogin({
       returnTo: "/user-homepage",
     }),
-});
+});    
