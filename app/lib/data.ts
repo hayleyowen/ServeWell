@@ -24,28 +24,38 @@ export async function getChurches() {
 
 // Create a new church
 export async function createChurch(churchData: {
-    churchname: string;
+    churchName: string;
     denomination: string;
     email: string;
     phone: string;
     address: string;
-    postalCode: string;
+    postalcode: string;
     city: string;
 }) {
     let connection;
+    console.log("Values being inserted:", [
+        churchData.churchName ?? null,
+        churchData.denomination ?? null,
+        churchData.email ?? null,
+        churchData.phone ?? null,
+        churchData.address ?? null,
+        churchData.postalcode ?? null,
+        churchData.city ?? null,
+    ]);
+
     try {
         connection = await pool.getConnection();
         const [result] = await connection.execute(
             `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
-                churchData.churchname,
-                churchData.denomination,
-                churchData.email,
-                churchData.phone,
-                churchData.address,
-                churchData.postalCode,
-                churchData.city
+                churchData.churchName,
+                churchData.denomination ?? null,
+                churchData.email ?? null,
+                churchData.phone ?? null,
+                churchData.address ?? null,
+                churchData.postalcode ?? null,
+                churchData.city ?? null,
             ]
         );
 
@@ -183,6 +193,10 @@ export async function createSuperAdmin(data: {
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
+
+        const [churchId] = await connection.execute(
+            "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
+        );
 
         // Insert into churchmember table
         const [memberResult] = await connection.execute(

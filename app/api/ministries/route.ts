@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     console.log('Received Ministry registration data:', data);
 
     const result = await createMinistry({
-      MinistryName: data.ministryName,
+      MinistryName: data.MinistryName,
       Description: data.Description,
       Church_ID: data.Church_ID,
       Budget: data.Budget,

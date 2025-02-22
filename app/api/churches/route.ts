@@ -5,24 +5,24 @@ import { createChurch } from '@/app/lib/data';
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    console.log('Received data:', data);
+    // console.log('Received data:', data.postalCode);
 
     const result = await createChurch({
-      churchname: data.churchname,
+      churchName: data.churchName,
       denomination: data.denomination,
       email: data.email,
       phone: data.phone,
       address: data.address,
-      postalCode: data.postalCode,
+      postalcode: data.postalCode,
       city: data.city,
     })
 
-    console.log('Created church:', result);
+    console.log('Created church:', result.insertedId);
 
     return NextResponse.json({ 
       success: true, 
       message: 'Church created successfully',
-      churchId: result.insertId,
+      churchId: result.insertedId,
     });
 
   } catch (error) {
