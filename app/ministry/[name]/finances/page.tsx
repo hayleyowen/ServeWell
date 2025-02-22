@@ -90,7 +90,7 @@ export default function FinancesTrackingPage() {
       formData.append("file", blob, "finances.xlsx");
 
       try {
-          const response = await fetch("/api/uploadFile", {
+          const response = await fetch("/api/files", {
               method: "POST",
               body: formData,
           });
@@ -141,7 +141,9 @@ export default function FinancesTrackingPage() {
   useEffect(() => {
       const fetchStoredFile = async () => {
           try {
-              const response = await fetch("/api/getFile");
+              const response = await fetch("/api/files", {
+                  method: "GET",  
+              });
               const result = await response.json();
 
               if (response.ok && result.success && result.fileData) {

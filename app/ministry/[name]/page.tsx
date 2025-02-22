@@ -2,7 +2,7 @@ import { getMinistryByName } from '@/app/lib/data';
 import '@/app/globals.css';
 
 export default async function MinistryPage({ params }: { params: { name: string } }) {
-    console.log('Received params:', params); // Debug log
+    console.log('Received params:', params.name); // Debug log
     
     try {
         const ministry = await getMinistryByName(params.name);
