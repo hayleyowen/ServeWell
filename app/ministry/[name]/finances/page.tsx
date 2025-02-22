@@ -133,15 +133,50 @@ export default function FinancesTrackingPage() {
                     body: formData,
                 });
 
-                const result = await response.json();
-                if (result.success) {
-                    console.log("File uploaded successfully");
-                } else {
-                    console.error("Upload failed:", result.error);
-                }
-            } catch (error) {
-                console.error("Error saving file:", error);
-            }
+      try {
+          const response = await fetch("/api/files", {
+              method: "POST",
+              body: formData,
+          });
+
+          const result = await response.json();
+          if (result.success) {
+              console.log("File uploaded successfully");
+          } else {
+              console.error("Upload failed:", result.error);
+          }
+      } catch (error) {
+          console.error("Error saving file:", error);
+      }
+
+      handleClose();
+  };
+
+  
+
+  const updateChartData = useCallback((spreadsheetData) => {
+    if (spreadsheetData.length < 2) {
+      setChartData(null);
+      return;
+    }
+
+    const labels = spreadsheetData[0].map(cell => cell.value);
+    const datasets = spreadsheetData[0].map((_, colIndex) => {
+      return spreadsheetData.slice(1).reduce((sum, row) => {
+        const value = parseFloat(row[colIndex]?.value);
+        return sum + (isNaN(value) ? 0 : value);
+      }, 0);
+    });
+
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Data Representation',
+          data: datasets,
+          backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+          borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
+          borderWidth: 1
         }
         handleClose();
     };

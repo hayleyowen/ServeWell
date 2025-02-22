@@ -142,15 +142,50 @@ export default function FinancesTrackingPage() {
                     body: formData,
                 });
 
-                const result = await response.json();
-                if (result.success) {
-                    console.log("File uploaded successfully");
-                } else {
-                    console.error("Upload failed:", result.error);
-                }
-            } catch (error) {
-                console.error("Error saving file:", error);
-            }
+      try {
+          const response = await fetch("/api/files", {
+              method: "POST",
+              body: formData,
+          });
+
+          const result = await response.json();
+          if (result.success) {
+              console.log("File uploaded successfully");
+          } else {
+              console.error("Upload failed:", result.error);
+          }
+      } catch (error) {
+          console.error("Error saving file:", error);
+      }
+
+      handleClose();
+  };
+
+  
+
+  const updateChartData = useCallback((spreadsheetData) => {
+    if (spreadsheetData.length < 2) {
+      setChartData(null);
+      return;
+    }
+
+    const labels = spreadsheetData[0].map(cell => cell.value);
+    const datasets = spreadsheetData[0].map((_, colIndex) => {
+      return spreadsheetData.slice(1).reduce((sum, row) => {
+        const value = parseFloat(row[colIndex]?.value);
+        return sum + (isNaN(value) ? 0 : value);
+      }, 0);
+    });
+
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Data Representation',
+          data: datasets,
+          backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+          borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
+          borderWidth: 1
         }
         handleClose();
     };
@@ -249,9 +284,131 @@ export default function FinancesTrackingPage() {
         }, 500);
     };
 
-    const LoadingSpinner = () => (
-        <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+    </div>
+  );
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredData(data);
+      return;
+    }
+
+    const searchTerm = searchQuery.toLowerCase();
+    const filtered = data.filter((row) => {
+      return row.some((cell) => 
+        cell.value?.toString().toLowerCase().includes(searchTerm)
+      );
+    }).map(row => {
+      return row.map(cell => {
+        const value = cell.value?.toString() || "";
+        if (value.toLowerCase().includes(searchTerm)) {
+          // Add a background color directly to matching cells
+          return {
+            value: value,
+            className: 'bg-yellow-200' // Tailwind class for yellow highlight
+          };
+        }
+        return { value };
+      });
+    });
+
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
+
+  return (
+    <section className="t-20 min-h-screen flex flex-col pt-20">
+      <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
+        <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
+          <div className="flex justify-between items-center w-full mb-4">
+            <h1 className="text-xl font-semibold text-gray-700">
+              Customizable Spreadsheet
+            </h1>
+            <div className="flex items-center gap-4">
+              <div className="relative flex items-center">
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <FaSearch className="text-gray-600" />
+                </button>
+                {showSearch && (
+                  <input
+                    type="text"
+                    placeholder="Search members..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="absolute right-10 w-64 p-2 border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                )}
+              </div>
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={showChart}
+                  onChange={() => setShowChart(!showChart)}
+                  className="mr-2"
+                />
+                Show Chart
+              </label>
+              <button
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                {isFullScreen ? "Exit Full Screen" : "Full Screen"}
+              </button>
+            </div>
+          </div>
+          
+          <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
+          <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save File</button>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={saveToComputer}>Save to this computer</MenuItem>
+            <MenuItem onClick={saveToCloud}>Save to the cloud</MenuItem>
+          </Menu>
+          {isLoading || switchingView ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              {showChart && chartData ? (
+                <div className="w-full h-96 flex flex-col items-center">
+                  <select
+                    className="mb-4 p-2 border rounded"
+                    value={chartType}
+                    onChange={handleChartTypeChange}
+                  >
+                    <option value="pie">Pie Chart</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                  </select>
+                  {chartLoading ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <>
+                      {chartType === "pie" && <Pie data={chartData} />}
+                      {chartType === "bar" && <Bar data={chartData} />}
+                      {chartType === "line" && <Line data={chartData} />}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full overflow-auto border border-gray-300 rounded-lg">
+                  <Spreadsheet 
+                    data={searchQuery ? filteredData : data} 
+                    onChange={setData}
+                    className="highlighted-cells"
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
     );
 
