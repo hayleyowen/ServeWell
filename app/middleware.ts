@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (restrictedPaths.includes(pathname) && !session) {
-    return NextResponse.redirect(new URL('/api/auth/login', request.url))
+    return NextResponse.redirect(new URL('@/pages/api/auth/login', request.url))
   }
   return res;
 }

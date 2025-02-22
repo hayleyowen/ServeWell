@@ -2,6 +2,34 @@
 import pool from "@/app/lib/database";
 
 ////////////////////////////////////////
+/////// Admin-related functions ///////
+////////////////////////////////////////
+
+export async function getUnAssignedAdmins() {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT * FROM admin WHERE ministry_id IS NULL`
+        );
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch unassigned admins:", error);
+        throw new Error("Failed to fetch unassigned admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+
+
+
+
+
+
+
+////////////////////////////////////////
 /////// Church-related functions ///////
 ////////////////////////////////////////
 
