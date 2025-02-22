@@ -1,5 +1,3 @@
-//UPDATE
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -10,10 +8,12 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScal
 import { Alert, Snackbar, Menu, MenuItem } from "@mui/material";
 import clsx from "clsx";
 import "@/app/globals.css";
+import { FaSearch } from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
 export default function FinancesTrackingPage() {
+    const [data, setData] = useState(() => generateData(5, 5));
     const [charts, setCharts] = useState([]);
     const [activeChart, setActiveChart] = useState(null);
     const [chartName, setChartName] = useState("");
@@ -24,6 +24,11 @@ export default function FinancesTrackingPage() {
     const [switchingView, setSwitchingView] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [chartType, setChartType] = useState("pie");
+    const [chartData, setChartData] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showSearch, setShowSearch] = useState(false);
+    const [filteredData, setFilteredData] = useState(data);
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -33,22 +38,24 @@ export default function FinancesTrackingPage() {
     }
 
     const createNewChart = () => {
-        if (!chartName) {
-            const nextChartNumber = charts.length + 1;
-            setChartName(`Member Chart ${nextChartNumber}`);
+        if (!chartName.trim()) {
+            setAlertOpen(true); // Show an alert if the name is empty
+            return;
         }
+    
         const newChart = {
             id: Date.now(),
-            name: chartName,
-            data: generateData(5, 5), // Initialize with 5x5 grid
+            name: chartName.trim(),
+            data: generateData(5, 5), // Initialize with a 5x5 grid
             chartType: "pie",
             chartData: null,
         };
+    
         setCharts([...charts, newChart]);
         setActiveChart(newChart.id);
         setChartName("");
     };
-
+    
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -186,12 +193,46 @@ export default function FinancesTrackingPage() {
     };
 
     const deleteChart = (chartId) => {
-        setCharts(charts.filter(chart => chart.id !== chartId));
-        if (activeChart === chartId) {
-            setActiveChart(charts.length > 1 ? charts[0].id : null);
-        }
+        setCharts(prevCharts => {
+            const updatedCharts = prevCharts.filter(chart => chart.id !== chartId);
+            setActiveChart(updatedCharts.length > 0 ? updatedCharts[0].id : null);
+            return updatedCharts;
+        });
     };
 
+    useEffect(() => {
+        const fetchStoredFile = async () => {
+            try {
+                const response = await fetch("/api/getFile");
+                const result = await response.json();
+  
+                if (response.ok && result.success && result.fileData) {
+                    const binaryStr = atob(result.fileData);
+                    const byteArray = new Uint8Array(binaryStr.length);
+                    for (let i = 0; i < binaryStr.length; i++) {
+                        byteArray[i] = binaryStr.charCodeAt(i);
+                    }
+  
+                    const workbook = XLSX.read(byteArray, { type: "array" });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  
+                    const formattedData = jsonData.map(row =>
+                        row.map(cell => ({ value: cell || "" }))
+                    );
+  
+                    setData(formattedData);
+                    updateChartData(formattedData);
+                }
+            } catch (error) {
+                console.error("Error fetching stored file:", error);
+            }
+        };
+  
+        fetchStoredFile();
+    }, []);
+  
 
     const toggleChart = () => {
         if (!activeChart || !charts.find(chart => chart.id === activeChart).data ||
@@ -246,19 +287,74 @@ export default function FinancesTrackingPage() {
         }
     };
 
-    return (
+    useEffect(() => {
+        if (!searchQuery.trim()) {
+            setFilteredData(data);
+            return;
+        }
+    
+        const searchTerm = searchQuery.toLowerCase();
+    
+        setCharts(prevCharts =>
+            prevCharts.map(chart => {
+                if (chart.id === activeChart && chart.data) {
+                    // Ensure the data structure exists before modifying it
+                    const updatedData = chart.data.map(row =>
+                        row.map(cell => {
+                            const value = cell?.value?.toString() || "";
+                            if (value.toLowerCase().includes(searchTerm)) {
+                                return { ...cell, className: "bg-yellow-200" };
+                            }
+                            return { ...cell, className: "" }; // Ensure no lingering highlights
+                        })
+                    );
+    
+                    if (updatedData && updatedData.length > 0) {
+                        updateChartData(activeChart, updatedData); // Update the chart with highlighted data
+                    }
+    
+                    return { ...chart, data: updatedData };
+                }
+                return chart;
+            })
+        );
+    }, [searchQuery, activeChart]);
+    
+      return (
         <section className="h-screen flex flex-col">
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
-
+    
             <div className="flex-1 flex flex-col bg-blue-500">
-                <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
+                <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${
+                    isFullScreen ? "fixed inset-0 z-50" : ""
+                }`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
+                    
                     <div className="flex justify-between items-center w-full mb-4">
-                        <h1 className="text-xl font-semibold text-gray-700">
-                            Member SpreadSheet
-                        </h1>
+                        <h1 className="text-xl font-semibold text-gray-700">Member SpreadSheet</h1>
+                        
                         <div className="flex gap-4">
+                            {/* Search Bar */}
+                            <div className="relative flex items-center">
+                                <button
+                                    onClick={() => setShowSearch(!showSearch)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <FaSearch className="text-gray-600" />
+                                </button>
+                                {showSearch && (
+                                    <input
+                                        type="text"
+                                        placeholder="Search members..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="absolute right-10 w-64 p-2 border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        autoFocus
+                                    />
+                                )}
+                            </div>
+    
                             <label className="flex items-center text-sm font-medium text-gray-700">
                                 <input
                                     type="checkbox"
@@ -276,17 +372,26 @@ export default function FinancesTrackingPage() {
                             </button>
                         </div>
                     </div>
-
+    
+                    {/* Chart Name Input & Create Button */}
                     <div className="flex gap-2 mb-4">
                         <input
                             type="text"
                             value={chartName}
                             onChange={(e) => setChartName(e.target.value)}
                             placeholder="Chart Name"
-                            className="border p-2"
+                            className="border p-2 rounded-md"
                         />
-                        <button onClick={createNewChart} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Create Chart</button>
+                        <button 
+                            onClick={createNewChart} 
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                            disabled={!chartName.trim()} // Prevents empty chart names
+                        >
+                            Create Chart
+                        </button>
                     </div>
+    
+                    {/* Chart Tabs */}
                     <div className="tabs-container border-b pb-2 h-12 flex-shrink-0">
                         {charts.map((chart) => (
                             <div
@@ -298,16 +403,17 @@ export default function FinancesTrackingPage() {
                             </div>
                         ))}
                     </div>
+    
                     <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
-                    <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save File</button>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
-                    >
+                    <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Save File
+                    </button>
+    
+                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                         <MenuItem onClick={saveToComputer}>Save to this computer</MenuItem>
                         <MenuItem onClick={saveToCloud}>Save to the cloud</MenuItem>
                     </Menu>
+    
                     {isLoading || switchingView ? (
                         <LoadingSpinner />
                     ) : (
@@ -327,40 +433,44 @@ export default function FinancesTrackingPage() {
                                         <LoadingSpinner />
                                     ) : (
                                         <>
-                                            {charts.find(chart => chart.id === activeChart).chartType === "pie" && <Pie data={charts.find(chart => chart.id === activeChart).chartData} />}
-                                            {charts.find(chart => chart.id === activeChart).chartType === "bar" && <Bar data={charts.find(chart => chart.id === activeChart).chartData} />}
-                                            {charts.find(chart => chart.id === activeChart).chartType === "line" && <Line data={charts.find(chart => chart.id === activeChart).chartData} />}
-                                        </>
-                                    )}
+                                        {charts.find(chart => chart.id === activeChart).chartType === "pie" && <Pie data={charts.find(chart => chart.id === activeChart).chartData} />}
+                                        {charts.find(chart => chart.id === activeChart).chartType === "bar" && <Bar data={charts.find(chart => chart.id === activeChart).chartData} />}
+                                        {charts.find(chart => chart.id === activeChart).chartType === "line" && <Line data={charts.find(chart => chart.id === activeChart).chartData} />}
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="w-full overflow-auto border border-gray-300 rounded-lg">
+                                <div className="flex justify-end mb-2">
+                                    <button onClick={addRow} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
+                                        Add Row
+                                    </button>
+                                    <button onClick={addColumn} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                                        Add Column
+                                    </button>
                                 </div>
-                            ) : (
-                                <div className="w-full overflow-auto border border-gray-300 rounded-lg">
-                                    <div className="flex justify-end mb-2">
-                                        <button onClick={addRow} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">Add Row</button>
-                                        <button onClick={addColumn} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Add Column</button>
-                                    </div>
-                                    {activeChart && (
-                                        <Spreadsheet
-                                            data={charts.find(chart => chart.id === activeChart).data}
-                                            onChange={(newData) => {
-                                                setCharts(prevCharts => prevCharts.map(chart =>
-                                                    chart.id === activeChart ? { ...chart, data: newData } : chart
-                                                ));
-                                                updateChartData(activeChart, newData);
-                                            }}
-                                        />
-                                    )}
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
+                                {activeChart && (
+                                    <Spreadsheet
+                                        data={charts.find(chart => chart.id === activeChart).data}
+                                        onChange={(newData) => {
+                                            setCharts(prevCharts => prevCharts.map(chart =>
+                                                chart.id === activeChart ? { ...chart, data: newData } : chart
+                                            ));
+                                            updateChartData(activeChart, newData);
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
-            <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
-                <Alert onClose={() => setAlertOpen(false)} severity="warning">
-                    Upload data before showing charts!
-                </Alert>
-            </Snackbar>
-        </section>
+        </div>
+        <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
+            <Alert onClose={() => setAlertOpen(false)} severity="warning">
+                {chartName.trim() ? "Upload data before showing charts!" : "Please enter a chart name!"}
+            </Alert>
+        </Snackbar>
+    </section>
     );
-}
+    
