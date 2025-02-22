@@ -30,12 +30,6 @@ const TopNav = () => {
 
     useEffect(() => {
         fetchMinistries();
-
-        // Set up an interval to check for new ministries every few seconds
-        // const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
-
-        // Cleanup interval on component unmount
-        // return () => clearInterval(intervalId);
     }, []);
 
     return (
@@ -105,7 +99,6 @@ const TopNav = () => {
                     </ul>
                 </div>
                 <div>
-
                     <Link 
                         href="/ministry-creation"
                         className="text-blue-500 hover:text-blue-600 font-medium"
