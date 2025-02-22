@@ -109,7 +109,6 @@ const TopNav = () => {
                     </ul>
                 </div>
                 <div>
-
                     <Link 
                         href="/ministry-creation"
                         className="text-blue-500 hover:text-blue-600 font-medium"

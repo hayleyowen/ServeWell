@@ -1,16 +1,20 @@
 import '@/app/globals.css';
-import { AssignmentPage } from '../components/buttons/AssignmentPage';
+import { AssignmentPageButton } from '../components/buttons/AssignmentPage';
+import { MinistryCreationButton } from '../components/buttons/MinistryCreationButton';
+import UserSettingsForm from '../components/forms/UserSettingsForm';
 
-export default function Home() {
+export default function Settings() {
   return (
-    <section className="t-20 h-screen flex flex-col">
-      <div className="t-15 flex-1 flex flex-col bg-blue-500 p-20">
+    <section className="t-20 min-h-screen flex flex-col">
+      <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-            <AssignmentPage />
-            <a href="/ministry-creation" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
-              <h3 className="text-xl font-bold mb-2">Minsitry Creation</h3>
-            </a>
+            <AssignmentPageButton />
+            <MinistryCreationButton />
+          </div>
+          <div className="mt-8 w-full max-w-4xl">
+            <h1 className="text-2xl text-white font-bold mb-4">Update User Details</h1>
+            <UserSettingsForm />
           </div>
         </div>
       </div>
