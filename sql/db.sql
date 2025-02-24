@@ -103,7 +103,7 @@ Insert INTO Roles (Role_ID, RoleName, Description) VALUES
 INSERT INTO Admin (AdminName, Ministry_ID) VALUES 
 ('admin1', null),
 ('admin2', 1),
-('admin3' 3);
+('admin3', 3);
 
 INSERT INTO superadmin (member_id, church_id, admin_id) VALUES 
 (1, 1, 1),

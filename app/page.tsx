@@ -5,7 +5,7 @@ import { ChurchCreationButton } from './components/buttons/ChurchCreationButton'
 import Image from 'next/image';
 import { SuperHomepageButton } from './components/buttons/SuperHomepageButton';
 import  {useUser} from '@auth0/nextjs-auth0/client';
-import { insertAdmins } from '../api/admin/route';
+import { insertAdmins } from './lib/data';
 
 
 
@@ -13,16 +13,13 @@ export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
   console.log(user.sub);
+  let Auth0_ID = user.sub;
+  let nickname = user.nickname;
+
 
   // take logged-in user and create an admin associated with that user
-  const createAdmin = async () => {
-    const response = await insertAdmins(user.sub);
-
-    if (response.ok) {
-      console.log("Admin created successfully");
-    } else {
-      console.error("Failed to create admin");
-    }
+  if (user) {
+    insertAdmins(nickname, Auth0_ID);
   }
   
 

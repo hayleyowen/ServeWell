@@ -1,4 +1,5 @@
 "use server";
+import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
 ////////////////////////////////////////
@@ -22,11 +23,21 @@ export async function getUnAssignedAdmins() {
     }
 }
 
-
-
-
-
-
+export async function insertAdmins(nickname: string, Auth0_ID: string) {
+    try {
+      const client = await pool.getConnection();
+  
+      const query = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
+      const values = [nickname, Auth0_ID];
+      const [result] = await client.execute(query, values);
+      client.release();
+  
+      return NextResponse.json({ success: true, affectedRows: result.affectedRows });
+    } catch(error) {
+      console.error("Error inserting admin:", error);
+      return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
+    }
+  }
 
 
 ////////////////////////////////////////
