@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import '@/app/globals.css';
 import { AssignmentPageButton } from '../components/buttons/AssignmentPage';
 

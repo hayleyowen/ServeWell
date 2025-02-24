@@ -20,8 +20,8 @@ export async function POST(req: Request) {
   try {
     const { admin_id, ministry_id } = await req.json();
 
-    if (!admin_id || !ministry_id) {
-      return NextResponse.json({ error: "Missing admin_id or ministry_id" }, { status: 400 });
+    if (!admin_id) {
+      return NextResponse.json({ error: "Missing admin_id" }, { status: 400 });
     }
 
     const client = await pool.getConnection();
@@ -35,5 +35,21 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error updating admin ministry:", error);
     return NextResponse.json({ error: "Failed to update ministry" }, { status: 500 });
+  }
+}
+
+export async function insertAdmins(Auth0_ID: string) {
+  try {
+    const client = await pool.getConnection();
+
+    const query = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (null, ?, 1);`;
+    const values = [Auth0_ID];
+    const [result] = await client.execute(query, values);
+    client.release();
+
+    return NextResponse.json({ success: true, affectedRows: result.affectedRows });
+  } catch(error) {
+    console.error("Error inserting admin:", error);
+    return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
   }
 }

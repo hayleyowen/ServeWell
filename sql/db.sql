@@ -40,25 +40,29 @@ CREATE TABLE IF NOT EXISTS churchmember (
     CONSTRAINT churchmember_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
-CREATE TABLE IF NOT EXISTS superadmin (
-    superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INTEGER NOT NULL,
-    superusername VARCHAR(50) NOT NULL UNIQUE,
-    superpassword VARCHAR(255) NOT NULL,
-    church_id INTEGER NOT NULL,
-    CONSTRAINT superadmin_member_id_fkey FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
-    CONSTRAINT superadmin_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
+CREATE TABLE IF NOT EXISTS Roles (
+    Role_ID INT PRIMARY KEY,
+    RoleName VARCHAR(50) NOT NULL,
+    Description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Admin (
     Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
-    AdminUsername VARCHAR(50) UNIQUE NOT NULL,
-    AdminPassword VARCHAR(255) NOT NULL,
-    Date_Started DATE NOT NULL,
+    AdminName VARCHAR(50),
     Ministry_ID INT,
-    SuperAdmin_ID INT,
-    FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID),
-    FOREIGN KEY (SuperAdmin_ID) REFERENCES superadmin(SuperAdmin_ID)
+    Auth0_ID VARCHAR(30),
+    Role_ID INT,
+    FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
+    FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
+);
+CREATE TABLE IF NOT EXISTS superadmin (
+    superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INTEGER NOT NULL,
+    admin_id INTEGER NOT NULL,
+    church_id INTEGER NOT NULL,
+    FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
+    FOREIGN KEY (church_id) REFERENCES church(church_id),
+    FOREIGN KEY (admin_id) REFERENCES Admin(Admin_ID)
 );
 
 CREATE OR REPLACE VIEW member_and_admin AS 
@@ -92,12 +96,16 @@ INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity
 ('Mary', 'Ann', 'Johnson', 'F', 'mjohnson@email.com', '318-555-5333', 'Active', 2, '2021-01-01'),
 ('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3, '2019-01-01');
 
-INSERT INTO superadmin (member_id, superusername, superpassword, church_id) VALUES 
-(1, 'superadmin1', 'password1', 1),
-(2, 'superadmin2', 'password2', 2),
-(3, 'superadmin3', 'password3', 3);
+Insert INTO Roles (Role_ID, RoleName, Description) VALUES 
+(1, 'MinistryAdmin', 'Can only see their ministry pages'),
+(2, 'SuperAdmin', 'Can see all pages and edit all ministries');
 
-INSERT INTO Admin (AdminUsername, AdminPassword, Date_Started, Ministry_ID, SuperAdmin_ID) VALUES 
-('admin1', 'password1', '2020-01-01', null, 1),
-('admin2', 'password2', '2021-01-01', 1, 2),
-('admin3', 'password3', '2019-01-01', 3, 3);
+INSERT INTO Admin (AdminName, Ministry_ID) VALUES 
+('admin1', null),
+('admin2', 1),
+('admin3' 3);
+
+INSERT INTO superadmin (member_id, church_id, admin_id) VALUES 
+(1, 1, 1),
+(3, 2, 2),
+(4, 3, 3);

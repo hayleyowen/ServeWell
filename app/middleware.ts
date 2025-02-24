@@ -1,22 +1,21 @@
-import { NextResponse } from 'next/server'
-import { getSession } from '@auth0/nextjs-auth0'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { useUser } from '@auth0/nextjs-auth0/client'
  
 // This function can be marked `async` if using `await` inside
-export async function middleware(request: NextRequest) {
-  const res = NextResponse.next();
-  const session = await getSession(request, res);
+export default async function middleware(req: NextRequest) {
+  const protectedRoutes = ['/admin/assign', 'super-homepage', 'ministry-creation']
+  const publicRoutes = ['/', 'ministry', 'user-homepage']
 
-  const restrictedPaths = ['/admin-assign'];
-  const { pathname } = request.nextUrl;
+  const path = req.nextUrl.pathname
+  const isProtected = protectedRoutes.includes(path)
+  const isPublic = publicRoutes.includes(path)
 
-  if (restrictedPaths.includes(pathname) && !session) {
-    return NextResponse.redirect(new URL('@/pages/api/auth/login', request.url))
-  }
-  return res;
+
 }
  
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ['/admin-assign'],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml).*)",
+  ]
 };
