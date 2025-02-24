@@ -58,8 +58,10 @@ export default function AdminAssignPage() {
                                         <td>{admin.email}</td>
                                         <td>{admin.memberphone}</td>
                                         <td>
-                                            {admin.ministry_id ? (
-                                                "Assigned"
+                                            {admin.Ministry_ID !== null? (
+                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
+                                                    Assigned
+                                                </div>    
                                             ) : (
                                                 <MinistryDropdown member_id={admin.member_id} />
                                             )}

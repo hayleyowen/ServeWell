@@ -2,6 +2,7 @@ import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
 import Image from 'next/image';
+import { SuperHomepageButton } from './components/buttons/SuperHomepageButton';
 
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
             <ChurchCreationButton />
             <LoginButton />
+            <SuperHomepageButton />
           </div>
         </div>
       </div>

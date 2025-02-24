@@ -55,20 +55,15 @@ CREATE TABLE IF NOT EXISTS Admin (
     AdminUsername VARCHAR(50) UNIQUE NOT NULL,
     AdminPassword VARCHAR(255) NOT NULL,
     Date_Started DATE NOT NULL,
-    Ministry_ID INT NOT NULL,
+    Ministry_ID INT,
     SuperAdmin_ID INT,
     FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID),
     FOREIGN KEY (SuperAdmin_ID) REFERENCES superadmin(SuperAdmin_ID)
 );
 
-CREATE TABLE IF NOT EXISTS Ministry_Admin (
-    Admin_ID INT PRIMARY KEY,
-    Ministry_ID INT NOT NULL,
-    Member_ID INT NOT NULL,
-    Admin_Start_Date DATE NOT NULL,
-    FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID),
-    FOREIGN KEY (Member_ID) REFERENCES churchmember(Member_ID)
-);
+CREATE OR REPLACE VIEW member_and_admin AS 
+SELECT cm.fname, cm.lname, cm.member_id, cm.memberphone, cm.email, a.Admin_ID, a.Ministry_ID from churchmember cm
+Inner JOIN Admin a ON cm.member_id = a.Admin_ID;
 
 CREATE TABLE uploaded_files (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -103,6 +98,6 @@ INSERT INTO superadmin (member_id, superusername, superpassword, church_id) VALU
 (3, 'superadmin3', 'password3', 3);
 
 INSERT INTO Admin (AdminUsername, AdminPassword, Date_Started, Ministry_ID, SuperAdmin_ID) VALUES 
-('admin1', 'password1', '2020-01-01', 1, 1),
-('admin2', 'password2', '2021-01-01', 2, 2),
+('admin1', 'password1', '2020-01-01', null, 1),
+('admin2', 'password2', '2021-01-01', 1, 2),
 ('admin3', 'password3', '2019-01-01', 3, 3);
