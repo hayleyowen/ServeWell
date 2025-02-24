@@ -26,18 +26,45 @@ export async function getUnAssignedAdmins() {
 export async function insertAdmins(nickname: string, Auth0_ID: string) {
     try {
       const client = await pool.getConnection();
+
+      const query = 'Select * from Admin where Auth0_ID = ?';
+      const [result] = await client.execute(query, [Auth0_ID]);
+        if (result.length > 0) {
+            client.release();
+            return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
+        }
   
-      const query = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
+      const query1 = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
       const values = [nickname, Auth0_ID];
-      const [result] = await client.execute(query, values);
+      const [result1] = await client.execute(query1, values);
       client.release();
   
-      return NextResponse.json({ success: true, affectedRows: result.affectedRows });
+      return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
     } catch(error) {
       console.error("Error inserting admin:", error);
       return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
     }
   }
+
+  // for middleware to check if user is an admin
+export async function verifyAdmin(Auth0_ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT Role_ID FROM Admin WHERE Auth0_ID = ?`,
+            [Auth0_ID]
+        );
+        console.log("Data:", data);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch admin:", error);
+        throw new Error("Failed to fetch admin.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
 
 
 ////////////////////////////////////////
@@ -288,6 +315,27 @@ export async function getSuperAdmins() {
     } catch (err) {
         console.error("Database Error:", err);
         throw new Error("Failed to fetch super admin data");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+
+////////////////////////////////////////
+//////// Role-related functions ////////
+////////////////////////////////////////
+
+// Function to fetch all roles
+export async function getRoles() {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute("SELECT * FROM Role");
+        connection.release();
+        return data;
+    } catch (err) {
+        console.error("Database Error:", err);
+        throw new Error("Failed to fetch role data");
     } finally {
         if (connection) connection.release();
     }

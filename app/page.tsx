@@ -4,23 +4,34 @@ import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
 import Image from 'next/image';
 import { SuperHomepageButton } from './components/buttons/SuperHomepageButton';
-import  {useUser} from '@auth0/nextjs-auth0/client';
-import { insertAdmins } from './lib/data';
+import  { useUser } from '@auth0/nextjs-auth0/client';
+import { useEffect } from 'react';
 
 
 
 export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
-  console.log(user.sub);
-  let Auth0_ID = user.sub;
-  let nickname = user.nickname;
+
+  // create a new admin from the user session
+  useEffect(() => {
+    if (user) {
+      const insertAdmin = async () => {
+        try {
+          await fetch('/api/admin/insert-admins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub }),
+          });
+        } catch (err) {
+          console.error('Failed to insert admin:', err);
+        }
+      };
+      insertAdmin();
+    }
+  }, [user]);  
 
 
-  // take logged-in user and create an admin associated with that user
-  if (user) {
-    insertAdmins(nickname, Auth0_ID);
-  }
   
 
   // if no session (i.e. user is not logged in), show login button

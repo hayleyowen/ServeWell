@@ -10,7 +10,7 @@ export default function AdminAssignPage() {
     useEffect(() => {
         const fetchAdmins = async () => {
             try {
-                const response = await fetch('/api/admin/update-ministry', {
+                const response = await fetch('/api/admin', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
