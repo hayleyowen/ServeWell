@@ -45,3 +45,10 @@ npm install xlsx
 npm install scheduler react-spreadsheet
 npm install chart.js
 npm install react-chartjs-2
+
+Docker Stuff
+
+To be able to see the database in Docker, run:
+ ```bash
+ docker exec -it ServeWell mysql -u root -p
+```

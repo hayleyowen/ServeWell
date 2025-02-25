@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
-import { LogoutButton } from './buttons/LogoutButton';
+
+import { usePathname } from 'next/navigation';
+import { LogoutButton } from '../buttons/LogoutButton';
 
 interface Ministry {
     ministry_id: number;
@@ -17,6 +20,8 @@ interface Ministry {
 
 const TopNav = () => {
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
+
+    const pathname = usePathname();
 
     const fetchMinistries = async () => {
         try {
@@ -35,7 +40,7 @@ const TopNav = () => {
 
         // Cleanup interval on component unmount
         // return () => clearInterval(intervalId);
-    }, []);
+    }, [pathname]);
 
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4">
@@ -51,47 +56,42 @@ const TopNav = () => {
                             <li className="group">
                                 <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
                             </li>
+                            {customMinistries.map((ministry) => (
+                                <li key={ministry.ministry_id} className="group">
+                                    <Link 
+                                        href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`} 
+                                        className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                    >
+                                        {ministry.ministryname}
+                                    </Link>
+                                    <ul className="pl-4 space-y-2 hidden group-hover:block">
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Finances
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link 
+                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} 
+                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
+                                            >
+                                                Members
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </li>
+                            ))}
                             <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Adult's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Children's Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Youth Ministry</Link>
-                                <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Finances</Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Members</Link>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
+                                <Link href="/settings" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
                             </li>
                         </ul>
                     </nav>
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
+                    <Link href="/"><Image src="/logo.png" width={75} height={75} alt="Logo"/></Link>
                 </div>
                 <div className="flex justify-between">   
                     <ul className="flex right-0 space-x-4">
@@ -109,7 +109,6 @@ const TopNav = () => {
                     </ul>
                 </div>
                 <div>
-
                     <Link 
                         href="/ministry-creation"
                         className="text-blue-500 hover:text-blue-600 font-medium"
@@ -118,9 +117,7 @@ const TopNav = () => {
                     </Link>
                 </div>
                 <div>
-                    
                     <LogoutButton />
-
                 </div>            
             </nav>
         </header>
