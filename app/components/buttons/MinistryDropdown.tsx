@@ -51,7 +51,7 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
   async function updateAdminMinistry(ministry: Ministry) {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/update-ministry", {
+      const response = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ admin_id: member_id, ministry_id: ministry.ministry_id }), // Pass admin_id

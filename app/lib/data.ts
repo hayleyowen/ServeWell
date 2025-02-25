@@ -282,9 +282,9 @@ export async function createSuperAdmin(data: {
 
         // Insert into superadmin table
         const [superAdminResult] = await connection.execute(
-            `INSERT INTO superadmin (member_id, superusername, superpassword, church_id) 
-             VALUES (?, ?, ?, ?)`,
-            [member_id, data.username, data.password, data.church_id]
+            `INSERT INTO superadmin (member_id, church_id) 
+             VALUES (?, ?)`,
+            [member_id, data.church_id]
         );
 
         await connection.commit(); // Commit the transaction

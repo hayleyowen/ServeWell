@@ -58,11 +58,9 @@ CREATE TABLE IF NOT EXISTS Admin (
 CREATE TABLE IF NOT EXISTS superadmin (
     superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
     member_id INTEGER NOT NULL,
-    admin_id INTEGER NOT NULL,
     church_id INTEGER NOT NULL,
     FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
-    FOREIGN KEY (church_id) REFERENCES church(church_id),
-    FOREIGN KEY (admin_id) REFERENCES Admin(Admin_ID)
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
 CREATE OR REPLACE VIEW member_and_admin AS 
@@ -105,7 +103,7 @@ INSERT INTO Admin (AdminName, Ministry_ID) VALUES
 ('admin2', 1),
 ('admin3', 3);
 
-INSERT INTO superadmin (member_id, church_id, admin_id) VALUES 
-(1, 1, 1),
-(3, 2, 2),
-(4, 3, 3);
+INSERT INTO superadmin (member_id, church_id) VALUES 
+(1, 1),
+(3, 2),
+(4, 3);
