@@ -85,6 +85,9 @@ const TopNav = () => {
                                 </li>
                             ))}
                             <li className="group">
+                                <Link href="/media" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Media</Link>
+                            </li>
+                            <li className="group">
                                 <Link href="/settings" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
                             </li>
                         </ul>
