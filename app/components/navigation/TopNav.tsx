@@ -5,6 +5,8 @@ import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
+
+import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
 
 interface Ministry {
@@ -19,6 +21,8 @@ interface Ministry {
 const TopNav = () => {
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
 
+    const pathname = usePathname();
+
     const fetchMinistries = async () => {
         try {
             const ministries = await getMinistries();
@@ -30,7 +34,13 @@ const TopNav = () => {
 
     useEffect(() => {
         fetchMinistries();
-    }, []);
+
+        // Set up an interval to check for new ministries every few seconds
+        // const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
+
+        // Cleanup interval on component unmount
+        // return () => clearInterval(intervalId);
+    }, [pathname]);
 
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4">

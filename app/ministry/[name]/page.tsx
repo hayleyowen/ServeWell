@@ -2,7 +2,7 @@ import { getMinistryByName } from '@/app/lib/data';
 import '@/app/globals.css';
 
 export default async function MinistryPage({ params }: { params: { name: string } }) {
-    console.log('Received params:', params); // Debug log
+    console.log('Received params:', params.name); // Debug log
     
     try {
         const ministry = await getMinistryByName(params.name);
@@ -33,6 +33,9 @@ export default async function MinistryPage({ params }: { params: { name: string 
                             </a>
                             <a href={`/ministry/${params.name}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Financial Tracking</h3>
+                            </a>
+                            <a href={`/ministry/${params.name}/calendar`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                                <h3 className="text-xl font-bold mb-2">Calendar</h3>
                             </a>
                         </div>
                     </div>

@@ -73,6 +73,7 @@ export default function ChurchCreationForm() {
             email: formData.email,
             phone: formData.phone,
             address: formData.address,
+            postalCode: formData.postalCode,
             city: formattedCity,
         };
 
@@ -85,9 +86,9 @@ export default function ChurchCreationForm() {
 
             if (response.ok) {
                 const result = await response.json();
-                setChurchId(result.church_id); // Store the church_id
+                setChurchId(result['churchId']);
                 setRegisteredChurch({
-                    id: result.id,
+                    id: result['churchId'],
                     name: formData.churchName
                 });
                 setStep(3);
@@ -102,8 +103,10 @@ export default function ChurchCreationForm() {
 
     const handleSuperAdminSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!churchId) {
-            console.error('No church ID available');
+            console.error('No church ID available'); // Debug log
+            alert('Failed to register SuperAdmin. Church ID is missing!');
             return;
         }
 
