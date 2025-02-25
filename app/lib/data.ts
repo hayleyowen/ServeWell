@@ -324,19 +324,3 @@ export async function getSuperAdmins() {
 ////////////////////////////////////////
 //////// Role-related functions ////////
 ////////////////////////////////////////
-
-// Function to fetch all roles
-export async function getRoles() {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute("SELECT * FROM Role");
-        connection.release();
-        return data;
-    } catch (err) {
-        console.error("Database Error:", err);
-        throw new Error("Failed to fetch role data");
-    } finally {
-        if (connection) connection.release();
-    }
-}
