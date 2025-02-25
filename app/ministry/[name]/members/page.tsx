@@ -29,6 +29,7 @@ export default function FinancesTrackingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [showSearch, setShowSearch] = useState(false);
     const [filteredData, setFilteredData] = useState(data);
+    const [originalData, setOriginalData] = useState(null);
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -288,40 +289,72 @@ export default function FinancesTrackingPage() {
     };
 
     useEffect(() => {
+        if (!activeChart) return;
+
+        // Store original data on first search
+        if (!originalData && charts.find(chart => chart.id === activeChart)?.data) {
+            setOriginalData(charts.find(chart => chart.id === activeChart).data);
+        }
+
         if (!searchQuery.trim()) {
-            setFilteredData(data);
+            // Restore original data when search is empty
+            if (originalData) {
+                setCharts(prevCharts =>
+                    prevCharts.map(chart =>
+                        chart.id === activeChart
+                            ? { 
+                                ...chart, 
+                                data: originalData.map(row => 
+                                    row.map(cell => ({ ...cell, className: '' }))
+                                ) 
+                              }
+                            : chart
+                    )
+                );
+            }
             return;
         }
-    
+
         const searchTerm = searchQuery.toLowerCase();
-    
-        setCharts(prevCharts =>
-            prevCharts.map(chart => {
-                if (chart.id === activeChart && chart.data) {
-                    // Ensure the data structure exists before modifying it
-                    const updatedData = chart.data.map(row =>
-                        row.map(cell => {
-                            const value = cell?.value?.toString() || "";
-                            if (value.toLowerCase().includes(searchTerm)) {
-                                return { ...cell, className: "bg-yellow-200" };
-                            }
-                            return { ...cell, className: "" }; // Ensure no lingering highlights
-                        })
-                    );
-    
-                    if (updatedData && updatedData.length > 0) {
-                        updateChartData(activeChart, updatedData); // Update the chart with highlighted data
-                    }
-    
-                    return { ...chart, data: updatedData };
-                }
-                return chart;
+        const dataToFilter = originalData || charts.find(chart => chart.id === activeChart)?.data;
+
+        if (!dataToFilter) return;
+
+        const filteredData = dataToFilter
+            .filter((row, index) => {
+                if (index === 0) return true; // Keep header row
+                return row.some(cell => 
+                    cell.value?.toString().toLowerCase().includes(searchTerm)
+                );
             })
+            .map(row => 
+                row.map(cell => ({
+                    ...cell,
+                    className: cell.value?.toString().toLowerCase().includes(searchTerm)
+                        ? 'highlighted-cell'
+                        : ''
+                }))
+            );
+
+        setCharts(prevCharts =>
+            prevCharts.map(chart =>
+                chart.id === activeChart
+                    ? { ...chart, data: filteredData }
+                    : chart
+            )
         );
     }, [searchQuery, activeChart]);
     
       return (
         <section className="h-screen flex flex-col">
+            <style>
+                {`
+                    .highlighted-cell {
+                        background-color: yellow !important;
+                        transition: background-color 0.3s;
+                    }
+                `}
+            </style>
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
