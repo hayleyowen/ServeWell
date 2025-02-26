@@ -3,7 +3,6 @@ import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
 import Image from 'next/image';
-import { SuperHomepageButton } from './components/buttons/SuperHomepageButton';
 import  { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect } from 'react';
 
@@ -59,10 +58,9 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
             <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-8 w-full max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 w-full max-w-4xl">
             <ChurchCreationButton />
             {/* <LoginButton /> */}
-            <SuperHomepageButton />
           </div>
         </div>
       </div>
