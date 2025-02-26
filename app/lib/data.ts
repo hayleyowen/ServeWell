@@ -320,7 +320,19 @@ export async function getSuperAdmins() {
     }
 }
 
-
 ////////////////////////////////////////
 //////// Role-related functions ////////
 ////////////////////////////////////////
+
+export async function getMedia() {
+    try {
+        const [rows] = await pool.query(`
+            SELECT * FROM media 
+            ORDER BY date DESC
+        `);
+        return rows;
+    } catch (error) {
+        console.error('Error fetching media:', error);
+        throw new Error('Failed to fetch media.');
+    }
+}

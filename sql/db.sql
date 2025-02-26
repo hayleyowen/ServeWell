@@ -74,6 +74,17 @@ CREATE TABLE uploaded_files (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS media (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    youtube_id VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    church_id INT NOT NULL,
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
+);
 
 -- Inserting data into the tables
 
@@ -107,3 +118,7 @@ INSERT INTO superadmin (member_id, church_id) VALUES
 (1, 1),
 (3, 2),
 (4, 3);
+
+INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
+('Sunday Morning Service', 'sermon', 'sample-youtube-id-1', '2024-03-24', 'Morning worship service', 1),
+('Weekly Announcements', 'announcement', 'sample-youtube-id-2', '2024-03-20', 'Updates for this week', 1);
