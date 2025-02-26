@@ -64,14 +64,13 @@ export default function CalendarPage() {
     };
 
     return (
-        <section className="calendar-page">
+        <section className="calendar-page h-screen overflow-y-auto">
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
-    
-            <div className="flex-1 flex flex-col bg-blue-500 justify-center items-center"> 
-                <div className="calendar-container flex justify-center items-center"> 
-                    <div className="w-full max-w-4xl"> {/* Set max width to control calendar size */}
+            <div className="flex-1 flex flex-col bg-blue-500 justify-center items-center p-10"> 
+                <div className="calendar-container flex justify-center items-center mt-6 w-full max-w-4xl"> {/* Added margin-top */}
+                    <div className="w-full">
                         <h1 className="text-xl font-semibold text-gray-700 mb-4">Event Calendar</h1>
                         <FullCalendar
                             plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
