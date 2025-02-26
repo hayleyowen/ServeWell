@@ -28,7 +28,7 @@ export default function FinancesTrackingPage() {
     const [chartData, setChartData] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [showSearch, setShowSearch] = useState(false);
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState([]);
     const [originalData, setOriginalData] = useState(null);
 
     // Function to generate initial data with specified rows and columns
@@ -288,26 +288,40 @@ export default function FinancesTrackingPage() {
         }
     };
 
+    // Update filtered data whenever search query changes
     useEffect(() => {
-        // Only update filteredData if we have data and a search query
-        if (!data) return;
+        if (!activeChart || !charts.find(chart => chart.id === activeChart)?.data) {
+            return;
+        }
+
+        const currentChart = charts.find(chart => chart.id === activeChart);
         
         if (!searchQuery.trim()) {
-            setFilteredData(data);
+            // If no search query, show all data
+            setFilteredData(currentChart.data);
             return;
         }
 
         const searchTerm = searchQuery.toLowerCase();
-        const filtered = data.filter(row => 
+        
+        // Filter and highlight matching data
+        const filtered = currentChart.data.filter(row =>
             row.some(cell => 
                 cell.value?.toString().toLowerCase().includes(searchTerm)
             )
+        ).map(row =>
+            row.map(cell => ({
+                ...cell,
+                className: cell.value?.toString().toLowerCase().includes(searchTerm)
+                    ? "bg-yellow-200"
+                    : ""
+            }))
         );
 
         setFilteredData(filtered);
-    }, [searchQuery, data]); // Only depend on searchQuery and data
-    
-      return (
+    }, [searchQuery, activeChart, charts]);
+
+    return (
         <section className="h-screen flex flex-col">
             <style>
                 {`
@@ -446,7 +460,7 @@ export default function FinancesTrackingPage() {
                                 </div>
                                 {activeChart && (
                                     <Spreadsheet
-                                        data={charts.find(chart => chart.id === activeChart).data}
+                                        data={searchQuery.trim() ? filteredData : charts.find(chart => chart.id === activeChart).data}
                                         onChange={(newData) => {
                                             setCharts(prevCharts => prevCharts.map(chart =>
                                                 chart.id === activeChart ? { ...chart, data: newData } : chart
