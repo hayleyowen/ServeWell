@@ -77,6 +77,17 @@ CREATE TABLE uploaded_files (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS media (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    youtube_id VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    church_id INT NOT NULL,
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
+);
 
 -- Inserting data into the tables
 
@@ -106,3 +117,7 @@ INSERT INTO Admin (AdminUsername, AdminPassword, Date_Started, Ministry_ID, Supe
 ('admin1', 'password1', '2020-01-01', 1, 1),
 ('admin2', 'password2', '2021-01-01', 2, 2),
 ('admin3', 'password3', '2019-01-01', 3, 3);
+
+INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
+('Sunday Morning Service', 'sermon', 'sample-youtube-id-1', '2024-03-24', 'Morning worship service', 1),
+('Weekly Announcements', 'announcement', 'sample-youtube-id-2', '2024-03-20', 'Updates for this week', 1);
