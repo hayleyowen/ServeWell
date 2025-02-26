@@ -2,10 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-
 import { useEffect, useState } from 'react';
 import { getMinistries } from '@/app/lib/data';
-
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
 
@@ -17,10 +15,8 @@ interface Ministry {
     description: string | null;
 }
 
-
 const TopNav = () => {
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
-
     const pathname = usePathname();
 
     const fetchMinistries = async () => {
@@ -34,91 +30,64 @@ const TopNav = () => {
 
     useEffect(() => {
         fetchMinistries();
-
-        // Set up an interval to check for new ministries every few seconds
-        // const intervalId = setInterval(fetchMinistries, 3000); // Checks every 3 seconds
-
-        // Cleanup interval on component unmount
-        // return () => clearInterval(intervalId);
     }, [pathname]);
 
     return (
-        <header className="fixed top-0 h-15 w-full bg-white p-4">
+        <header className="fixed top-0 h-15 w-full bg-white p-4 shadow-md">
             <nav className="flex justify-between items-center">
-                <div className="group"> 
-                    <button className="h-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5" />
-                        </svg>
-                    </button>
-                    <nav className="w-64 fixed top-15 left-0 h-screen bg-blue-300 p-0 hidden group-hover:block">
-                        <ul className="space-y-4">
-                            <li className="group">
-                                <Link href="/" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Home</Link>
-                            </li>
-                            {customMinistries.map((ministry) => (
-                                <li key={ministry.ministry_id} className="group">
-                                    <Link 
-                                        href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`} 
-                                        className="text-white block py-2 px-4 rounded hover:bg-blue-500"
-                                    >
-                                        {ministry.ministryname}
-                                    </Link>
-                                    <ul className="pl-4 space-y-2 hidden group-hover:block">
-                                        <li>
-                                            <Link 
-                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} 
-                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
-                                            >
-                                                Finances
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link 
-                                                href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} 
-                                                className="text-white block py-2 px-4 rounded hover:bg-blue-500"
-                                            >
-                                                Members
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                            ))}
-                            <li className="group">
-                                <Link href="/media" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Media</Link>
-                            </li>
-                            <li className="group">
-                                <Link href="/settings" className="text-white block py-2 px-4 rounded hover:bg-blue-500">Settings</Link>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+                {/* Logo */}
                 <div>
                     <Link href="/"><Image src="/logo.png" width={75} height={75} alt="Logo"/></Link>
                 </div>
-                <div className="flex justify-between">   
-                    <ul className="flex right-0 space-x-4">
 
+                {/* Ministries Navigation */}
+                <div>
+                    <ul className="flex space-x-4">
                         {customMinistries.map((ministry) => (
-                            <li key={ministry.ministry_id}>
+                            <li key={ministry.ministry_id} className="relative group">
                                 <Link 
                                     href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                                    className="text-gray-800 hover:text-gray-500"
+                                    className="text-gray-800 hover:text-gray-500 flex items-center"
                                 >
                                     {ministry.ministryname}
+                                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
                                 </Link>
+                                {/* Dropdown */}
+                                <ul className="absolute left-0 mt-2 w-40 bg-blue-700 shadow-lg rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <li>
+                                        <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            Finances
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            Members
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/calendar`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            Calendar
+                                        </Link>
+                                    </li>
+                                </ul>
                             </li>
                         ))}
                     </ul>
                 </div>
+
+                {/* Settings Button */}
                 <div>
                     <Link 
-                        href="/ministry-creation"
-                        className="text-blue-500 hover:text-blue-600 font-medium"
+                        href="/settings"
+                        className="text-blue-600 hover:text-blue-400 font-medium"
                     >
-                        + Add Ministry
+                        Settings
                     </Link>
                 </div>
+
+                {/* Logout Button */}
                 <div>
                     <LogoutButton />
                 </div>            
