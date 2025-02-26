@@ -40,7 +40,8 @@ export default function Home() {
         <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
           <div className="flex-1 flex flex-col items-center justify-center">
             <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-8 w-full max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+              <ChurchCreationButton />
               <LoginButton />
             </div>
           </div>
@@ -58,9 +59,9 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
             <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 w-full max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
             <ChurchCreationButton />
-            {/* <LoginButton /> */}
+            <LoginButton />
           </div>
         </div>
       </div>
