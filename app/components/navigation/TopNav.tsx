@@ -77,16 +77,6 @@ const TopNav = () => {
                     </ul>
                 </div>
 
-                {/* Add Ministry */}
-                <div>
-                    <Link 
-                        href="/ministry-creation"
-                        className="text-blue-600 hover:text-blue-400 font-medium"
-                    >
-                        + Add Ministry
-                    </Link>
-                </div>
-
                 {/* Settings Button */}
                 <div>
                     <Link 
