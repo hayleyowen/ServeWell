@@ -6,7 +6,7 @@ export default async function UserHomepage() {
   const ministries = await getMinistries();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 p-8 flex items-center justify-center">
+    <main className="min-h-screen bg-gradient-to-b from-blue-300 to-blue-600 p-8 flex items-center justify-center">
       <div className="max-w-6xl w-full">
         <h1 className="text-3xl font-bold text-white text-center mb-12">User Homepage</h1>
         
