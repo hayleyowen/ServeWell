@@ -28,7 +28,8 @@ export default function FinancesTrackingPage() {
     const [chartData, setChartData] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [showSearch, setShowSearch] = useState(false);
-    const [filteredData, setFilteredData] = useState(data);
+    const [filteredData, setFilteredData] = useState([]);
+    const [originalData, setOriginalData] = useState(null);
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -362,41 +363,49 @@ export default function FinancesTrackingPage() {
         }
     };
 
+    // Update filtered data whenever search query changes
     useEffect(() => {
-        if (!searchQuery.trim()) {
-            setFilteredData(data);
+        if (!activeChart || !charts.find(chart => chart.id === activeChart)?.data) {
             return;
         }
-    
+
+        const currentChart = charts.find(chart => chart.id === activeChart);
+        
+        if (!searchQuery.trim()) {
+            // If no search query, show all data
+            setFilteredData(currentChart.data);
+            return;
+        }
+
         const searchTerm = searchQuery.toLowerCase();
-    
-        setCharts(prevCharts =>
-            prevCharts.map(chart => {
-                if (chart.id === activeChart && chart.data) {
-                    // Ensure the data structure exists before modifying it
-                    const updatedData = chart.data.map(row =>
-                        row.map(cell => {
-                            const value = cell?.value?.toString() || "";
-                            if (value.toLowerCase().includes(searchTerm)) {
-                                return { ...cell, className: "bg-yellow-200" };
-                            }
-                            return { ...cell, className: "" }; // Ensure no lingering highlights
-                        })
-                    );
-    
-                    if (updatedData && updatedData.length > 0) {
-                        updateChartData(activeChart, updatedData); // Update the chart with highlighted data
-                    }
-    
-                    return { ...chart, data: updatedData };
-                }
-                return chart;
-            })
+        
+        // Filter and highlight matching data
+        const filtered = currentChart.data.filter(row =>
+            row.some(cell => 
+                cell.value?.toString().toLowerCase().includes(searchTerm)
+            )
+        ).map(row =>
+            row.map(cell => ({
+                ...cell,
+                className: cell.value?.toString().toLowerCase().includes(searchTerm)
+                    ? "bg-yellow-200"
+                    : ""
+            }))
         );
-    }, [searchQuery, activeChart]);
-    
-      return (
+
+        setFilteredData(filtered);
+    }, [searchQuery, activeChart, charts]);
+
+    return (
         <section className="h-screen flex flex-col">
+            <style>
+                {`
+                    .highlighted-cell {
+                        background-color: yellow !important;
+                        transition: background-color 0.3s;
+                    }
+                `}
+            </style>
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
@@ -526,7 +535,7 @@ export default function FinancesTrackingPage() {
                                 </div>
                                 {activeChart && (
                                     <Spreadsheet
-                                        data={charts.find(chart => chart.id === activeChart).data}
+                                        data={searchQuery.trim() ? filteredData : charts.find(chart => chart.id === activeChart).data}
                                         onChange={(newData) => {
                                             setCharts(prevCharts => prevCharts.map(chart =>
                                                 chart.id === activeChart ? { ...chart, data: newData } : chart

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Ministry {
   ministry_id: number;
@@ -8,7 +8,7 @@ interface Ministry {
 }
 
 interface MinistryDropdownProps {
-    member_id: number; // Pass admin_id as a prop
+  member_id: number; // Pass admin_id as a prop
 }
 
 export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
@@ -16,11 +16,15 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchMinistries() {
       try {
-        const response = await fetch("/api/getMinistries");
+        const response = await fetch("/api/ministries", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
         const data = await response.json();
         setMinistries(data);
       } catch (error) {
@@ -31,10 +35,23 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
     fetchMinistries();
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
   async function updateAdminMinistry(ministry: Ministry) {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/update-ministry", {
+      const response = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ admin_id: member_id, ministry_id: ministry.ministry_id }), // Pass admin_id
@@ -53,7 +70,7 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
   }
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left mb-4" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="px-4 py-2 bg-blue-500 text-white rounded-lg"
@@ -63,7 +80,7 @@ export default function MinistryDropdown({ member_id }: MinistryDropdownProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg">
+        <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
           {ministries.map((ministry) => (
             <div
               key={ministry.ministry_id}

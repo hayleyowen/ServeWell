@@ -1,5 +1,71 @@
 "use server";
+import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
+
+////////////////////////////////////////
+/////// Admin-related functions ///////
+////////////////////////////////////////
+
+export async function getUnAssignedAdmins() {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT * FROM admin WHERE ministry_id IS NULL`
+        );
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch unassigned admins:", error);
+        throw new Error("Failed to fetch unassigned admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+export async function insertAdmins(nickname: string, Auth0_ID: string) {
+    try {
+      const client = await pool.getConnection();
+
+      const query = 'Select * from Admin where Auth0_ID = ?';
+      const [result] = await client.execute(query, [Auth0_ID]);
+        if (result.length > 0) {
+            client.release();
+            return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
+        }
+  
+      const query1 = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
+      const values = [nickname, Auth0_ID];
+      const [result1] = await client.execute(query1, values);
+      client.release();
+  
+      return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
+    } catch(error) {
+      console.error("Error inserting admin:", error);
+      return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
+    }
+  }
+
+  // for middleware to check if user is an admin
+export async function verifyAdmin(Auth0_ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT Role_ID FROM Admin WHERE Auth0_ID = ?`,
+            [Auth0_ID]
+        );
+        console.log("Data:", data);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch admin:", error);
+        throw new Error("Failed to fetch admin.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
 
 ////////////////////////////////////////
 /////// Church-related functions ///////
@@ -216,9 +282,9 @@ export async function createSuperAdmin(data: {
 
         // Insert into superadmin table
         const [superAdminResult] = await connection.execute(
-            `INSERT INTO superadmin (member_id, superusername, superpassword, church_id) 
-             VALUES (?, ?, ?, ?)`,
-            [member_id, data.username, data.password, data.church_id]
+            `INSERT INTO superadmin (member_id, church_id) 
+             VALUES (?, ?)`,
+            [member_id, data.church_id]
         );
 
         await connection.commit(); // Commit the transaction
@@ -251,5 +317,22 @@ export async function getSuperAdmins() {
         throw new Error("Failed to fetch super admin data");
     } finally {
         if (connection) connection.release();
+    }
+}
+
+////////////////////////////////////////
+//////// Role-related functions ////////
+////////////////////////////////////////
+
+export async function getMedia() {
+    try {
+        const [rows] = await pool.query(`
+            SELECT * FROM media 
+            ORDER BY date DESC
+        `);
+        return rows;
+    } catch (error) {
+        console.error('Error fetching media:', error);
+        throw new Error('Failed to fetch media.');
     }
 }

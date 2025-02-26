@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     // The GET request will fetch all ministries from the database
-    const [ministries] = await pool.query('SELECT * FROM ministries');
+    const [ministries] = await pool.query('SELECT * FROM ministry');
 
     return NextResponse.json(ministries);
   } catch (error) {
