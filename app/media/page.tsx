@@ -80,12 +80,12 @@ export default function MediaPage() {
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex gap-2 mb-6">
+        <div className="grid grid-cols-5 gap-2 mb-6 w-full max-w-3xl">
           {['all', 'sermon', 'announcement', 'worship', 'other'].map((type) => (
             <button
               key={type}
               onClick={() => setFilter(type as any)}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              className={`w-full px-4 py-2 rounded-lg transition-colors duration-200 ${
                 filter === type 
                   ? 'bg-white text-blue-600' 
                   : 'bg-blue-500 text-white hover:bg-blue-400'
