@@ -289,61 +289,23 @@ export default function FinancesTrackingPage() {
     };
 
     useEffect(() => {
-        if (!activeChart) return;
-
-        // Store original data on first search
-        if (!originalData && charts.find(chart => chart.id === activeChart)?.data) {
-            setOriginalData(charts.find(chart => chart.id === activeChart).data);
-        }
-
+        // Only update filteredData if we have data and a search query
+        if (!data) return;
+        
         if (!searchQuery.trim()) {
-            // Restore original data when search is empty
-            if (originalData) {
-                setCharts(prevCharts =>
-                    prevCharts.map(chart =>
-                        chart.id === activeChart
-                            ? { 
-                                ...chart, 
-                                data: originalData.map(row => 
-                                    row.map(cell => ({ ...cell, className: '' }))
-                                ) 
-                              }
-                            : chart
-                    )
-                );
-            }
+            setFilteredData(data);
             return;
         }
 
         const searchTerm = searchQuery.toLowerCase();
-        const dataToFilter = originalData || charts.find(chart => chart.id === activeChart)?.data;
-
-        if (!dataToFilter) return;
-
-        const filteredData = dataToFilter
-            .filter((row, index) => {
-                if (index === 0) return true; // Keep header row
-                return row.some(cell => 
-                    cell.value?.toString().toLowerCase().includes(searchTerm)
-                );
-            })
-            .map(row => 
-                row.map(cell => ({
-                    ...cell,
-                    className: cell.value?.toString().toLowerCase().includes(searchTerm)
-                        ? 'highlighted-cell'
-                        : ''
-                }))
-            );
-
-        setCharts(prevCharts =>
-            prevCharts.map(chart =>
-                chart.id === activeChart
-                    ? { ...chart, data: filteredData }
-                    : chart
+        const filtered = data.filter(row => 
+            row.some(cell => 
+                cell.value?.toString().toLowerCase().includes(searchTerm)
             )
         );
-    }, [searchQuery, activeChart]);
+
+        setFilteredData(filtered);
+    }, [searchQuery, data]); // Only depend on searchQuery and data
     
       return (
         <section className="h-screen flex flex-col">

@@ -30,15 +30,12 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const [media] = await pool.query('SELECT * FROM media ORDER BY date DESC');
-    return NextResponse.json(media);
+    const [rows] = await pool.query('SELECT * FROM media ORDER BY date DESC');
+    return NextResponse.json(rows);
   } catch (error) {
     console.error('Error fetching media:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch media',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch media' },
       { status: 500 }
     );
   }
