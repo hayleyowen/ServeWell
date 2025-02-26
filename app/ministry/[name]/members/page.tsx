@@ -410,7 +410,7 @@ export default function FinancesTrackingPage() {
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
     
-            <div className="flex-1 flex flex-col bg-blue-500">
+            <div className="flex-1 flex flex-col bg-blue-500 justify-center">
                 <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${
                     isFullScreen ? "fixed inset-0 z-50" : ""
                 }`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
@@ -483,7 +483,7 @@ export default function FinancesTrackingPage() {
                                 className={clsx("p-2 border rounded-md flex items-center mr-2", { "bg-gray-300": activeChart === chart.id })}
                             >
                                 <button onClick={() => setActiveChart(chart.id)} className="mr-2">{chart.name}</button>
-                                <button onClick={() => deleteChart(chart.id)} className="text-red-500 font-bold text-lg">✖</button>
+                                <button onClick={() => deleteChart(chart.id)} className="text-blue-500 font-bold text-lg">X</button>
                             </div>
                         ))}
                     </div>
@@ -526,10 +526,10 @@ export default function FinancesTrackingPage() {
                         ) : (
                             <div className="w-full overflow-auto border border-gray-300 rounded-lg">
                                 <div className="flex justify-end mb-2">
-                                    <button onClick={addRow} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
+                                    <button onClick={addRow} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
                                         Add Row
                                     </button>
-                                    <button onClick={addColumn} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
+                                    <button onClick={addColumn} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-green-600">
                                         Add Column
                                     </button>
                                 </div>

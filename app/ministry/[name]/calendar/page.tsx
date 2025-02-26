@@ -68,23 +68,25 @@ export default function CalendarPage() {
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
-
-            <div className="calendar-content bg-blue-500">
-                <div className="calendar-container">
-                    <h1 className="text-xl font-semibold text-gray-700 mb-4">Event Calendar</h1>
-                    <FullCalendar
-                        plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
-                        initialView="dayGridMonth"
-                        selectable={true}
-                        dateClick={handleDateClick}
-                        eventClick={handleEventClick}
-                        events={events}
-                        height="auto"
-                        eventContent={renderEventContent}
-                    />
+    
+            <div className="flex-1 flex flex-col bg-blue-500 justify-center items-center"> 
+                <div className="calendar-container flex justify-center items-center"> 
+                    <div className="w-full max-w-4xl"> {/* Set max width to control calendar size */}
+                        <h1 className="text-xl font-semibold text-gray-700 mb-4">Event Calendar</h1>
+                        <FullCalendar
+                            plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
+                            initialView="dayGridMonth"
+                            selectable={true}
+                            dateClick={handleDateClick}
+                            eventClick={handleEventClick}
+                            events={events}
+                            height="auto"
+                            eventContent={renderEventContent}
+                        />
+                    </div>
                 </div>
             </div>
-
+    
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>{isEditing ? "Edit Event" : "Add Event"}</DialogTitle>
                 <DialogContent>
@@ -107,4 +109,4 @@ export default function CalendarPage() {
             </Dialog>
         </section>
     );
-}
+}    
