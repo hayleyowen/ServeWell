@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS Admin (
     Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
     AdminName VARCHAR(50),
     Ministry_ID INT,
-    Auth0_ID VARCHAR(30),
+    Auth0_ID VARCHAR(50),
     Role_ID INT,
     FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
     FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
