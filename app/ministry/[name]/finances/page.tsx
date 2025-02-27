@@ -115,36 +115,55 @@ export default function FinancesTrackingPage() {
     const saveToCloud = async () => {
         if (activeChart) {
             const activeChartData = charts.find(chart => chart.id === activeChart);
-            if (!activeChartData) return null;
+            if (!activeChartData) return;
+    
+            const tabName = prompt("Enter a tab name for this file:");
+            if (!tabName || tabName.trim() === "") {
+                alert("Tab name is required.");
+                return;
+            }
+    
+            console.log("📤 Uploading file:", activeChartData.name, "Tab:", tabName);
+    
             const worksheetData = activeChartData.data.map(row => row.map(cell => cell.value));
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
+    
             const fileBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
             const blob = new Blob([fileBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-
+    
             const formData = new FormData();
-            formData.append("file", blob, `${charts.find(chart => chart.id === activeChart).name}.xlsx`);
-
+            const file = new File([blob], `${activeChartData.name}.xlsx`, { type: blob.type });
+    
+            formData.append("file", file);
+            formData.append("tab_name", tabName);
+    
             try {
-                const response = await fetch("/api/uploadFile", {
+                const response = await fetch("/api/files", {
                     method: "POST",
                     body: formData,
                 });
-
-                const result = await response.json();
-                if (result.success) {
-                    console.log("File uploaded successfully");
-                } else {
-                    console.error("Upload failed:", result.error);
+    
+                const text = await response.text();
+                console.log("📩 Raw API Response:", text);
+    
+                try {
+                    const result = JSON.parse(text);
+                    if (result.success) {
+                        console.log("✅ File uploaded successfully");
+                    } else {
+                        console.error("❌ Upload failed:", result.error);
+                    }
+                } catch (jsonError) {
+                    console.error("❌ Invalid JSON response:", text);
                 }
             } catch (error) {
-                console.error("Error saving file:", error);
+                console.error("❌ Error saving file:", error);
             }
         }
         handleClose();
-    };
+    };  
 
     const updateChartData = (chartId, spreadsheetData) => {
         if (spreadsheetData.length < 2) return;
@@ -212,6 +231,96 @@ export default function FinancesTrackingPage() {
         </div>
     );
 
+    useEffect(() => {
+        const fetchStoredFile = async () => {
+            try {
+                const response = await fetch("/api/files");
+                const text = await response.text();
+                console.log("📥 Raw API Response:", text);
+    
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (jsonError) {
+                    console.error("❌ Failed to parse JSON response:", text);
+                    return;
+                }
+    
+                if (!response.ok || !result.success || !result.fileData) {
+                    console.error("❌ Error: No valid file data found in response.");
+                    return;
+                }
+    
+                console.log("✅ File data received:", result.filename, "Tab:", result.tabName);
+    
+                // Decode Base64
+                const byteCharacters = atob(result.fileData);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const workbook = XLSX.read(byteArray.buffer, { type: "array" });
+    
+                if (!workbook || workbook.SheetNames.length === 0) {
+                    console.error("❌ No valid sheets found in the file.");
+                    return;
+                }
+    
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+    
+                if (!worksheet) {
+                    console.error("❌ Worksheet not found in the file.");
+                    return;
+                }
+    
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
+                if (!jsonData || jsonData.length === 0) {
+                    console.warn("⚠️ Warning: The file is empty or contains no valid data.");
+                    return;
+                }
+    
+                // Format data properly
+                const formattedData = jsonData.map(row =>
+                    row.map(cell => ({ value: cell || "" }))
+                );
+    
+                // If there are no active charts, create one for this file
+                if (charts.length === 0 || !activeChart) {
+                    console.log("📊 Creating new chart for loaded file...");
+    
+                    const newChart = {
+                        id: Date.now(),
+                        name: result.tabName || "Loaded Chart",
+                        data: formattedData,
+                        chartType: "pie",
+                        chartData: null,
+                    };
+    
+                    setCharts([...charts, newChart]);
+                    setActiveChart(newChart.id);
+                } else {
+                    // Update existing active chart
+                    setCharts(prevCharts =>
+                        prevCharts.map(chart =>
+                            chart.id === activeChart ? { ...chart, data: formattedData } : chart
+                        )
+                    );
+                }
+    
+                console.log("✅ Successfully loaded spreadsheet data:", formattedData);
+                updateChartData(activeChart, formattedData);
+    
+            } catch (error) {
+                console.error("❌ Error fetching stored file:", error);
+            }
+        };
+    
+        fetchStoredFile();
+    }, []);
+
     // Function to add a new row to the spreadsheet data
     const addRow = () => {
         if (activeChart) {
@@ -249,9 +358,8 @@ export default function FinancesTrackingPage() {
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
-
-            <div className="flex-1 flex flex-col bg-blue-500">
-                <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
+            <div className="flex-1 flex flex-col bg-blue-500 justify-center">
+                <div className={`bg-white rounded-lg shadow-md p-6 mt-10 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
                     <div className="flex justify-between items-center w-full mb-4">
                         <h1 className="text-xl font-semibold text-gray-700">
                             Finance SpreadSheet
@@ -292,7 +400,7 @@ export default function FinancesTrackingPage() {
                                 className={clsx("p-2 border rounded-md flex items-center mr-2", { "bg-gray-300": activeChart === chart.id })}
                             >
                                 <button onClick={() => setActiveChart(chart.id)} className="mr-2">{chart.name}</button>
-                                <button onClick={() => deleteChart(chart.id)} className="text-red-500 font-bold text-lg">✖</button>
+                                <button onClick={() => deleteChart(chart.id)} className="text-blue-500 font-bold text-lg">X</button>
                             </div>
                         ))}
                     </div>
@@ -334,8 +442,8 @@ export default function FinancesTrackingPage() {
                             ) : (
                                 <div className="w-full overflow-auto border border-gray-300 rounded-lg">
                                     <div className="flex justify-end mb-2">
-                                        <button onClick={addRow} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">Add Row</button>
-                                        <button onClick={addColumn} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Add Column</button>
+                                        <button onClick={addRow} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2">Add Row</button>
+                                        <button onClick={addColumn} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Add Column</button>
                                     </div>
                                     {activeChart && (
                                         <Spreadsheet
