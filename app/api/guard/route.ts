@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
     try {
         const {authid} = await req.json();
+        console.log('Auth ID:', authid);
         const client = await pool.getConnection();
         const query = `select Role_ID from Admin where Auth0_ID = ?;`;
         const [result] = await client.execute(query, [authid]);

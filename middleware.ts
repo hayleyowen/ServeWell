@@ -4,12 +4,15 @@ import  userStuff from '@/app/lib/userstuff'
 
 export async function middleware(req: NextRequest) {
   // try {
-    const res = NextResponse.next()
+  const res = NextResponse.next()
 
-    const session = await getSession(req, res)
-    console.log('User:', session?.user.sub)
+  // retrieve the user 
+  const session = await getSession(req, res)
+  // console.log('User's Auth0 ID:', session?.user.sub)
 
   let auth_ID = session?.user.sub
+
+  // retrieve the role id for the superadmin from the database
   let SuperRole_ID = 2
 
   // send post function here to retrieve role id
@@ -50,5 +53,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/super-homepage', '/admin-assign'],
+  matcher: ['/super-homepage', '/admin-assign', '/super-homepage'],
 }

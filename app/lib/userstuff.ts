@@ -1,6 +1,5 @@
 export default async function userStuff(authid: string) {
     try {
-        console.log("AuthID:", typeof(authid));
         const result = await fetch('http://localhost:3000/api/guard', {
             method: 'POST',
             headers: {
