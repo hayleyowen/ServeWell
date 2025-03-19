@@ -9,6 +9,10 @@ import { Alert, Snackbar, Menu, MenuItem } from "@mui/material";
 import clsx from "clsx";
 import "@/app/globals.css";
 import { FaSearch } from 'react-icons/fa';
+import { useRouter } from "next/navigation"; 
+import { usePathname } from "next/navigation";
+
+
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
@@ -30,7 +34,9 @@ export default function FinancesTrackingPage() {
     const [showSearch, setShowSearch] = useState(false);
     const [filteredData, setFilteredData] = useState([]);
     const [originalData, setOriginalData] = useState(null);
-
+    const router = useRouter();
+    const pathname = usePathname();
+   
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
         return Array.from({ length: rows }, () =>
@@ -65,8 +71,8 @@ export default function FinancesTrackingPage() {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-            const binaryStr = e.target.result;
-            const workbook = XLSX.read(binaryStr, { type: "binary" });
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
@@ -98,7 +104,7 @@ export default function FinancesTrackingPage() {
             setIsLoading(false);
         };
 
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     };
 
     const handleSaveClick = (event) => {
@@ -128,12 +134,15 @@ export default function FinancesTrackingPage() {
             if (!activeChartData) return;
     
             const tabName = prompt("Enter a tab name for this file:");
-            if (!tabName || tabName.trim() === "") {
-                alert("Tab name is required.");
+            const ministry = prompt("Enter the ministry:");
+            const pageType = prompt("Enter the page type:");
+    
+            if (!tabName || !ministry || !pageType) {
+                alert("Tab name, ministry, and page type are required.");
                 return;
             }
     
-            console.log("📤 Uploading file:", activeChartData.name, "Tab:", tabName);
+            console.log("📤 Uploading file for", ministry, "-", pageType, ":", activeChartData.name);
     
             const worksheetData = activeChartData.data.map(row => row.map(cell => cell.value));
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
@@ -148,6 +157,8 @@ export default function FinancesTrackingPage() {
     
             formData.append("file", file);
             formData.append("tab_name", tabName);
+            formData.append("ministry", ministry);
+            formData.append("page_type", pageType);
     
             try {
                 const response = await fetch("/api/files", {
@@ -156,61 +167,78 @@ export default function FinancesTrackingPage() {
                 });
     
                 const text = await response.text();
-                console.log("📩 Raw API Response:", text);
+                const result = JSON.parse(text);
     
-                try {
-                    const result = JSON.parse(text);
-                    if (result.success) {
-                        console.log("✅ File uploaded successfully");
-                    } else {
-                        console.error("❌ Upload failed:", result.error);
-                    }
-                } catch (jsonError) {
-                    console.error("❌ Invalid JSON response:", text);
+                if (result.success) {
+                    console.log("✅ File uploaded successfully");
+                    alert("✅ File uploaded successfully!");
+                } else {
+                    console.error("❌ Upload failed:", result.error);
+                    alert("❌ Upload failed! " + result.error);
                 }
             } catch (error) {
                 console.error("❌ Error saving file:", error);
+                alert("❌ Error saving file. See console for details.");
             }
         }
-        handleClose();
     };    
     
     const updateChartData = (chartId, spreadsheetData) => {
-        if (spreadsheetData.length < 2) return;
+        console.log("📊 Received Data in updateChartData:", spreadsheetData);  // Confirm input
+        if (spreadsheetData.length < 2) {
+            console.warn("⚠️ Not enough data to update chart.");
+            return;
+        }
+    
         const labels = spreadsheetData[0].map(cell => cell.value);
-        const datasets = spreadsheetData[0].map((_, colIndex) => {
-            return spreadsheetData.slice(1).reduce((sum, row) => {
+        const datasets = spreadsheetData[0].map((_, colIndex) =>
+            spreadsheetData.slice(1).reduce((sum, row) => {
                 const value = parseFloat(row[colIndex]?.value);
                 return sum + (isNaN(value) ? 0 : value);
-            }, 0);
+            }, 0)
+        );
+    
+        console.log("📈 Labels:", labels);
+        console.log("📊 Datasets:", datasets);
+    
+        setCharts(prevCharts => {
+            console.log("📌 Previous Charts Before Update:", prevCharts); // Debugging previous state
+    
+            const updatedCharts = prevCharts.map(chart =>
+                chart.id === chartId
+                    ? {
+                        ...chart,
+                        chartData: {
+                            labels,
+                            datasets: [{
+                                label: 'Data Representation',
+                                data: datasets,
+                                backgroundColor: ['rgba(255,99,132,0.2)', 'rgba(54,162,235,0.2)', 'rgba(255,206,86,0.2)'],
+                                borderColor: ['rgba(255,99,132,1)', 'rgba(54,162,235,1)', 'rgba(255,206,86,1)'],
+                                borderWidth: 1
+                            }]
+                        }
+                    }
+                    : chart
+            );
+    
+            console.log("✅ Updated Charts:", updatedCharts); // Debugging updated state
+            return updatedCharts;
         });
-
-        setCharts(prevCharts => prevCharts.map(chart =>
-            chart.id === chartId ? {
-                ...chart,
-                chartData: {
-                    labels,
-                    datasets: [{
-                        label: 'Data Representation',
-                        data: datasets,
-                        backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
-                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
-                        borderWidth: 1
-                    }]
-                }
-            } : chart
-        ));
     };
+    
 
     const handleChartTypeChange = (chartId, type) => {
         setChartLoading(true);
-        setCharts(prevCharts => prevCharts.map(chart =>
-            chart.id === chartId ? { ...chart, chartType: type } : chart
-        ));
         setTimeout(() => {
+            setCharts(prevCharts => prevCharts.map(chart =>
+                chart.id === chartId ? { ...chart, chartType: type } : chart
+            ));
             setChartLoading(false);
-        }, 500);
+        }, 300);
     };
+    
+    
 
     const deleteChart = (chartId) => {
         setCharts(prevCharts => {
@@ -221,94 +249,103 @@ export default function FinancesTrackingPage() {
     };
 
     useEffect(() => {
-        const fetchStoredFile = async () => {
-            try {
-                const response = await fetch("/api/files");
-                const text = await response.text();
-                console.log("📥 Raw API Response:", text);
+        console.log("✅ useEffect is running");
+
+        const pathSegments = pathname.split('/');
+        const ministry = pathSegments[2] || "defaultMinistry";
+        const pageType = pathSegments[3] || "defaultPageType";
+
+        console.log(`📢 Fetching file for: Ministry = ${ministry}, Page Type = ${pageType}`);
+
+        fetchStoredFile(ministry, pageType, activeChart);
+    }, [router.isReady, activeChart]);
     
-                let result;
-                try {
-                    result = JSON.parse(text);
-                } catch (jsonError) {
-                    console.error("❌ Failed to parse JSON response:", text);
+    
+    const fetchStoredFile = async (ministry, pageType, chartId) => {
+        const apiURL = `/api/files?ministry=${encodeURIComponent(ministry)}&page_type=${encodeURIComponent(pageType)}`;
+    
+        console.log("🌍 Attempting API request:", apiURL);
+    
+        try {
+            const response = await fetch(apiURL);
+            console.log("📡 Response Status:", response.status);
+    
+            if (!response.ok) {
+                console.error(`❌ API Request Failed: ${response.statusText}`);
+                return;
+            }
+    
+            const result = await response.json();
+            console.log("✅ API Response:", result);
+    
+            if (!result.success || !result.fileData) {
+                console.warn("⚠️ No valid file data found.");
+                return;
+            }
+    
+            // Decode and process file
+            const byteCharacters = atob(result.fileData);
+            const byteArray = new Uint8Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteArray[i] = byteCharacters.charCodeAt(i);
+            }
+    
+            const blob = new Blob([byteArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const fileReader = new FileReader();
+    
+            fileReader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+    
+                console.log("📊 Workbook Loaded:", workbook);
+    
+                if (!workbook.SheetNames.length) {
+                    console.error("❌ No sheets found in workbook.");
                     return;
                 }
     
-                if (!response.ok || !result.success || !result.fileData) {
-                    console.error("❌ Error: No valid file data found in response.");
-                    return;
-                }
-    
-                console.log("✅ File data received:", result.filename, "Tab:", result.tabName);
-    
-                // Decode Base64
-                const byteCharacters = atob(result.fileData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const workbook = XLSX.read(byteArray.buffer, { type: "array" });
-    
-                if (!workbook || workbook.SheetNames.length === 0) {
-                    console.error("❌ No valid sheets found in the file.");
-                    return;
-                }
-    
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-    
-                if (!worksheet) {
-                    console.error("❌ Worksheet not found in the file.");
-                    return;
-                }
-    
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
-                if (!jsonData || jsonData.length === 0) {
-                    console.warn("⚠️ Warning: The file is empty or contains no valid data.");
+                if (!jsonData.length) {
+                    console.warn("⚠️ Warning: The file is empty.");
                     return;
                 }
     
-                // Format data properly
-                const formattedData = jsonData.map(row =>
-                    row.map(cell => ({ value: cell || "" }))
-                );
+                const formattedData = jsonData.map(row => row.map(cell => ({ value: cell || "" })));
     
-                // If there are no active charts, create one for this file
-                if (charts.length === 0 || !activeChart) {
-                    console.log("📊 Creating new chart for loaded file...");
+                console.log("✅ Formatted Data for Chart:", formattedData);
     
-                    const newChart = {
-                        id: Date.now(),
-                        name: result.tabName || "Loaded Chart",
-                        data: formattedData,
-                        chartType: "pie",
-                        chartData: null,
-                    };
+                // 🚨 Ensure a chart exists before updating
+                setCharts(prevCharts => {
+                    let existingChart = prevCharts.find(chart => chart.id === chartId);
     
-                    setCharts([...charts, newChart]);
-                    setActiveChart(newChart.id);
-                } else {
-                    // Update existing active chart
-                    setCharts(prevCharts =>
-                        prevCharts.map(chart =>
-                            chart.id === activeChart ? { ...chart, data: formattedData } : chart
-                        )
-                    );
-                }
+                    if (!existingChart) {
+                        console.log("⚠️ No existing chart found! Creating a new one.");
+                        const newChart = {
+                            id: Date.now(),
+                            name: `Member Chart ${prevCharts.length + 1}`,
+                            data: formattedData,
+                            chartType: "pie",
+                            chartData: null,
+                        };
     
-                console.log("✅ Successfully loaded spreadsheet data:", formattedData);
-                updateChartData(activeChart, formattedData);
+                        return [...prevCharts, newChart]; // Add new chart
+                    }
     
-            } catch (error) {
-                console.error("❌ Error fetching stored file:", error);
-            }
-        };
+                    return prevCharts;
+                });
     
-        fetchStoredFile();
-    }, []);
+                updateChartData(chartId, formattedData);
+            };
+    
+            fileReader.readAsArrayBuffer(blob);
+        } catch (error) {
+            console.error("❌ Error fetching stored file:", error);
+            alert(`Error fetching file: ${error.message}`);
+        }
+    };
+    
     
     const toggleChart = () => {
         if (!activeChart || !charts.find(chart => chart.id === activeChart).data ||
@@ -395,6 +432,7 @@ export default function FinancesTrackingPage() {
 
         setFilteredData(filtered);
     }, [searchQuery, activeChart, charts]);
+    
 
     return (
         <section className="h-screen flex flex-col">
