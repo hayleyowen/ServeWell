@@ -51,8 +51,10 @@ CREATE TABLE IF NOT EXISTS Admin (
     AdminName VARCHAR(50),
     Ministry_ID INT,
     Auth0_ID VARCHAR(50),
-    Role_ID INT,
+    Role_ID INT DEFAULT 1,
+    super_id INT DEFAULT 0,
     FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
+    FOREIGN KEY (super_id) REFERENCES superadmin(superadmin_id),
     FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
 );
 CREATE TABLE IF NOT EXISTS superadmin (
@@ -89,8 +91,8 @@ CREATE TABLE IF NOT EXISTS media (
 
 -- Inserting data into the tables
 
-INSERT INTO church (churchname, churchphone, streetaddress, postalcode, city, denomination, email) 
-VALUES ('Temple Baptist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Baptist', 'hello@temple.life'),
+INSERT INTO church (churchname, churchphone, streetaddress, postalcode, city, denomination, email) VALUES
+('Temple Baptist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Baptist', 'hello@temple.life'),
 ('First United Methodist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Methodist', 'hello@first.united'),
 ('St. Mary''s Catholic Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Catholic', 'hello@st.marys');
 

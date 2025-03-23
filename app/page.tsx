@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
+  console.log('User:', user);
 
   // create a new admin from the user session
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function Home() {
           await fetch('/api/admin/insert-admins', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub }),
+            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
           });
         } catch (err) {
           console.error('Failed to insert admin:', err);

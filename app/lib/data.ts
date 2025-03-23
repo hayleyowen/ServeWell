@@ -23,7 +23,7 @@ export async function getUnAssignedAdmins() {
     }
 }
 
-export async function insertAdmins(nickname: string, Auth0_ID: string) {
+export async function insertAdmins(nickname: string, Auth0_ID: string, email: string) {
     try {
       const client = await pool.getConnection();
 
@@ -34,9 +34,14 @@ export async function insertAdmins(nickname: string, Auth0_ID: string) {
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
         }
   
-      const query1 = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
+      const insertadmin = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
       const values = [nickname, Auth0_ID];
-      const [result1] = await client.execute(query1, values);
+      const [result1] = await client.execute(insertadmin, values);
+      
+        // need a way to get the church_id that is associated with the admin
+      const insertmember = `insert into churchmember (fname, email, church_id) values (?, ?, 1);`;
+      const values1 = [nickname, email];
+      const [result2] = await client.execute(insertmember, values1);
       client.release();
   
       return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
@@ -287,6 +292,15 @@ export async function createSuperAdmin(data: {
             [member_id, data.church_id]
         );
 
+        const [getsuperadmin] = await connection.execute(
+            `SELECT superadmin_id FROM superadmin WHERE member_id = ?`, [member_id]);
+        const super_id = getsuperadmin.insertId;
+
+        const [adminResult] = await connection.execute(
+            `INSERT INTO admin (AdminName, Ministry_ID)
+                VALUES (?, null, ?)`, [data.firstName, data.email]
+        );
+
         await connection.commit(); // Commit the transaction
         connection.release();
 
@@ -336,3 +350,4 @@ export async function getMedia() {
         throw new Error('Failed to fetch media.');
     }
 }
+

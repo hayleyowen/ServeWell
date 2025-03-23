@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
     try {
-        const {nickname, auth0_id} = await req.json();
-        const result = await insertAdmins(nickname, auth0_id);
+        const {nickname, auth0_id, email} = await req.json();
+        const result = await insertAdmins(nickname, auth0_id, email);
         return NextResponse.json({ success: true });
     } catch(error) {
         console.error('Detailed error:', error);
