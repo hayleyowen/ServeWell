@@ -1,8 +1,11 @@
-import clsx from 'clsx';
 import '@/app/globals.css';
 import { getMinistries } from '@/app/lib/data';
 
 export default async function UserHomepage() {
+
+  //////////////////////////////////////////////
+  // LOGIC HERE FOR CHECKING USER PERMISSIONS //
+  //////////////////////////////////////////////
   const ministries = await getMinistries();
 
   return (

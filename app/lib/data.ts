@@ -25,29 +25,29 @@ export async function getUnAssignedAdmins() {
 
 export async function insertAdmins(nickname: string, Auth0_ID: string, email: string) {
     try {
-      const client = await pool.getConnection();
+        const client = await pool.getConnection();
 
-      const query = 'Select * from Admin where Auth0_ID = ?';
-      const [result] = await client.execute(query, [Auth0_ID]);
+        const query = 'Select * from Admin where Auth0_ID = ?';
+        const [result] = await client.execute(query, [Auth0_ID]);
         if (result.length > 0) {
             client.release();
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
         }
-  
-      const insertadmin = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
-      const values = [nickname, Auth0_ID];
-      const [result1] = await client.execute(insertadmin, values);
-      
+
+        const insertadmin = `insert into Admin (AdminName, Auth0_ID, Role_ID) values (?, ?, 1);`;
+        const values = [nickname, Auth0_ID];
+        const [result1] = await client.execute(insertadmin, values);
+        
         // need a way to get the church_id that is associated with the admin
-      const insertmember = `insert into churchmember (fname, email, church_id) values (?, ?, 1);`;
-      const values1 = [nickname, email];
-      const [result2] = await client.execute(insertmember, values1);
-      client.release();
-  
-      return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
+        const insertmember = `insert into churchmember (fname, email, church_id) values (?, ?, 1);`;
+        const values1 = [nickname, email];
+        const [result2] = await client.execute(insertmember, values1);
+        client.release();
+
+        return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
     } catch(error) {
-      console.error("Error inserting admin:", error);
-      return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
+        console.error("Error inserting admin:", error);
+        return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
     }
   }
 
@@ -285,21 +285,12 @@ export async function createSuperAdmin(data: {
 
         const member_id = memberResult.insertId;
 
-        // Insert into superadmin table
-        const [superAdminResult] = await connection.execute(
-            `INSERT INTO superadmin (member_id, church_id) 
-             VALUES (?, ?)`,
-            [member_id, data.church_id]
-        );
-
-        const [getsuperadmin] = await connection.execute(
-            `SELECT superadmin_id FROM superadmin WHERE member_id = ?`, [member_id]);
-        const super_id = getsuperadmin.insertId;
-
         const [adminResult] = await connection.execute(
-            `INSERT INTO admin (AdminName, Ministry_ID)
-                VALUES (?, null, ?)`, [data.firstName, data.email]
+            `INSERT INTO admin (member_id, Role_ID)
+                VALUES (?, 2)`, [member_id]
         );
+
+        
 
         await connection.commit(); // Commit the transaction
         connection.release();
@@ -307,28 +298,12 @@ export async function createSuperAdmin(data: {
         return {
             success: true,
             member_id: member_id,
-            superadmin_id: superAdminResult.insertId
+            admin_id: adminResult.insertId
         };
     } catch (error) {
         if (connection) await connection.rollback(); // Rollback in case of error
         console.error("Failed to create super admin:", error);
         throw new Error("Failed to create super admin.");
-    } finally {
-        if (connection) connection.release();
-    }
-}
-
-// Function to fetch super admins
-export async function getSuperAdmins() {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute("SELECT * FROM superadmin");
-        connection.release();
-        return data;
-    } catch (err) {
-        console.error("Database Error:", err);
-        throw new Error("Failed to fetch super admin data");
     } finally {
         if (connection) connection.release();
     }

@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS churchmember (
     activity_status VARCHAR(20),
     church_id INTEGER NOT NULL,
     church_join_date DATE,
-    CONSTRAINT churchmember_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
 CREATE TABLE IF NOT EXISTS Roles (
@@ -48,22 +48,22 @@ CREATE TABLE IF NOT EXISTS Roles (
 
 CREATE TABLE IF NOT EXISTS Admin (
     Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
-    AdminName VARCHAR(50),
-    Ministry_ID INT,
+    member_id VARCHAR(50) NOT NULL,
+    Ministry_ID INT DEFAULT NULL,
     Auth0_ID VARCHAR(50),
-    Role_ID INT DEFAULT 1,
-    super_id INT DEFAULT 0,
+    Role_ID INT DEFAULT 1,    -- if role_id = 2, they are a superadmin
+    FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
     FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
-    FOREIGN KEY (super_id) REFERENCES superadmin(superadmin_id),
     FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
 );
-CREATE TABLE IF NOT EXISTS superadmin (
-    superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INTEGER NOT NULL,
-    church_id INTEGER NOT NULL,
-    FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
-    FOREIGN KEY (church_id) REFERENCES church(church_id)
-);
+
+-- CREATE TABLE IF NOT EXISTS superadmin (
+--     superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
+--     member_id INTEGER NOT NULL,
+--     church_id INTEGER NOT NULL,
+--     FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
+--     FOREIGN KEY (church_id) REFERENCES church(church_id)
+-- );
 
 CREATE OR REPLACE VIEW member_and_admin AS 
 SELECT cm.fname, cm.lname, cm.member_id, cm.memberphone, cm.email, a.Admin_ID, a.Ministry_ID from churchmember cm
@@ -109,6 +109,7 @@ INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity
 ('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3, '2019-01-01');
 
 Insert INTO Roles (Role_ID, RoleName, Description) VALUES 
+(0, 'NewUser', 'Can only request to join a ministry'),
 (1, 'MinistryAdmin', 'Can only see their ministry pages'),
 (2, 'SuperAdmin', 'Can see all pages and edit all ministries');
 
