@@ -1,12 +1,49 @@
+'use client';
+
 import '@/app/globals.css';
 import { getMinistries } from '@/app/lib/data';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { useEffect, useState } from 'react';
 
-export default async function UserHomepage() {
+export default function UserHomepage() {
+  // fetch user session
+  const { user, error, isLoading } = useUser();
+  console.log('User:', user);
+  const [ministries, setMinistries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
-  //////////////////////////////////////////////
-  // LOGIC HERE FOR CHECKING USER PERMISSIONS //
-  //////////////////////////////////////////////
-  const ministries = await getMinistries();
+  useEffect(() => {
+    const fetchMinistries = async () => {
+      try {
+        const data = await getMinistries();
+        setMinistries(data);
+      } catch (err) {
+        console.error('Failed to fetch ministries:', err);
+        setFetchError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMinistries();
+  }, []);
+
+  if (isLoading || loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <p className="text-white">Loading...</p>
+      </main>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">Failed to load ministries. Please try again later.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-t from-blue-300 to-blue-600 p-8 flex items-center justify-center">

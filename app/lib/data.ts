@@ -23,28 +23,29 @@ export async function getUnAssignedAdmins() {
     }
 }
 
-export async function insertAdmins(nickname: string, Auth0_ID: string, email: string) {
+// when a user logs in for the first time, give them "BaseUser" privileges
+export async function insertUser(nickname: string, Auth0_ID: string, email: string) {
     try {
         const client = await pool.getConnection();
 
-        const query = 'Select * from Admin where Auth0_ID = ?';
-        const [result] = await client.execute(query, [Auth0_ID]);
+        const existingUserCheck = 'Select * from users where auth0ID = ?';
+        const [result] = await client.execute(existingUserCheck, [Auth0_ID]);
         if (result.length > 0) {
             client.release();
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
         }
 
-        const insertadmin = `insert into Admin (AdminName, Auth0_ID, Role_ID) values (?, ?, 1);`;
-        const values = [nickname, Auth0_ID];
-        const [result1] = await client.execute(insertadmin, values);
-        
-        // need a way to get the church_id that is associated with the admin
-        const insertmember = `insert into churchmember (fname, email, church_id) values (?, ?, 1);`;
-        const values1 = [nickname, email];
-        const [result2] = await client.execute(insertmember, values1);
+        const insertMember = `insert into churchmember (fname, email) values (?, ?);`;
+        const values = [nickname, email];
+        const [newMember] = await client.execute(insertMember, values);
+        const memID = newMember.insertId;
+
+        const insertUser = `insert into users (auth0ID, memID) values (?, ?);`;
+        const values1 = [Auth0_ID, memID];
+        const [newUser] = await client.execute(insertUser, values1);
         client.release();
 
-        return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
+        return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
     } catch(error) {
         console.error("Error inserting admin:", error);
         return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
@@ -57,7 +58,7 @@ export async function verifyAdmin(Auth0_ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute(
-            `SELECT Role_ID FROM Admin WHERE Auth0_ID = ?`,
+            `SELECT rID FROM users WHERE auth0ID = ?`,
             [Auth0_ID]
         );
         console.log("Data:", data);

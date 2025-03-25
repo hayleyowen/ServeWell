@@ -3,8 +3,7 @@ import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
 import Image from 'next/image';
-import  { useUser } from '@auth0/nextjs-auth0/client';
-import { useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 
 
@@ -12,27 +11,6 @@ export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
   console.log('User:', user);
-
-  // create a new admin from the user session
-  useEffect(() => {
-    if (user) {
-      const insertAdmin = async () => {
-        try {
-          await fetch('/api/admin/insert-admins', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
-          });
-        } catch (err) {
-          console.error('Failed to insert admin:', err);
-        }
-      };
-      insertAdmin();
-    }
-  }, [user]);  
-
-
-  
 
   // if no session (i.e. user is not logged in), show login button
   if (!user) {
