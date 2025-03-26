@@ -10,7 +10,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
-  console.log('User:', user);
+  console.log('User:', user?.sub);
 
   // if no session (i.e. user is not logged in), show login button
   if (!user) {

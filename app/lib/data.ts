@@ -3,8 +3,27 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
 ////////////////////////////////////////
-/////// Admin-related functions ///////
+/////// User-related functions ///////
 ////////////////////////////////////////
+
+export async function getUserChurch(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
+            [auth0ID]
+        );
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch user church:", error);
+        throw new Error("Failed to fetch user church.");
+    } finally {
+        if (connection) connection.release();
+    }
+    
+}
 
 export async function getUnAssignedAdmins() {
     let connection;
