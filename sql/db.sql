@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS users (
 --     FOREIGN KEY (church_id) REFERENCES church(church_id)
 -- );
 
-CREATE OR REPLACE VIEW unassignedAdmins AS 
+CREATE OR REPLACE VIEW requestingAdmins AS 
 SELECT cm.fname, cm.lname, cm.member_id, cm.email, u.userID, u.minID from churchmember cm
 Inner JOIN users u ON cm.member_id = u.memID;
 

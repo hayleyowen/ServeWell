@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const client = await pool.getConnection();
 
-    const query = `select * from member_and_admin;`;
+    const query = `select member_id from requestingAdmins;`;
     const [result] = await client.execute(query);
     client.release();
 
@@ -18,16 +18,19 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { admin_id, ministry_id } = await req.json();
+    const { church_id, member_id } = await req.json();
 
-    if (!admin_id) {
-      return NextResponse.json({ error: "Missing admin_id" }, { status: 400 });
+    if (!church_id) {
+      return NextResponse.json({ error: "Missing church_id" }, { status: 400 });
     }
+    if (!member_id) {
+      return NextResponse.json({ error: "Missing member_id" }, { status: 400 });
+    }  
 
     const client = await pool.getConnection();
 
-    const query = `UPDATE Admin SET Ministry_ID = ? WHERE Admin_ID = ?;`;
-    const values = [ministry_id, admin_id];
+    const query = `UPDATE churchmember SET church_id = ? WHERE member_id = ?;`;
+    const values = [church_id, member_id];
     const [result] = await client.execute(query, values);
     client.release();
 
