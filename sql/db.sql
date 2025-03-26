@@ -89,6 +89,15 @@ CREATE TABLE IF NOT EXISTS media (
     FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
+CREATE TABLE calendar_events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    start DATETIME NOT NULL,
+    ministry VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 -- Inserting data into the tables
 
 INSERT INTO church (churchname, churchphone, streetaddress, postalcode, city, denomination, email) 
