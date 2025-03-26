@@ -8,7 +8,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScal
 import { Alert, Snackbar, Menu, MenuItem } from "@mui/material";
 import clsx from "clsx";
 import "@/app/globals.css";
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaEnvelope, FaUsers } from 'react-icons/fa';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
@@ -30,6 +30,13 @@ export default function FinancesTrackingPage() {
     const [showSearch, setShowSearch] = useState(false);
     const [filteredData, setFilteredData] = useState([]);
     const [originalData, setOriginalData] = useState(null);
+    const [contactModalOpen, setContactModalOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState(null);
+    const [contactMessage, setContactMessage] = useState('');
+    const [memberListOpen, setMemberListOpen] = useState(false);
+    const [emailServiceModalOpen, setEmailServiceModalOpen] = useState(false);
+    const [emailRecipient, setEmailRecipient] = useState(null);
+    const [memberSearchQuery, setMemberSearchQuery] = useState("");
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -396,6 +403,126 @@ export default function FinancesTrackingPage() {
         setFilteredData(filtered);
     }, [searchQuery, activeChart, charts]);
 
+    const handleContactMember = (rowIndex) => {
+        if (!activeChart) return;
+        
+        const currentData = charts.find(chart => chart.id === activeChart).data;
+        if (!currentData || !currentData[rowIndex]) return;
+        
+        // Get member's email
+        const memberEmail = currentData[rowIndex][1]?.value || '';
+        const memberName = currentData[rowIndex][0]?.value || '';
+        
+        if (!memberEmail) {
+            alert("This member doesn't have an email address.");
+            return;
+        }
+        
+        // Close the member list modal and open email service selection modal
+        setMemberListOpen(false);
+        setEmailRecipient({
+            email: memberEmail,
+            name: memberName
+        });
+        setEmailServiceModalOpen(true);
+    };
+    
+    const openMemberList = () => {
+        setMemberListOpen(true);
+    };
+    
+    const handleSendEmail = async () => {
+        if (!selectedMember || !contactMessage.trim()) {
+            alert("Please enter a message");
+            return;
+        }
+        
+        try {
+            setIsLoading(true);
+            
+            // Here you would integrate with your actual email service
+            const response = await fetch('/api/contact/email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: selectedMember.email,
+                    message: contactMessage,
+                    memberName: selectedMember.name
+                }),
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`Email sent to ${selectedMember.name} successfully!`);
+                setContactModalOpen(false);
+                setContactMessage('');
+            } else {
+                alert(`Error: ${result.error || 'Failed to send email'}`);
+            }
+        } catch (error) {
+            console.error("Error sending email:", error);
+            alert("Failed to send email. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Add this function to get alphabetically sorted members
+    const getSortedMembers = () => {
+        if (!activeChart) return [];
+        
+        const currentData = charts.find(chart => chart.id === activeChart).data;
+        if (!currentData) return [];
+        
+        // Filter out rows without names and create member objects
+        const members = currentData
+            .filter(row => row[0]?.value)
+            .map((row, index) => ({
+                name: row[0]?.value || '',
+                email: row[1]?.value || '',
+                rowIndex: index
+            }));
+        
+        // Sort alphabetically by name
+        return members.sort((a, b) => 
+            a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        );
+    };
+
+    const openEmailService = (service) => {
+        if (!emailRecipient) return;
+        
+        // Create email parameters
+        const subject = encodeURIComponent(`Message from ServeWell`);
+        const body = encodeURIComponent(`Dear ${emailRecipient.name},\n\n`);
+        
+        let emailUrl;
+        
+        switch (service) {
+            case "gmail":
+                emailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailRecipient.email)}&su=${subject}&body=${body}`;
+                break;
+            case "yahoo":
+                emailUrl = `https://compose.mail.yahoo.com/?to=${encodeURIComponent(emailRecipient.email)}&subject=${subject}&body=${body}`;
+                break;
+            case "outlook":
+                emailUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(emailRecipient.email)}&subject=${subject}&body=${body}`;
+                break;
+            case "default":
+                emailUrl = `mailto:${encodeURIComponent(emailRecipient.email)}?subject=${subject}&body=${body}`;
+                break;
+        }
+        
+        // Open the email service in a new tab
+        window.open(emailUrl, '_blank');
+        
+        // Close the modal
+        setEmailServiceModalOpen(false);
+    };
+
     return (
         <section className="h-screen flex flex-col">
             <style>
@@ -525,7 +652,20 @@ export default function FinancesTrackingPage() {
                             </div>
                         ) : (
                             <div className="w-full overflow-auto border border-gray-300 rounded-lg">
-                                <div className="flex justify-end mb-2">
+                                {/* Add a single email button above the spreadsheet */}
+                                <div className="p-2 border-b flex justify-between items-center">
+                                    <h3 className="text-lg font-medium">Member SpreadSheet</h3>
+                                    <button 
+                                        onClick={openMemberList}
+                                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                                    >
+                                        <FaEnvelope className="mr-2" /> 
+                                        Email Members
+                                    </button>
+                                </div>
+                                
+                                {/* Existing spreadsheet code */}
+                                <div className="flex justify-end mb-2 p-2">
                                     <button onClick={addRow} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
                                         Add Row
                                     </button>
@@ -555,6 +695,131 @@ export default function FinancesTrackingPage() {
                 {chartName.trim() ? "Upload data before showing charts!" : "Please enter a chart name!"}
             </Alert>
         </Snackbar>
+        {/* Member List Modal with fixed search positioning */}
+        {memberListOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold flex items-center">
+                            <FaUsers className="mr-2" /> Select Member to Email
+                        </h2>
+                        
+                        <button
+                            onClick={() => setShowSearch(!showSearch)}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <FaSearch className="text-gray-600" />
+                        </button>
+                    </div>
+                    
+                    {/* Search input in its own row */}
+                    {showSearch && (
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                placeholder="Search members..."
+                                value={memberSearchQuery}
+                                onChange={(e) => setMemberSearchQuery(e.target.value)}
+                                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                autoFocus
+                            />
+                        </div>
+                    )}
+                    
+                    <div className="overflow-y-auto flex-grow">
+                        <div className="divide-y">
+                            {getSortedMembers()
+                                .filter(member => 
+                                    !memberSearchQuery || 
+                                    member.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
+                                    member.email.toLowerCase().includes(memberSearchQuery.toLowerCase())
+                                )
+                                .map((member, index) => (
+                                    <button 
+                                        key={index}
+                                        onClick={() => handleContactMember(member.rowIndex)}
+                                        className="w-full text-left p-3 hover:bg-blue-50 flex justify-between items-center"
+                                    >
+                                        <span>{member.name}</span>
+                                        <span className="text-gray-500 text-sm">{member.email}</span>
+                                    </button>
+                                ))
+                            }
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 flex justify-end">
+                        <button
+                            onClick={() => setMemberListOpen(false)}
+                            className="px-4 py-2 border rounded-md hover:bg-gray-100"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        {/* Email Service Selection Modal */}
+        {emailServiceModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h2 className="text-xl font-bold mb-4">Choose Email Service</h2>
+                    <p className="mb-4">Sending email to: {emailRecipient?.name} ({emailRecipient?.email})</p>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <button 
+                            onClick={() => openEmailService("gmail")}
+                            className="p-4 border rounded-lg hover:bg-blue-50 flex flex-col items-center"
+                        >
+                            <img src="https://www.google.com/gmail/about/static/images/logo-gmail.png" 
+                                alt="Gmail" 
+                                className="h-8 mb-2" 
+                            />
+                            <span>Gmail</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => openEmailService("yahoo")}
+                            className="p-4 border rounded-lg hover:bg-blue-50 flex flex-col items-center"
+                        >
+                            <img src="https://s.yimg.com/rz/p/yahoo_frontpage_en-US_s_f_p_205x58_frontpage.png" 
+                                alt="Yahoo Mail" 
+                                className="h-8 mb-2" 
+                            />
+                            <span>Yahoo Mail</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => openEmailService("outlook")}
+                            className="p-4 border rounded-lg hover:bg-blue-50 flex flex-col items-center"
+                        >
+                            <img src="https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b" 
+                                alt="Outlook" 
+                                className="h-8 mb-2" 
+                            />
+                            <span>Outlook</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => openEmailService("default")}
+                            className="p-4 border rounded-lg hover:bg-blue-50 flex flex-col items-center"
+                        >
+                            <FaEnvelope className="text-2xl mb-2" />
+                            <span>Default Email</span>
+                        </button>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setEmailServiceModalOpen(false)}
+                            className="px-4 py-2 border rounded-md hover:bg-gray-100"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
     </section>
     );
     
