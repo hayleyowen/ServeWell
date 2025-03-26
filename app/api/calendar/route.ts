@@ -30,34 +30,33 @@ export async function GET(req: Request) {
     }
 }
 
-// Update event
-export async function PUT(req: Request) {
+// Create new event
+export async function POST(req: Request) {
     let connection;
     try {
-        const { id, title, start, ministry } = await req.json();
+        const { title, start, ministry } = await req.json();
 
-        if (!id || !title || !start || !ministry) {
+        if (!title || !start || !ministry) {
             return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
         }
 
         connection = await pool.getConnection();
         await connection.execute(
-            "UPDATE calendar_events SET title = ?, start = ?, ministry = ? WHERE id = ?",
-            [title, start, ministry, id]
+            "INSERT INTO calendar_events (title, start, ministry) VALUES (?, ?, ?)",
+            [title, start, ministry]
         );
 
         connection.release();
+
         return NextResponse.json({ success: true });
 
     } catch (error) {
-        console.error("❌ Update error:", error);
-        return NextResponse.json({ success: false, error: "Failed to update event" }, { status: 500 });
+        console.error("❌ Create error:", error);
+        return NextResponse.json({ success: false, error: "Failed to create event" }, { status: 500 });
     } finally {
         if (connection) connection.release();
     }
 }
-
-
 
 // Delete event
 export async function DELETE(req: Request) {

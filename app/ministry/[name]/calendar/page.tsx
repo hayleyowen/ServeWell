@@ -47,7 +47,10 @@ export default function CalendarPage() {
     };
     
     const saveEvent = async () => {
-        if (!newEvent.title || !newEvent.start) return;
+        if (!newEvent.title || !newEvent.start) {
+            console.error("Missing required fields:", newEvent);
+            return;
+        }
     
         const method = isEditing ? "PUT" : "POST";
         const res = await fetch("/api/calendar", {
@@ -57,14 +60,15 @@ export default function CalendarPage() {
         });
     
         if (!res.ok) {
-            console.error("Failed to save event:", await res.text());
+            const errorText = await res.text();
+            console.error("Failed to save event:", errorText);
             return;
         }
     
         try {
             const data = await res.json();
             if (data.success) {
-                window.location.reload(); // Refresh the page after updating or adding an event
+                window.location.reload();
             }
         } catch (error) {
             console.error("Error parsing response JSON:", error);
@@ -72,6 +76,7 @@ export default function CalendarPage() {
     
         handleClose();
     };
+    
 
     const deleteEvent = async () => {
         if (!newEvent.id) return;
