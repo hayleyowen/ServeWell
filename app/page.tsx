@@ -2,6 +2,7 @@
 import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
+import { AssignmentRequestButton } from './components/buttons/AssignmentRequestButton';
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
@@ -40,7 +41,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
             <ChurchCreationButton />
-            <LoginButton />
+            <AssignmentRequestButton />
           </div>
         </div>
       </div>
