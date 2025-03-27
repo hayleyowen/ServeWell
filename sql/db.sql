@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS roles (
 
 CREATE TABLE IF NOT EXISTS users (
     userID INT PRIMARY KEY AUTO_INCREMENT,
-    auth0ID VARCHAR(75) NOT NULL,
+    auth0ID VARCHAR(75) NOT NULL UNIQUE,
     minID INT DEFAULT NULL,
     rID INT DEFAULT 0,
     memID INT NOT NULL,
@@ -75,9 +75,27 @@ CREATE TABLE IF NOT EXISTS users (
 --     FOREIGN KEY (church_id) REFERENCES church(church_id)
 -- );
 
-CREATE OR REPLACE VIEW requestingAdmins AS 
-SELECT cm.fname, cm.lname, cm.member_id, cm.email, u.userID, u.minID from churchmember cm
-Inner JOIN users u ON cm.member_id = u.memID;
+CREATE TABLE IF NOT EXISTS requestingAdmins (
+    reqID INT PRIMARY KEY AUTO_INCREMENT,
+    auth0ID VARCHAR(75) NOT NULL,
+    churchID INT NOT NULL,
+
+    FOREIGN KEY (auth0ID) REFERENCES users(auth0ID),
+    FOREIGN KEY (churchID) REFERENCES church(church_id)
+);
+
+CREATE OR REPLACE VIEW showRequestingAdmins AS 
+SELECT 
+    cm.fname, 
+    cm.email
+FROM 
+    requestingAdmins ra
+INNER JOIN 
+    users u ON ra.auth0ID = u.auth0ID
+INNER JOIN 
+    churchmember cm ON u.memID = cm.member_id
+WHERE 
+    cm.church_id = ra.churchID;
 
 CREATE TABLE uploaded_files (
     id INT PRIMARY KEY AUTO_INCREMENT,

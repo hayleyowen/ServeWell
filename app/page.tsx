@@ -2,16 +2,33 @@
 import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
 import { ChurchCreationButton } from './components/buttons/ChurchCreationButton';
-import { AssignmentRequestButton } from './components/buttons/AssignmentRequestButton';
+import AssignmentRequestButton from './components/buttons/AssignmentRequestButton';
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
-
+import { useEffect } from 'react';
 
 
 export default function Home() {
   // fetch user session
   const { user, error, isLoading } = useUser();
-  console.log('User:', user?.sub);
+
+  // insert new users into users table if they don't already exist
+  useEffect(() => {
+    if (user) {
+      const insertUser = async () => {
+        try {
+          await fetch('/api/admin/insert-admins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
+          });
+        } catch (err) {
+          console.error('Failed to insert new user:', err);
+        }
+      };
+      insertUser();
+    }
+  }, [user]); 
 
   // if no session (i.e. user is not logged in), show login button
   if (!user) {

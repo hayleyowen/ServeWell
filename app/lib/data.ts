@@ -25,6 +25,21 @@ export async function getUserChurch(auth0ID: string) {
     
 }
 
+export async function getRequestingAdmins(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(``);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch requesting admins:", error);
+        throw new Error("Failed to fetch requesting admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}    
+
 export async function getUnAssignedAdmins() {
     let connection;
     try {
