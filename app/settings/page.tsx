@@ -1,7 +1,7 @@
 import '@/app/globals.css';
 import { AssignmentPageButton } from '../components/buttons/AssignmentPage';
 import { MinistryCreationButton } from '../components/buttons/MinistryCreationButton';
-import UserSettingsForm from '../components/forms/UserSettingsForm';
+// import UserSettingsForm from '../components/forms/UserSettingsForm';
 import ChurchDetailsForm from '../components/forms/ChurchDetailsForm';
 import MinistryDetailsForm from '../components/forms/MinistryDetailsForm';
 
@@ -15,8 +15,8 @@ export default function Settings() {
             <MinistryCreationButton />
           </div>
           <div className="mt-8 w-full max-w-4xl">
-            <h1 className="text-2xl text-white font-bold mb-4">Update User Details</h1>
-            <UserSettingsForm />
+            {/* <h1 className="text-2xl text-white font-bold mb-4">Update User Details</h1> */}
+            {/* <UserSettingsForm /> */}
             <h1 className="text-2xl text-white font-bold mb-4">Update Church Details</h1>
             <ChurchDetailsForm />
             <h1 className="text-2xl text-white font-bold mb-4">Update Minsitry Details</h1>
