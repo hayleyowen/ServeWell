@@ -33,7 +33,7 @@ const TopNav = () => {
     }, [pathname]);
 
     return (
-        <header className="fixed top-0 h-15 w-full bg-white p-4 shadow-md">
+        <header className="fixed top-0 h-15 w-full bg-white p-4 shadow-md z-50">
             <nav className="flex justify-between items-center">
                 {/* Logo */}
                 <div>
