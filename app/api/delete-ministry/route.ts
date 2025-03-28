@@ -1,4 +1,4 @@
-import { deleteMinistryByName } from '@/app/lib/data';
+import { deleteMinistryByURLPath } from '@/app/lib/data';
 
 export async function DELETE(req: Request) {
     try {
@@ -12,7 +12,7 @@ export async function DELETE(req: Request) {
             });
         }
 
-        const success = await deleteMinistryByName(name);
+        const success = await deleteMinistryByURLPath(name);
         if (success) {
             return new Response(JSON.stringify({ message: 'Ministry deleted successfully' }), {
                 status: 200,

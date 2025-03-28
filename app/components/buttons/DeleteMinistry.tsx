@@ -14,7 +14,7 @@ export default function DeleteMinistryButton({ ministryName }: { ministryName: s
 
                 if (response.ok) {
                     alert('Ministry deleted successfully');
-                    window.location.href = '/user-homepage'; // Redirect to the homepage or another page
+                    window.location.href = '/user-homepage'; // Redirect to the user homepage 
                 } else {
                     const errorData = await response.json();
                     alert(`Error: ${errorData.error}`);

@@ -329,13 +329,29 @@ export async function updateMinistry(ministryData: {
     let connection;
     try {
         connection = await pool.getConnection();
+
+        // Start a transaction
+        await connection.beginTransaction();
+
+        // Set Ministry_ID to NULL in the Admin table for related records
+        await connection.execute(
+            `UPDATE Admin SET ministry_id = NULL WHERE Ministry_ID = (SELECT ministry_id FROM ministry WHERE url_path = ?)`,
+            [name]
+        );
+
+        // Delete the ministry
         const [result] = await connection.execute(
             `DELETE FROM ministry WHERE url_path = ?`,
             [name]
         );
+
+        // Commit the transaction
+        await connection.commit();
+
         connection.release();
         return result.affectedRows > 0; // Returns true if a row was deleted
     } catch (error) {
+        if (connection) await connection.rollback(); // Rollback in case of error
         console.error("Failed to delete ministry:", error);
         throw new Error("Failed to delete ministry.");
     } finally {
