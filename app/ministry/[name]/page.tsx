@@ -1,5 +1,6 @@
 import { getMinistryByName } from '@/app/lib/data';
 import '@/app/globals.css';
+import DeleteMinistryButton from '@/app/components/buttons/DeleteMinistry';
 
 export default async function MinistryPage({ params }: { params: { name: string } }) {
     console.log('Received params:', params.name); // Debug log
@@ -40,6 +41,7 @@ export default async function MinistryPage({ params }: { params: { name: string 
                         </div>
                     </div>
                 </div>
+                <DeleteMinistryButton ministryName={params.name} />
             </section>
         );
     } catch (error) {
