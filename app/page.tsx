@@ -51,8 +51,12 @@ export default function Home() {
                 throw new Error('Failed to fetch user churches');
             }
             const data = await response.json();
-            const userChurch = data[0].church_id;
-            setUsers(userChurch);
+            if (data.length === 0) {
+              setUsers(null);
+            } else {
+              const userChurch = data[0].church_id;
+              setUsers(userChurch);
+            }
         } catch (error) {
             console.error('Error fetching user church:', error);
         }

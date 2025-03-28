@@ -20,23 +20,33 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { church_id, member_id } = await req.json();
+    const { memID, minID } = await req.json();
 
-    if (!church_id) {
-      return NextResponse.json({ error: "Missing church_id" }, { status: 400 });
-    }
-    if (!member_id) {
+    if (!memID) {
       return NextResponse.json({ error: "Missing member_id" }, { status: 400 });
+    }
+    if (!minID) {
+      return NextResponse.json({ error: "Missing ministry_id" }, { status: 400 });
     }  
 
     const client = await pool.getConnection();
 
-    const query = `UPDATE churchmember SET church_id = ? WHERE member_id = ?;`;
-    const values = [church_id, member_id];
-    const [result] = await client.execute(query, values);
+    // get the church asssociated with the ministryID we have
+    const churchIDQuery = `SELECT church_id FROM ministry WHERE ministry_id = ?;`;
+    const values1 = [minID];
+    const [result1] = await client.execute(churchIDQuery, values1);
+    const church_id = result1[0].church_id;
+
+    const memberUpdate = `UPDATE churchmember SET church_id = ? WHERE member_id = ?;`;
+    const values2 = [church_id, memID];
+    const [result2] = await client.execute(memberUpdate, values2);
+
+    const usersUpdate = `Update users Set minID = ? WHERE memID = ?;`;
+    const values3 = [minID, memID];
+    const [result3] = await client.execute(usersUpdate, values3);
     client.release();
 
-    return NextResponse.json({ success: true, affectedRows: result.affectedRows });
+    return NextResponse.json({ success: true, affectedRows: result3.affectedRows });
   } catch (error) {
     console.error("Error updating admin ministry:", error);
     return NextResponse.json({ error: "Failed to update ministry" }, { status: 500 });

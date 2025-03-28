@@ -63,5 +63,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/super-homepage', '/admin-assign', '/ministry/:path*', '/user-homepage'],
+  matcher: ['/super-homepage', '/admin-assign', '/ministry/:path*'],
 }

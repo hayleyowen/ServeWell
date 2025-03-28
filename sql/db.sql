@@ -84,9 +84,6 @@ CREATE TABLE IF NOT EXISTS requestingAdmins (
     FOREIGN KEY (churchID) REFERENCES church(church_id)
 );
 
-CREATE OR REPLACE VIEW showRequestingAdmins AS 
-SELECT cm.fname, cm.email FROM requestingAdmins ra INNER JOIN users u ON ra.auth0ID = u.auth0ID INNER JOIN churchmember cm ON u.memID = cm.member_id WHERE cm.church_id = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = CURRENT_USER_AUTH0ID));
-
 CREATE TABLE uploaded_files (
     id INT PRIMARY KEY AUTO_INCREMENT,
     file_name TEXT NOT NULL,
