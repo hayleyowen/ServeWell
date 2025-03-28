@@ -393,7 +393,7 @@ export async function updateMinistry(ministryData: {
 
         // Set Ministry_ID to NULL in the Admin table for related records
         await connection.execute(
-            `UPDATE Admin SET ministry_id = NULL WHERE Ministry_ID = (SELECT ministry_id FROM ministry WHERE url_path = ?)`,
+            `UPDATE users set minID = NULL where minID = (SELECT ministry_id FROM ministry WHERE url_path = ?)`,
             [name]
         );
 
