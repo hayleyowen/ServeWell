@@ -1,7 +1,7 @@
 'use client';
 
 import '@/app/globals.css';
-import { getMinistries, getUserChurch } from '@/app/lib/data';
+import { getMinistries } from '@/app/lib/data';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
 
@@ -85,7 +85,7 @@ export default function UserHomepage() {
       <main className="min-h-screen bg-gradient-to-t from-blue-300 to-blue-600 p-8 flex items-center justify-center">
         <div className="max-w-6xl w-full">
           <h1 className="text-3xl font-bold text-white text-center mb-12">You are not assigned to any church</h1>
-          <ChurchAssignButton />
+          <h3 className="text-3xl font-bold text-white text-center mb-12">Go back to the homepage and request to be assigned</h3>
         </div>
       </main>
     );

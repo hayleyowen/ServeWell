@@ -5,7 +5,6 @@ import { getUserChurch } from "@/app/lib/data";
 export async function POST(req) {
     try {
         const { auth0_id } = await req.json();
-        console.log('Auth0 IDssss:', auth0_id);
         const result = await getUserChurch(auth0_id);
         return NextResponse.json(result);
     } catch (error) {

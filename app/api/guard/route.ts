@@ -6,7 +6,7 @@ export async function POST(req: Request) {
         const {authid} = await req.json();
         console.log('Auth ID:', authid);
         const client = await pool.getConnection();
-        const query = `select Role_ID from Admin where Auth0_ID = ?;`;
+        const query = `select rID from users where auth0ID = ?;`;
         const [result] = await client.execute(query, [authid]);
         client.release();
 

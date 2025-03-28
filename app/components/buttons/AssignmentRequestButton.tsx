@@ -81,7 +81,7 @@ export default function AssignmentRequestButton() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <h3 className="text-xl font-bold mb-2">
-        {loading ? "Updating..." : selectedChurch ? selectedChurch.churchname : "Request Assignment"}
+        {loading ? "Updating..." : selectedChurch ? "Request Sent!" : "Request Assignment"}
         </h3>
       </button>
 
