@@ -324,6 +324,25 @@ export async function updateMinistry(ministryData: {
     }
   }
 
+  // Function to delete a ministry by url_path variable
+  export async function deleteMinistryByURLPath(name: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute(
+            `DELETE FROM ministry WHERE url_path = ?`,
+            [name]
+        );
+        connection.release();
+        return result.affectedRows > 0; // Returns true if a row was deleted
+    } catch (error) {
+        console.error("Failed to delete ministry:", error);
+        throw new Error("Failed to delete ministry.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
 ////////////////////////////////////////
 ///// SuperAdmin-related functions /////
 ////////////////////////////////////////
