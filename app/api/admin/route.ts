@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const values2 = [church_id, memID];
     const [result2] = await client.execute(memberUpdate, values2);
 
-    const usersUpdate = `Update users Set minID = ? WHERE memID = ?;`;
+    const usersUpdate = `Update users Set minID = ?, rID=1 WHERE memID = ?;`;
     const values3 = [minID, memID];
     const [result3] = await client.execute(usersUpdate, values3);
     client.release();
