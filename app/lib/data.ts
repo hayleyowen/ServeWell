@@ -3,8 +3,42 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
 ////////////////////////////////////////
-/////// Admin-related functions ///////
+/////// User-related functions ///////
 ////////////////////////////////////////
+
+export async function getUserChurch(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
+            [auth0ID]
+        );
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch user church:", error);
+        throw new Error("Failed to fetch user church.");
+    } finally {
+        if (connection) connection.release();
+    }
+    
+}
+
+export async function getRequestingAdmins(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(``);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch requesting admins:", error);
+        throw new Error("Failed to fetch requesting admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}    
 
 export async function getUnAssignedAdmins() {
     let connection;
@@ -23,26 +57,50 @@ export async function getUnAssignedAdmins() {
     }
 }
 
-export async function insertAdmins(nickname: string, Auth0_ID: string) {
+export async function showRequestingAdmins(auth0ID: string) {
+    let connection;
     try {
-      const client = await pool.getConnection();
+        connection = await pool.getConnection();
+        const query = `SELECT cm.fname, cm.email, cm.member_id, u.minID, cm.church_id FROM churchmember cm INNER JOIN users u ON cm.member_id = u.memID INNER JOIN requestingAdmins ra ON u.auth0ID = ra.auth0ID WHERE ra.churchID = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?));`
+        const values = [auth0ID];
+        const [data] = await connection.execute(query, values);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch requesting admins:", error);
+        throw new Error("Failed to fetch requesting admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
 
-      const query = 'Select * from Admin where Auth0_ID = ?';
-      const [result] = await client.execute(query, [Auth0_ID]);
+// when a user logs in for the first time, give them "BaseUser" privileges
+export async function insertUser(nickname: string, Auth0_ID: string, email: string) {
+    try {
+        const client = await pool.getConnection();
+
+        const existingUserCheck = 'Select * from users where auth0ID = ?';
+        const [result] = await client.execute(existingUserCheck, [Auth0_ID]);
+        console.log("Result:", result.length);
         if (result.length > 0) {
             client.release();
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
+        } else {
+            const insertMember = `insert into churchmember (fname, email) values (?, ?);`;
+            const values = [nickname, email];
+            const [newMember] = await client.execute(insertMember, values);
+            const memID = newMember.insertId;
+
+            const insertUser = `insert into users (auth0ID, memID) values (?, ?);`;
+            const values1 = [Auth0_ID, memID];
+            const [newUser] = await client.execute(insertUser, values1);
+            client.release();
+
+            return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
         }
-  
-      const query1 = `insert into Admin (AdminName, Ministry_ID, Auth0_ID, Role_ID) values (?, null, ?, 1);`;
-      const values = [nickname, Auth0_ID];
-      const [result1] = await client.execute(query1, values);
-      client.release();
-  
-      return NextResponse.json({ success: true, affectedRows: result1.affectedRows });
     } catch(error) {
-      console.error("Error inserting admin:", error);
-      return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
+        console.error("Error inserting admin:", error);
+        return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
     }
   }
 
@@ -52,7 +110,7 @@ export async function verifyAdmin(Auth0_ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute(
-            `SELECT Role_ID FROM Admin WHERE Auth0_ID = ?`,
+            `SELECT rID FROM users WHERE auth0ID = ?`,
             [Auth0_ID]
         );
         console.log("Data:", data);
@@ -373,6 +431,7 @@ export async function createSuperAdmin(data: {
     username: string;
     password: string;
     church_id: number;
+    auth0ID: string;
 }) {
     let connection;
     try {
@@ -385,8 +444,8 @@ export async function createSuperAdmin(data: {
 
         // Insert into churchmember table
         const [memberResult] = await connection.execute(
-            `INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, church_join_date, activity_status) 
-             VALUES (?, ?, ?, ?, ?, ?, CURRENT_DATE, 'Active')`,
+            `INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
+             VALUES (?, ?, ?, ?, ?, ?, 'Active')`,
             [
                 data.firstName,
                 data.middleName || null,
@@ -399,12 +458,10 @@ export async function createSuperAdmin(data: {
 
         const member_id = memberResult.insertId;
 
-        // Insert into superadmin table
-        const [superAdminResult] = await connection.execute(
-            `INSERT INTO superadmin (member_id, church_id) 
-             VALUES (?, ?)`,
-            [member_id, data.church_id]
+        const [adminResult] = await connection.execute(
+            `INSERT IGNORE INTO users (memID, auth0ID, rID) VALUES (?, ?, 2);`, [member_id, data.auth0ID]
         );
+
 
         await connection.commit(); // Commit the transaction
         connection.release();
@@ -412,28 +469,12 @@ export async function createSuperAdmin(data: {
         return {
             success: true,
             member_id: member_id,
-            superadmin_id: superAdminResult.insertId
+            admin_id: adminResult.insertId
         };
     } catch (error) {
         if (connection) await connection.rollback(); // Rollback in case of error
         console.error("Failed to create super admin:", error);
         throw new Error("Failed to create super admin.");
-    } finally {
-        if (connection) connection.release();
-    }
-}
-
-// Function to fetch super admins
-export async function getSuperAdmins() {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute("SELECT * FROM superadmin");
-        connection.release();
-        return data;
-    } catch (err) {
-        console.error("Database Error:", err);
-        throw new Error("Failed to fetch super admin data");
     } finally {
         if (connection) connection.release();
     }
@@ -455,3 +496,4 @@ export async function getMedia() {
         throw new Error('Failed to fetch media.');
     }
 }
+
