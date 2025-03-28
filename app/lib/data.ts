@@ -193,6 +193,55 @@ export async function createChurch(churchData: {
     }
 }
 
+// Function to update a church
+export async function updateChurch(churchData: {
+    churchName: string;
+    denomination: string;
+    email: string;
+    phone: string;
+    address: string;
+    postalcode: string;
+    city: string;
+  }) {
+    let connection;
+    try {
+      connection = await pool.getConnection();
+  
+      // Check if the church exists
+      const [existingChurch] = await connection.execute(
+        `SELECT church_id FROM church WHERE churchname = ?`,
+        [churchData.churchName]
+      );
+  
+      if (existingChurch.length > 0) {
+        // Update the existing church
+        await connection.execute(
+          `UPDATE church 
+           SET denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
+           WHERE churchname = ?`,
+          [
+            churchData.denomination,
+            churchData.email,
+            churchData.phone,
+            churchData.address,
+            churchData.postalcode,
+            churchData.city,
+            churchData.churchName,
+          ]
+        );
+        return { success: true, message: 'Church updated successfully' };
+      } else {
+        // Church does not exist
+        return { success: false, message: 'Church not found' };
+      }
+    } catch (error) {
+      console.error('Failed to update church:', error);
+      throw new Error('Failed to update church.');
+    } finally {
+      if (connection) connection.release();
+    }
+  }
+
 ////////////////////////////////////////
 ////// Ministry-related functions //////
 ////////////////////////////////////////
@@ -297,6 +346,41 @@ export async function createMinistry(ministryData: {
         if (connection) connection.release();
     }
 }
+
+// Function to update a ministry
+export async function updateMinistry(ministryData: {
+    ministryName: string;
+    budget: number;
+    description: string;
+  }) {
+    let connection;
+    try {
+      connection = await pool.getConnection();
+  
+      // Check if the ministry exists
+      const [existingMinistry] = await connection.execute(
+        `SELECT ministry_id FROM ministry WHERE ministryname = ?`,
+        [ministryData.ministryName]
+      );
+  
+      if (existingMinistry.length > 0) {
+        // Update the existing ministry
+        await connection.execute(
+          `UPDATE ministry SET budget = ?, description = ? WHERE ministryname = ?`,
+          [ministryData.budget, ministryData.description, ministryData.ministryName]
+        );
+        return { success: true, message: 'Ministry updated successfully' };
+      } else {
+        // Ministry does not exist
+        return { success: false, message: 'Ministry not found' };
+      }
+    } catch (error) {
+      console.error('Failed to update ministry:', error);
+      throw new Error('Failed to update ministry.');
+    } finally {
+      if (connection) connection.release();
+    }
+  }
 
 ////////////////////////////////////////
 ///// SuperAdmin-related functions /////
