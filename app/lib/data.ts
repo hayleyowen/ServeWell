@@ -86,12 +86,12 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
             client.release();
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
         } else {
-            const insertMember = `insert into churchmember (fname, email) values (?, ?);`;
+            const insertMember = `insert ignore into churchmember (fname, email) values (?, ?);`;
             const values = [nickname, email];
             const [newMember] = await client.execute(insertMember, values);
             const memID = newMember.insertId;
 
-            const insertUser = `insert into users (auth0ID, memID) values (?, ?);`;
+            const insertUser = `insert ignore into users (auth0ID, memID) values (?, ?);`;
             const values1 = [Auth0_ID, memID];
             const [newUser] = await client.execute(insertUser, values1);
             client.release();
