@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { getMinistries } from '@/app/lib/data';
+import { getMinistries, getMinistriesByID } from '@/app/lib/data';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface Ministry {
     ministry_id: number;
@@ -16,22 +17,38 @@ interface Ministry {
 }
 
 const TopNav = () => {
+    const {user} = useUser();
+    console.log('Users AuthID:', user?.sub);
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const pathname = usePathname();
 
-    useEffect(() => {
-        const fetchMinistries = async () => {
-            try {
-                const ministries = await getMinistries();
-                setCustomMinistries(ministries);
-            } catch (error) {
-                console.error('Failed to fetch ministries:', error);
-            }
-        };
-        fetchMinistries();
-    }, [pathname]);
-
+    if (user) {
+        useEffect(() => {
+            const fetchMinistries = async () => {
+                try {
+                    const auth0ID = user?.sub;
+                    const ministries = await getMinistriesByID(auth0ID);
+                    setCustomMinistries(ministries);
+                } catch (error) {
+                    console.error('Failed to fetch ministries:', error);
+                }
+            };
+            fetchMinistries();
+        }, [pathname]);
+    } else {
+        useEffect(() => {
+            const fetchMinistries = async () => {
+                try {
+                    const ministries = await getMinistries();
+                    setCustomMinistries(ministries);
+                } catch (error) {
+                    console.error('Failed to fetch ministries:', error);
+                }
+            };
+            fetchMinistries();
+        }, [pathname]);
+    }
     // Toggle dropdown visibility
     const handleToggleDropdown = (ministryId: number) => {
         setOpenDropdown(openDropdown === ministryId ? null : ministryId);

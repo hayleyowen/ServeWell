@@ -82,7 +82,7 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
         const existingUserCheck = 'Select * from users where auth0ID = ?';
         const [result] = await client.execute(existingUserCheck, [Auth0_ID]);
         console.log("Result:", result.length);
-        if (result.length > 0) {
+        if (result.length >= 0) {
             client.release();
             return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
         } else {
@@ -252,6 +252,24 @@ export async function getMinistries() {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute("SELECT ministry_id, ministryname, url_path FROM ministry");
+        connection.release();
+
+        console.log("Fetched ministries:", data);
+        return data;
+    } catch (err) {
+        console.error("Database Error:", err);
+        throw new Error("Failed to fetch ministry data");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+// For the TopNav when a user is logged in
+export async function getMinistriesByID(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute("SELECT ministry_id, ministryname, url_path FROM ministry Where church_id = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?))", [auth0ID]);
         connection.release();
 
         console.log("Fetched ministries:", data);
