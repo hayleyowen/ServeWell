@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { getMinistries, getMinistriesByID } from '@/app/lib/data';
+import Spinner from '@/app/components/spinner/spinner';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
 import { useUser } from '@auth0/nextjs-auth0/client';
@@ -17,15 +18,15 @@ interface Ministry {
 }
 
 const TopNav = () => {
-    const {user} = useUser();
+    const {user, isLoading } = useUser();
     console.log('Users AuthID:', user?.sub);
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const pathname = usePathname();
 
-    if (user) {
-        useEffect(() => {
-            const fetchMinistries = async () => {
+    useEffect(() => {
+        const fetchMinistries = async () => {
+            if (user) {
                 try {
                     const auth0ID = user?.sub;
                     const ministries = await getMinistriesByID(auth0ID);
@@ -33,22 +34,14 @@ const TopNav = () => {
                 } catch (error) {
                     console.error('Failed to fetch ministries:', error);
                 }
-            };
-            fetchMinistries();
-        }, [pathname]);
-    } else {
-        useEffect(() => {
-            const fetchMinistries = async () => {
-                try {
-                    const ministries = await getMinistries();
-                    setCustomMinistries(ministries);
-                } catch (error) {
-                    console.error('Failed to fetch ministries:', error);
-                }
-            };
-            fetchMinistries();
-        }, [pathname]);
-    }
+            } else {
+                setCustomMinistries([]);
+            }
+        };
+
+        fetchMinistries();
+    }, [user, pathname]);
+
     // Toggle dropdown visibility
     const handleToggleDropdown = (ministryId: number) => {
         setOpenDropdown(openDropdown === ministryId ? null : ministryId);
@@ -64,6 +57,10 @@ const TopNav = () => {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
+
+    if (isLoading) {
+        return <Spinner />;
+    }
 
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4 shadow-md z-50">
