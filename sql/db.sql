@@ -111,7 +111,8 @@ CREATE TABLE calendar_events (
     title VARCHAR(255) NOT NULL,
     start DATETIME NOT NULL,
     ministry VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description VARCHAR(255) NULL
 );
 
 
