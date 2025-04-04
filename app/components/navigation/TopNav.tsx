@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { getMinistries } from '@/app/lib/data';
+import { getMinistries, getMinistriesByID } from '@/app/lib/data';
+import Spinner from '@/app/components/spinner/spinner';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface Ministry {
     ministry_id: number;
@@ -16,21 +18,29 @@ interface Ministry {
 }
 
 const TopNav = () => {
+    const {user, isLoading } = useUser();
+    console.log('Users AuthID:', user?.sub);
     const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const pathname = usePathname();
 
     useEffect(() => {
         const fetchMinistries = async () => {
-            try {
-                const ministries = await getMinistries();
-                setCustomMinistries(ministries);
-            } catch (error) {
-                console.error('Failed to fetch ministries:', error);
+            if (user) {
+                try {
+                    const auth0ID = user?.sub;
+                    const ministries = await getMinistriesByID(auth0ID);
+                    setCustomMinistries(ministries);
+                } catch (error) {
+                    console.error('Failed to fetch ministries:', error);
+                }
+            } else {
+                setCustomMinistries([]);
             }
         };
+
         fetchMinistries();
-    }, [pathname]);
+    }, [user, pathname]);
 
     // Toggle dropdown visibility
     const handleToggleDropdown = (ministryId: number) => {
@@ -47,6 +57,10 @@ const TopNav = () => {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
+
+    if (isLoading) {
+        return <Spinner />;
+    }
 
     return (
         <header className="fixed top-0 h-15 w-full bg-white p-4 shadow-md z-50">
