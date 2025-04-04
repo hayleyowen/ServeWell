@@ -2,9 +2,13 @@
 import '@/app/globals.css';
 
 import { useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function ChurchCreationForm() {
+    const { user } = useUser();
     const [step, setStep] = useState(1);
+    const [churchId, setChurchId] = useState<string | null>(null);
+    const [registeredChurch, setRegisteredChurch] = useState<{ id: string | null; name: string | null }>({ id: null, name: null });
     const [formData, setFormData] = useState({
         churchName: '',
         denomination: '',
@@ -79,8 +83,8 @@ export default function ChurchCreationForm() {
                 })
             });
 
-            if (response.ok) {
-                alert('SuperAdmin registered successfully!');
+            if (superadmin.ok) {
+                alert('Church registered successfully!');
                 window.location.href = '/';
             } else {
                 const error = await response.json();
