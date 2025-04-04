@@ -166,7 +166,7 @@ export async function createChurch(churchData: {
     try {
         connection = await pool.getConnection();
         const [result] = await connection.execute(
-            `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
+            `INSERT IGNORE INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 churchData.churchName,
@@ -465,31 +465,24 @@ export async function createSuperAdmin(data: {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
 
-        const [churchId] = await connection.execute(
+        const [churchIdResult] = await connection.execute(
             "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
         );
+
+        const churchId = churchIdResult[0]?.church_id; // Increment the church ID for the new church
 
         // Insert into churchmember table
         const [memberResult] = await connection.execute(
             `
-            IF NOT EXISTS (SELECT 1 FROM churchmember WHERE email = ?)
-            BEGIN
-                UPDATE churchmember SET church_id = ? WHERE email = ?;
-                SELECT member_id FROM churchmember WHERE email = ?;
-            END
-            ELSE
-            BEGIN
-                INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
-                VALUES (?, null, null, ?, null, ?, 'Active')
-            END
+            INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status)
+            VALUES (?, null, null, ?, null, ?, 'Active')
+            ON DUPLICATE KEY UPDATE 
+                church_id = VALUES(church_id);
             `,
                 [
-                    data.email,
-                    data.church_id,
-                    data.email,
                     data.firstName,
                     data.email,
-                    data.church_id
+                    churchId
                 ]
             
         );
@@ -498,17 +491,13 @@ export async function createSuperAdmin(data: {
 
         const [adminResult] = await connection.execute(
             `
-            IF EXISTS (SELECT 1 FROM users WHERE auth0ID = ?)
-            BEGIN
-                UPDATE users SET rID=2, minID=null WHERE auth0ID = ?;
-                Select userID FROM users WHERE auth0ID = ?;
-            END
-            ELSE
-            BEGIN
-                INSERT INTO users (auth0ID, memID, rID) VALUES (?, ?, 2);
-                SELECT userID FROM users WHERE auth0ID = ?;
-            END
-            `, [data.auth0ID, data.auth0ID, data.auth0ID, member_id, data.auth0ID]
+            INSERT INTO users (auth0ID, memID, rID, minID)
+            VALUES (?, ?, 2, NULL)
+            ON DUPLICATE KEY UPDATE 
+                rID = VALUES(rID),
+                minID = VALUES(minID);
+            `,
+            [data.auth0ID, member_id]
         );
 
 

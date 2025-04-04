@@ -63,6 +63,7 @@ export default function ChurchCreationForm() {
 
             if (response.ok) {
                 const result = await response.json();
+                console.log('ChurchID = ', result['churchId']); // Debug log
                 setChurchId(result['churchId']);
                 setRegisteredChurch({
                     id: result['churchId'],
