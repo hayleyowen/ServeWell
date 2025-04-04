@@ -65,7 +65,7 @@ export default function ChurchCreationForm() {
         }
     };
 
-    const handleChurchSubmit = async (e: React.FormEvent) => {
+    const handleChurchAndAdminSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const formattedCity = `${formData.city}, ${formData.state}`;
@@ -93,46 +93,21 @@ export default function ChurchCreationForm() {
                     id: result['churchId'],
                     name: formData.churchName
                 });
-                setStep(3);
             } else {
                 alert('Failed to register the church.');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred.');
-        }
-    };
 
-    const handleSuperAdminSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!churchId) {
-            console.error('No church ID available'); // Debug log
-            alert('Failed to register SuperAdmin. Church ID is missing!');
-            return;
-        }
-
-        const superAdminData = {
-            firstName: formData.firstName,
-            middleName: formData.middleName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            username: formData.username,
-            password: formData.password,
-            church_id: churchId,  // Add the stored church_id
-            auth0ID: user?.sub,
-        };
-
-        console.log('Sending SuperAdmin data:', superAdminData); // Debug log
-
-        try {
-            const response = await fetch('/api/superadmin', {
+            const superadmin = await fetch('/api/superadmin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(superAdminData),
+                body: JSON.stringify({
+                    firstName: user?.nickname,
+                    email: user?.email,
+                    church_id: churchId,
+                    auth0ID: user?.sub,
+                })
             });
-            
+
             if (response.ok) {
                 alert('SuperAdmin registered successfully!');
                 window.location.href = '/';
@@ -147,6 +122,50 @@ export default function ChurchCreationForm() {
         }
     };
 
+    // const handleSuperAdminSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+
+    //     if (!churchId) {
+    //         console.error('No church ID available'); // Debug log
+    //         alert('Failed to register SuperAdmin. Church ID is missing!');
+    //         return;
+    //     }
+
+    //     const superAdminData = {
+    //         firstName: formData.firstName,
+    //         middleName: formData.middleName,
+    //         lastName: formData.lastName,
+    //         email: formData.email,
+    //         phoneNumber: formData.phoneNumber,
+    //         username: formData.username,
+    //         password: formData.password,
+    //         church_id: churchId,  // Add the stored church_id
+    //         auth0ID: user?.sub,
+    //     };
+
+    //     console.log('Sending SuperAdmin data:', superAdminData); // Debug log
+
+    //     try {
+    //         const response = await fetch('/api/superadmin', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify(superAdminData),
+    //         });
+            
+    //         if (response.ok) {
+    //             alert('SuperAdmin registered successfully!');
+    //             window.location.href = '/';
+    //         } else {
+    //             const error = await response.json();
+    //             console.error('Registration failed:', error);
+    //             alert('Failed to register SuperAdmin.');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         alert('An error occurred.');
+    //     }
+    // };
+
     // Calculate progress (percentage based on current step)
     const progress = (step - 1) * 50; // 3 steps, so each step is 50%
 
@@ -157,7 +176,7 @@ export default function ChurchCreationForm() {
             </div>
 
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <form onSubmit={handleChurchSubmit}>
+                <form onSubmit={handleChurchAndAdminSubmit}>
                     {step === 1 && (
                         <div>
                             <h2 className="text-2xl font-bold mb-4">Church Details</h2>
@@ -313,96 +332,6 @@ export default function ChurchCreationForm() {
                                 </button>
                             </div>
                             <a href="/" className="text-blue-500 hover:underline mt-4 block">Back to Home</a>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-4">SuperAdmin Registration</h2>
-                            
-                            <div className="mb-4">
-                                <h3 className="text-lg font-semibold">Registering SuperAdmin for:</h3>
-                                <p className="text-xl font-bold">{registeredChurch.name}</p>
-                            </div>
-
-                            <input
-                                type="text"
-                                name="firstName"
-                                placeholder="First Name"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="middleName"
-                                placeholder="Middle Name"
-                                value={formData.middleName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                            />
-                            <input
-                                type="text"
-                                name="lastName"
-                                placeholder="Last Name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="tel"
-                                name="phoneNumber"
-                                placeholder="Phone Number"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="username"
-                                placeholder="Username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                placeholder="Confirm Password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={handleSuperAdminSubmit}
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Register SuperAdmin
-                            </button>
                         </div>
                     )}
                 </form>

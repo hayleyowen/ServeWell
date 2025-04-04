@@ -456,12 +456,7 @@ export async function updateMinistry(ministryData: {
 // Function to create a super admin
 export async function createSuperAdmin(data: {
     firstName: string;
-    middleName?: string;
-    lastName: string;
     email: string;
-    phoneNumber: string;
-    username: string;
-    password: string;
     church_id: number;
     auth0ID: string;
 }) {
@@ -476,22 +471,44 @@ export async function createSuperAdmin(data: {
 
         // Insert into churchmember table
         const [memberResult] = await connection.execute(
-            `INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
-             VALUES (?, ?, ?, ?, ?, ?, 'Active')`,
-            [
-                data.firstName,
-                data.middleName || null,
-                data.lastName,
-                data.email,
-                data.phoneNumber,
-                data.church_id
-            ]
+            `
+            IF NOT EXISTS (SELECT 1 FROM churchmember WHERE email = ?)
+            BEGIN
+                UPDATE churchmember SET church_id = ? WHERE email = ?;
+                SELECT member_id FROM churchmember WHERE email = ?;
+            END
+            ELSE
+            BEGIN
+                INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
+                VALUES (?, null, null, ?, null, ?, 'Active')
+            END
+            `,
+                [
+                    data.email,
+                    data.church_id,
+                    data.email,
+                    data.firstName,
+                    data.email,
+                    data.church_id
+                ]
+            
         );
 
         const member_id = memberResult.insertId;
 
         const [adminResult] = await connection.execute(
-            `INSERT IGNORE INTO users (memID, auth0ID, rID) VALUES (?, ?, 2);`, [member_id, data.auth0ID]
+            `
+            IF EXISTS (SELECT 1 FROM users WHERE auth0ID = ?)
+            BEGIN
+                UPDATE users SET rID=2, minID=null WHERE auth0ID = ?;
+                Select userID FROM users WHERE auth0ID = ?;
+            END
+            ELSE
+            BEGIN
+                INSERT INTO users (auth0ID, memID, rID) VALUES (?, ?, 2);
+                SELECT userID FROM users WHERE auth0ID = ?;
+            END
+            `, [data.auth0ID, data.auth0ID, data.auth0ID, member_id, data.auth0ID]
         );
 
 
