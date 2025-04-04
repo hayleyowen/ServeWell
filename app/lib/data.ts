@@ -79,40 +79,36 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
     try {
         const client = await pool.getConnection();
 
-        const existingUserCheck = 'Select * from users where auth0ID = ?';
-        const [result] = await client.execute(existingUserCheck, [Auth0_ID]);
-        console.log("Result:", result.length);
-        if (result.length > 0) {
-            client.release();
-            return NextResponse.json({ success: false, error: "Admin already exists" }, { status: 400 });
-        } else {
-            const insertMember = `insert into churchmember (fname, email) values (?, ?);`;
-            const values = [nickname, email];
-            const [newMember] = await client.execute(insertMember, values);
-            const memID = newMember.insertId;
+        // create a new member record, if they are a new user
+        const insertMember = `insert ignore into churchmember (fname, email) values (?, ?);`;
+        const values = [nickname, email];
+        const [newMember] = await client.execute(insertMember, values);
+        const memID = newMember.insertId;
 
-            const insertUser = `insert into users (auth0ID, memID) values (?, ?);`;
-            const values1 = [Auth0_ID, memID];
-            const [newUser] = await client.execute(insertUser, values1);
-            client.release();
+        // create a new user record, if they are a new user
+        const insertUser = `insert ignore into users (auth0ID, memID) values (?, ?);`;
+        const values1 = [Auth0_ID, memID];
+        const [newUser] = await client.execute(insertUser, values1);
+        client.release();
 
-            return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
-        }
+        return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
     } catch(error) {
         console.error("Error inserting admin:", error);
         return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
     }
   }
 
-  // for middleware to check if user is an admin
+  // for middleware to fetch the logged in user's role
 export async function verifyAdmin(Auth0_ID: string) {
     let connection;
     try {
         connection = await pool.getConnection();
+
         const [data] = await connection.execute(
             `SELECT rID FROM users WHERE auth0ID = ?`,
             [Auth0_ID]
         );
+        
         console.log("Data:", data);
         connection.release();
         return data;
@@ -252,6 +248,42 @@ export async function getMinistries() {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute("SELECT ministry_id, ministryname, url_path FROM ministry");
+        connection.release();
+
+        console.log("Fetched ministries:", data);
+        return data;
+    } catch (err) {
+        console.error("Database Error:", err);
+        throw new Error("Failed to fetch ministry data");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+// For the TopNav when a user is logged in
+export async function getMinistriesByID(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute(
+            `
+            SELECT ministry_id, ministryname, url_path 
+            FROM ministry 
+            WHERE 
+                -- If rID is 1, match the user's minID
+                (
+                    (SELECT rID FROM users WHERE auth0ID = ?) = 1 
+                    AND ministry_id = (SELECT minID FROM users WHERE auth0ID = ?)
+                )
+                OR 
+                -- If rID is 2, match the church_id
+                (
+                    (SELECT rID FROM users WHERE auth0ID = ?) = 2 
+                    AND church_id = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?))
+                )
+            `,
+            [auth0ID, auth0ID, auth0ID, auth0ID]
+        );
         connection.release();
 
         console.log("Fetched ministries:", data);
