@@ -2,10 +2,8 @@
 import '@/app/globals.css';
 
 import { useState } from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function ChurchCreationForm() {
-    const {user} = useUser();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         churchName: '',
@@ -16,45 +14,18 @@ export default function ChurchCreationForm() {
         postalCode: '',
         city: '',
         state: '',
-        admin: '',
-        password: '',
-        confirmPassword: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        username: '',
-        phoneNumber: '',
     });
-
-    // Add state to store the registered church info
-    const [registeredChurch, setRegisteredChurch] = useState({
-        id: '',
-        name: ''
-    });
-
-    // Add state to store church_id
-    const [churchId, setChurchId] = useState<number | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-    
-        if (e.target.type === 'checkbox') {
-            const { checked } = e.target as HTMLInputElement; // Type assertion for checkbox
-            setFormData({
-                ...formData,
-                [name]: checked,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
-    
 
     const handleNext = () => {
-        if (step < 3) {
+        if (step < 2) {
             setStep(step + 1);
         }
     };
@@ -167,7 +138,7 @@ export default function ChurchCreationForm() {
     // };
 
     // Calculate progress (percentage based on current step)
-    const progress = (step - 1) * 50; // 3 steps, so each step is 50%
+    const progress = (step - 1) * 50;
 
     return (
         <div className="container mx-auto p-4">
