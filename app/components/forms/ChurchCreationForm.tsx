@@ -2,10 +2,8 @@
 import '@/app/globals.css';
 
 import { useState } from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function ChurchCreationForm() {
-    const {user} = useUser();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         churchName: '',
@@ -16,45 +14,18 @@ export default function ChurchCreationForm() {
         postalCode: '',
         city: '',
         state: '',
-        admin: '',
-        password: '',
-        confirmPassword: '',
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        username: '',
-        phoneNumber: '',
     });
-
-    // Add state to store the registered church info
-    const [registeredChurch, setRegisteredChurch] = useState({
-        id: '',
-        name: ''
-    });
-
-    // Add state to store church_id
-    const [churchId, setChurchId] = useState<number | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-    
-        if (e.target.type === 'checkbox') {
-            const { checked } = e.target as HTMLInputElement; // Type assertion for checkbox
-            setFormData({
-                ...formData,
-                [name]: checked,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: value,
-            });
-        }
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
-    
 
     const handleNext = () => {
-        if (step < 3) {
+        if (step < 2) {
             setStep(step + 1);
         }
     };
@@ -65,7 +36,7 @@ export default function ChurchCreationForm() {
         }
     };
 
-    const handleChurchSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const formattedCity = `${formData.city}, ${formData.state}`;
@@ -87,13 +58,8 @@ export default function ChurchCreationForm() {
             });
 
             if (response.ok) {
-                const result = await response.json();
-                setChurchId(result['churchId']);
-                setRegisteredChurch({
-                    id: result['churchId'],
-                    name: formData.churchName
-                });
-                setStep(3);
+                alert('Church registered successfully!');
+                window.location.href = '/';
             } else {
                 alert('Failed to register the church.');
             }
@@ -103,52 +69,8 @@ export default function ChurchCreationForm() {
         }
     };
 
-    const handleSuperAdminSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!churchId) {
-            console.error('No church ID available'); // Debug log
-            alert('Failed to register SuperAdmin. Church ID is missing!');
-            return;
-        }
-
-        const superAdminData = {
-            firstName: formData.firstName,
-            middleName: formData.middleName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            username: formData.username,
-            password: formData.password,
-            church_id: churchId,  // Add the stored church_id
-            auth0ID: user?.sub,
-        };
-
-        console.log('Sending SuperAdmin data:', superAdminData); // Debug log
-
-        try {
-            const response = await fetch('/api/superadmin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(superAdminData),
-            });
-            
-            if (response.ok) {
-                alert('SuperAdmin registered successfully!');
-                window.location.href = '/';
-            } else {
-                const error = await response.json();
-                console.error('Registration failed:', error);
-                alert('Failed to register SuperAdmin.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred.');
-        }
-    };
-
     // Calculate progress (percentage based on current step)
-    const progress = (step - 1) * 50; // 3 steps, so each step is 50%
+    const progress = (step - 1) * 50;
 
     return (
         <div className="container mx-auto p-4">
@@ -157,7 +79,7 @@ export default function ChurchCreationForm() {
             </div>
 
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <form onSubmit={handleChurchSubmit}>
+                <form onSubmit={handleSubmit}>
                     {step === 1 && (
                         <div>
                             <h2 className="text-2xl font-bold mb-4">Church Details</h2>
@@ -261,7 +183,6 @@ export default function ChurchCreationForm() {
                                 <option value="IN">Indiana</option>
                                 <option value="IA">Iowa</option>
                                 <option value="KS">Kansas</option>
-                                <option value="KY">Kentucky</option>
                                 <option value="LA">Louisiana</option>
                                 <option value="ME">Maine</option>
                                 <option value="MD">Maryland</option>
@@ -313,96 +234,6 @@ export default function ChurchCreationForm() {
                                 </button>
                             </div>
                             <a href="/" className="text-blue-500 hover:underline mt-4 block">Back to Home</a>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-4">SuperAdmin Registration</h2>
-                            
-                            <div className="mb-4">
-                                <h3 className="text-lg font-semibold">Registering SuperAdmin for:</h3>
-                                <p className="text-xl font-bold">{registeredChurch.name}</p>
-                            </div>
-
-                            <input
-                                type="text"
-                                name="firstName"
-                                placeholder="First Name"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="middleName"
-                                placeholder="Middle Name"
-                                value={formData.middleName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                            />
-                            <input
-                                type="text"
-                                name="lastName"
-                                placeholder="Last Name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="tel"
-                                name="phoneNumber"
-                                placeholder="Phone Number"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="username"
-                                placeholder="Username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                placeholder="Confirm Password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="mb-4 p-2 border rounded w-full"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={handleSuperAdminSubmit}
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Register SuperAdmin
-                            </button>
                         </div>
                     )}
                 </form>
