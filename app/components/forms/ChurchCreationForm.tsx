@@ -183,6 +183,7 @@ export default function ChurchCreationForm() {
                                 <option value="IN">Indiana</option>
                                 <option value="IA">Iowa</option>
                                 <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
                                 <option value="LA">Louisiana</option>
                                 <option value="ME">Maine</option>
                                 <option value="MD">Maryland</option>
