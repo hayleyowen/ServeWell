@@ -1,20 +1,20 @@
-import { getMinistryByName } from '@/app/lib/data';
+import { getMinistryByID } from '@/app/lib/data';
 import '@/app/globals.css';
 import DeleteMinistryButton from '@/app/components/buttons/DeleteMinistry';
 
-export default async function MinistryPage({ params }: { params: { name: string } }) {
-    console.log('Received params:', params.name); // Debug log
+export default async function MinistryPage({ params }: { params: { id: string } }) {
+    console.log('Received params:', params.id);
     
     try {
-        const ministry = await getMinistryByName(params.name);
+        const ministry = await getMinistryByID(parseInt(params.id));
         
         if (!ministry) {
-            console.log('Ministry not found for name:', params.name); // Debug log
+            console.log('Ministry not found for ID:', params.id);
             return (
                 <div className="min-h-screen bg-blue-500 flex items-center justify-center">
                     <div className="bg-white p-8 rounded-lg">
                         <h1 className="text-2xl font-bold text-red-500">
-                            Ministry not found (Name: {params.name})
+                            Ministry not found (ID: {params.id})
                         </h1>
                     </div>
                 </div>
@@ -22,26 +22,28 @@ export default async function MinistryPage({ params }: { params: { name: string 
         }
 
         return (
-            <section className="t-20 min-h-screen flex flex-col">
-                <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
-                    <div className="flex flex-col items-center justify-center pt-8">
-                        <h2 className="text-2xl font-bold text-white mb-8">{ministry.ministryname} Homepage</h2>
+            <section className="min-h-screen flex flex-col relative pt-16">
+                <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-600 to-blue-300">
+                    <div className="text-center py-8">
+                        <h1 className="text-4xl font-bold text-white mb-4">
+                            {ministry.ministryname}'s Homepage
+                        </h1>
                     </div>
-                    <div className="flex-1 flex flex-col items-center justify-center">
+                    <div className="flex-1 flex flex-col items-center justify-center px-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-                            <a href={`/ministry/${params.name}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${params.id}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Member Tracking</h3>
                             </a>
-                            <a href={`/ministry/${params.name}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${params.id}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Financial Tracking</h3>
                             </a>
-                            <a href={`/ministry/${params.name}/calendar`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${params.id}/calendar`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Calendar</h3>
                             </a>
                         </div>
                     </div>
                 </div>
-                <DeleteMinistryButton ministryName={params.name} />
+                <DeleteMinistryButton ministryId={params.id} />
             </section>
         );
     } catch (error) {

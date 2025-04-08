@@ -1,6 +1,12 @@
 'use client';
 
-export default function DeleteMinistryButton({ ministryName }: { ministryName: string }) {
+import { useState } from 'react';
+
+interface DeleteMinistryButtonProps {
+    ministryId: string;
+}
+
+export default function DeleteMinistryButton({ ministryId }: DeleteMinistryButtonProps) {
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this ministry?')) {
             try {
@@ -9,7 +15,7 @@ export default function DeleteMinistryButton({ ministryName }: { ministryName: s
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name: ministryName }),
+                    body: JSON.stringify({ id: ministryId }),
                 });
 
                 if (response.ok) {

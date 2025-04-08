@@ -1,6 +1,7 @@
 "use server";
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
+import { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2';
 
 ////////////////////////////////////////
 /////// User-related functions ///////
@@ -82,13 +83,13 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
         // create a new member record, if they are a new user
         const insertMember = `insert ignore into churchmember (fname, email) values (?, ?);`;
         const values = [nickname, email];
-        const [newMember] = await client.execute(insertMember, values);
+        const [newMember] = await client.execute<ResultSetHeader>(insertMember, values);
         const memID = newMember.insertId;
 
         // create a new user record, if they are a new user
         const insertUser = `insert ignore into users (auth0ID, memID) values (?, ?);`;
         const values1 = [Auth0_ID, memID];
-        const [newUser] = await client.execute(insertUser, values1);
+        const [newUser] = await client.execute<ResultSetHeader>(insertUser, values1);
         client.release();
 
         return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
@@ -96,9 +97,9 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
         console.error("Error inserting admin:", error);
         return NextResponse.json({ error: "Failed to insert admin" }, { status: 500 });
     }
-  }
+}
 
-  // for middleware to fetch the logged in user's role
+// for middleware to fetch the logged in user's role
 export async function verifyAdmin(Auth0_ID: string) {
     let connection;
     try {
@@ -165,7 +166,7 @@ export async function createChurch(churchData: {
 
     try {
         connection = await pool.getConnection();
-        const [result] = await connection.execute(
+        const [result] = await connection.execute<ResultSetHeader>(
             `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -198,45 +199,45 @@ export async function updateChurch(churchData: {
     address: string;
     postalcode: string;
     city: string;
-  }) {
+}) {
     let connection;
     try {
-      connection = await pool.getConnection();
-  
-      // Check if the church exists
-      const [existingChurch] = await connection.execute(
-        `SELECT church_id FROM church WHERE churchname = ?`,
-        [churchData.churchName]
-      );
-  
-      if (existingChurch.length > 0) {
-        // Update the existing church
-        await connection.execute(
-          `UPDATE church 
-           SET denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
-           WHERE churchname = ?`,
-          [
-            churchData.denomination,
-            churchData.email,
-            churchData.phone,
-            churchData.address,
-            churchData.postalcode,
-            churchData.city,
-            churchData.churchName,
-          ]
+        connection = await pool.getConnection();
+    
+        // Check if the church exists
+        const [existingChurch] = await connection.execute<RowDataPacket[]>(
+            `SELECT church_id FROM church WHERE churchname = ?`,
+            [churchData.churchName]
         );
-        return { success: true, message: 'Church updated successfully' };
-      } else {
-        // Church does not exist
-        return { success: false, message: 'Church not found' };
-      }
+    
+        if (existingChurch.length > 0) {
+            // Update the existing church
+            await connection.execute(
+                `UPDATE church 
+                SET denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
+                WHERE churchname = ?`,
+                [
+                    churchData.denomination,
+                    churchData.email,
+                    churchData.phone,
+                    churchData.address,
+                    churchData.postalcode,
+                    churchData.city,
+                    churchData.churchName,
+                ]
+            );
+            return { success: true, message: 'Church updated successfully' };
+        } else {
+            // Church does not exist
+            return { success: false, message: 'Church not found' };
+        }
     } catch (error) {
-      console.error('Failed to update church:', error);
-      throw new Error('Failed to update church.');
+        console.error('Failed to update church:', error);
+        throw new Error('Failed to update church.');
     } finally {
-      if (connection) connection.release();
+        if (connection) connection.release();
     }
-  }
+}
 
 ////////////////////////////////////////
 ////// Ministry-related functions //////
@@ -301,7 +302,7 @@ export async function getMinistryByUrlPath(urlPath: string) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [ministry] = await connection.execute(
+        const [ministry] = await connection.execute<RowDataPacket[]>(
             "SELECT * FROM ministry WHERE url_path = ? LIMIT 1",
             [urlPath]
         );
@@ -321,7 +322,7 @@ export async function getMinistryByName(name: string) {
     try {
         console.log("Fetching ministry with name:", name);
         connection = await pool.getConnection();
-        const [ministry] = await connection.execute(
+        const [ministry] = await connection.execute<RowDataPacket[]>(
             "SELECT * FROM ministry WHERE LOWER(url_path) LIKE LOWER(?) LIMIT 1",
             [`%${name}%`]
         );
@@ -341,6 +342,24 @@ export async function getMinistryByName(name: string) {
     }
 }
 
+// Fetch ministry by ID
+export async function getMinistryByID(id: number) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [ministry] = await connection.execute<RowDataPacket[]>(
+            "SELECT * FROM ministry WHERE ministry_id = ? LIMIT 1",
+            [id]
+        );
+        connection.release();
+        return ministry[0] || null;
+    } catch (error) {
+        console.error("Failed to fetch ministry:", error);
+        throw new Error("Failed to fetch ministry.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
 
 // Function to create a ministry
 export async function createMinistry(ministryData: {
@@ -357,7 +376,7 @@ export async function createMinistry(ministryData: {
             .toLowerCase()
             .replace(/[^a-z0-9]/g, '');
 
-        const [result] = await connection.execute(
+        const [result] = await connection.execute<ResultSetHeader>(
             `INSERT INTO ministry (ministryname, church_id, description, url_path, budget) 
              VALUES (?, ?, ?, ?, ?)`,
             [
@@ -384,38 +403,38 @@ export async function updateMinistry(ministryData: {
     ministryName: string;
     budget: number;
     description: string;
-  }) {
+}) {
     let connection;
     try {
-      connection = await pool.getConnection();
-  
-      // Check if the ministry exists
-      const [existingMinistry] = await connection.execute(
-        `SELECT ministry_id FROM ministry WHERE ministryname = ?`,
-        [ministryData.ministryName]
-      );
-  
-      if (existingMinistry.length > 0) {
-        // Update the existing ministry
-        await connection.execute(
-          `UPDATE ministry SET budget = ?, description = ? WHERE ministryname = ?`,
-          [ministryData.budget, ministryData.description, ministryData.ministryName]
+        connection = await pool.getConnection();
+    
+        // Check if the ministry exists
+        const [existingMinistry] = await connection.execute<RowDataPacket[]>(
+            `SELECT ministry_id FROM ministry WHERE ministryname = ?`,
+            [ministryData.ministryName]
         );
-        return { success: true, message: 'Ministry updated successfully' };
-      } else {
-        // Ministry does not exist
-        return { success: false, message: 'Ministry not found' };
-      }
+    
+        if (existingMinistry.length > 0) {
+            // Update the existing ministry
+            await connection.execute(
+                `UPDATE ministry SET budget = ?, description = ? WHERE ministryname = ?`,
+                [ministryData.budget, ministryData.description, ministryData.ministryName]
+            );
+            return { success: true, message: 'Ministry updated successfully' };
+        } else {
+            // Ministry does not exist
+            return { success: false, message: 'Ministry not found' };
+        }
     } catch (error) {
-      console.error('Failed to update ministry:', error);
-      throw new Error('Failed to update ministry.');
+        console.error('Failed to update ministry:', error);
+        throw new Error('Failed to update ministry.');
     } finally {
-      if (connection) connection.release();
+        if (connection) connection.release();
     }
-  }
+}
 
-  // Function to delete a ministry by url_path variable
-  export async function deleteMinistryByURLPath(name: string) {
+// Function to delete a ministry by url_path variable
+export async function deleteMinistryByURLPath(name: string) {
     let connection;
     try {
         connection = await pool.getConnection();
@@ -430,7 +449,7 @@ export async function updateMinistry(ministryData: {
         );
 
         // Delete the ministry
-        const [result] = await connection.execute(
+        const [result] = await connection.execute<ResultSetHeader>(
             `DELETE FROM ministry WHERE url_path = ?`,
             [name]
         );
@@ -442,6 +461,25 @@ export async function updateMinistry(ministryData: {
         return result.affectedRows > 0; // Returns true if a row was deleted
     } catch (error) {
         if (connection) await connection.rollback(); // Rollback in case of error
+        console.error("Failed to delete ministry:", error);
+        throw new Error("Failed to delete ministry.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+// Delete ministry by ID
+export async function deleteMinistryByID(id: number) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute<ResultSetHeader>(
+            "DELETE FROM ministry WHERE ministry_id = ?",
+            [id]
+        );
+        connection.release();
+        return result.affectedRows > 0;
+    } catch (error) {
         console.error("Failed to delete ministry:", error);
         throw new Error("Failed to delete ministry.");
     } finally {
@@ -470,12 +508,12 @@ export async function createSuperAdmin(data: {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
 
-        const [churchId] = await connection.execute(
+        const [churchId] = await connection.execute<RowDataPacket[]>(
             "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
         );
 
         // Insert into churchmember table
-        const [memberResult] = await connection.execute(
+        const [memberResult] = await connection.execute<ResultSetHeader>(
             `INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
              VALUES (?, ?, ?, ?, ?, ?, 'Active')`,
             [
@@ -490,10 +528,9 @@ export async function createSuperAdmin(data: {
 
         const member_id = memberResult.insertId;
 
-        const [adminResult] = await connection.execute(
+        const [adminResult] = await connection.execute<ResultSetHeader>(
             `INSERT IGNORE INTO users (memID, auth0ID, rID) VALUES (?, ?, 2);`, [member_id, data.auth0ID]
         );
-
 
         await connection.commit(); // Commit the transaction
         connection.release();

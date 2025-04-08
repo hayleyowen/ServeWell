@@ -26,11 +26,11 @@ const TopNav = () => {
 
     useEffect(() => {
         const fetchMinistries = async () => {
-            if (user) {
+            if (user?.sub) {
                 try {
-                    const auth0ID = user?.sub;
+                    const auth0ID = user.sub;
                     const ministries = await getMinistriesByID(auth0ID);
-                    setCustomMinistries(ministries);
+                    setCustomMinistries(ministries as Ministry[]);
                 } catch (error) {
                     console.error('Failed to fetch ministries:', error);
                 }
@@ -91,17 +91,17 @@ const TopNav = () => {
                                 {openDropdown === ministry.ministry_id && (
                                     <ul className="absolute left-0 mt-2 w-40 bg-blue-700 shadow-lg rounded-lg">
                                         <li>
-                                            <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/finances`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            <Link href={`/ministry/${ministry.ministry_id}/finances`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
                                                 Finances
                                             </Link>
                                         </li>
                                         <li>
-                                            <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/members`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            <Link href={`/ministry/${ministry.ministry_id}/members`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
                                                 Members
                                             </Link>
                                         </li>
                                         <li>
-                                            <Link href={`/ministry/${ministry.ministryname.toLowerCase().replace(/[^a-z0-9]/g, '')}/calendar`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
+                                            <Link href={`/ministry/${ministry.ministry_id}/calendar`} className="block px-4 py-2 text-white rounded-lg hover:bg-blue-500">
                                                 Calendar
                                             </Link>
                                         </li>
