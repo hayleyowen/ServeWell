@@ -1,32 +1,76 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@auth0/nextjs-auth0/client'
 import styles from '../styles/MinistryCreationForm.module.css'
 
 interface MinistryFormData {
   MinistryName: string;
-  Church_ID: number;
+  Church_ID: number | null;
   Description: string;
 }
 
 export default function MinistryCreationForm() {
   const router = useRouter()
+  const { user } = useUser()
   const [formData, setFormData] = useState<MinistryFormData>({
     MinistryName: '',
     Description: '',
-    Church_ID: 1, // We might want to make this dynamic later
+    Church_ID: null,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Fetch user's church ID when component mounts
+  useEffect(() => {
+    const fetchUserChurch = async () => {
+      if (!user?.sub) return;
+
+      try {
+        const response = await fetch('/api/userChurch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ auth0_id: user.sub }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user church');
+        }
+
+        const data = await response.json();
+        if (data.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            Church_ID: data[0].church_id
+          }));
+        } else {
+          setError('You must be associated with a church to create a ministry');
+        }
+      } catch (error) {
+        console.error('Error fetching user church:', error);
+        setError('Failed to fetch church information');
+      }
+    };
+
+    fetchUserChurch();
+  }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.Church_ID) {
+      setError('You must be associated with a church to create a ministry');
+      return;
+    }
+
     setIsLoading(true)
     setError('')
     
     try {
-      console.log('Submitting form data:', formData) // Log the data being sent
+      console.log('Submitting form data:', formData)
 
       const response = await fetch('/api/ministries', {
         method: 'POST',
@@ -37,7 +81,7 @@ export default function MinistryCreationForm() {
       })
 
       const data = await response.json()
-      console.log('Response received:', data) // Log the response
+      console.log('Response received:', data)
       
       if (!response.ok) {
         console.log('Error response:', {
@@ -74,6 +118,16 @@ export default function MinistryCreationForm() {
       ...prev,
       [name]: type === 'number' ? (value === '' ? 0 : parseFloat(value)) : value
     }))
+  }
+
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <div className="text-center text-red-500">
+          Please log in to create a ministry
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -115,7 +169,7 @@ export default function MinistryCreationForm() {
             <button
               type="submit"
               className={styles.button}
-              disabled={isLoading}
+              disabled={isLoading || !formData.Church_ID}
             >
               {isLoading ? 'Creating...' : 'Create Ministry'}
             </button>

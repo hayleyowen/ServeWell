@@ -11,7 +11,7 @@ export async function getUserChurch(auth0ID: string) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [data] = await connection.execute(
+        const [data] = await connection.execute<RowDataPacket[]>(
             `SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
             [auth0ID]
         );
@@ -23,7 +23,6 @@ export async function getUserChurch(auth0ID: string) {
     } finally {
         if (connection) connection.release();
     }
-    
 }
 
 export async function getRequestingAdmins(auth0ID: string) {
