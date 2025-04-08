@@ -21,6 +21,7 @@ export default function MinistryCreationForm() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   // Fetch user's church ID when component mounts
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function MinistryCreationForm() {
 
     setIsLoading(true)
     setError('')
+    setSuccess('')
     
     try {
       console.log('Submitting form data:', formData)
@@ -92,8 +94,14 @@ export default function MinistryCreationForm() {
         throw new Error(data.details || data.error || 'Failed to create ministry')
       }
 
+      // Show success message
+      setSuccess('Ministry created successfully! Redirecting...')
+      
       // First refresh to update the TopNav
       router.refresh()
+      
+      // Wait a moment to show the success message
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
       // Then redirect to the new ministry's homepage using its ID
       router.push(`/ministry/${data.ministryId}`)
@@ -146,6 +154,12 @@ export default function MinistryCreationForm() {
             </div>
           )}
 
+          {success && (
+            <div className="text-green-500 mb-4 text-center font-semibold">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -155,6 +169,7 @@ export default function MinistryCreationForm() {
               onChange={handleChange}
               required
               className={styles.input}
+              disabled={isLoading}
             />
 
             <textarea
@@ -164,11 +179,12 @@ export default function MinistryCreationForm() {
               onChange={handleChange}
               className={styles.input}
               rows={4}
+              disabled={isLoading}
             />
 
             <button
               type="submit"
-              className={styles.button}
+              className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isLoading || !formData.Church_ID}
             >
               {isLoading ? 'Creating...' : 'Create Ministry'}
