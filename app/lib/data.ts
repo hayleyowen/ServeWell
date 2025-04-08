@@ -366,7 +366,6 @@ export async function createMinistry(ministryData: {
     MinistryName: string;
     Description: string;
     Church_ID: number;
-    Budget: number;
 }) {
     let connection;
     try {
@@ -377,14 +376,13 @@ export async function createMinistry(ministryData: {
             .replace(/[^a-z0-9]/g, '');
 
         const [result] = await connection.execute<ResultSetHeader>(
-            `INSERT INTO ministry (ministryname, church_id, description, url_path, budget) 
-             VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO ministry (ministryname, church_id, description, url_path) 
+             VALUES (?, ?, ?, ?)`,
             [
                 ministryData.MinistryName,
                 ministryData.Church_ID,
                 ministryData.Description,
-                urlFriendlyName,
-                ministryData.Budget
+                urlFriendlyName
             ]
         );
 

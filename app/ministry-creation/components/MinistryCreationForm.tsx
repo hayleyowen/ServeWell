@@ -7,7 +7,6 @@ import styles from '../styles/MinistryCreationForm.module.css'
 interface MinistryFormData {
   MinistryName: string;
   Church_ID: number;
-  Budget: number;
   Description: string;
 }
 
@@ -17,7 +16,6 @@ export default function MinistryCreationForm() {
     MinistryName: '',
     Description: '',
     Church_ID: 1, // We might want to make this dynamic later
-    Budget: 0  // Make sure this is initialized as a number
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -112,17 +110,6 @@ export default function MinistryCreationForm() {
               onChange={handleChange}
               className={styles.input}
               rows={4}
-            />
-
-            <input
-              type="number"
-              name="Budget"
-              placeholder="Budget"
-              value={formData.Budget}
-              onChange={handleChange}
-              className={styles.input}
-              step="0.01"
-              min="0"
             />
 
             <button
