@@ -72,7 +72,7 @@ export default function FinancesTrackingPage() {
             if (!activeChart) {
                 // Generate automatic chart name
                 const nextChartNumber = charts.length + 1;
-                const newChartName = `Member Chart ${nextChartNumber}`;
+                const newChartName = `Finance Chart ${nextChartNumber}`;
                 const newChart = {
                     id: Date.now(),
                     name: newChartName,
