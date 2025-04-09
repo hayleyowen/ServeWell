@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS churchmember (
     mname VARCHAR(50),
     lname VARCHAR(50),
     sex CHAR(1),
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     memberphone VARCHAR(15),
     activity_status VARCHAR(20),
     church_id INT,
