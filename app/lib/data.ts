@@ -491,12 +491,7 @@ export async function deleteMinistryByID(id: number) {
 // Function to create a super admin
 export async function createSuperAdmin(data: {
     firstName: string;
-    middleName?: string;
-    lastName: string;
     email: string;
-    phoneNumber: string;
-    username: string;
-    password: string;
     church_id: number;
     auth0ID: string;
 }) {
@@ -505,28 +500,39 @@ export async function createSuperAdmin(data: {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
 
-        const [churchId] = await connection.execute<RowDataPacket[]>(
+        const [churchIdResult] = await connection.execute(
             "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
         );
 
+        const churchId = churchIdResult[0]?.church_id; // Increment the church ID for the new church
+
         // Insert into churchmember table
-        const [memberResult] = await connection.execute<ResultSetHeader>(
-            `INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status) 
-             VALUES (?, ?, ?, ?, ?, ?, 'Active')`,
-            [
-                data.firstName,
-                data.middleName || null,
-                data.lastName,
-                data.email,
-                data.phoneNumber,
-                data.church_id
-            ]
+        const [memberResult] = await connection.execute(
+            `
+            INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status)
+            VALUES (?, null, null, ?, null, ?, 'Active')
+            ON DUPLICATE KEY UPDATE 
+                church_id = VALUES(church_id);
+            `,
+                [
+                    data.firstName,
+                    data.email,
+                    churchId
+                ]
+            
         );
 
         const member_id = memberResult.insertId;
 
-        const [adminResult] = await connection.execute<ResultSetHeader>(
-            `INSERT IGNORE INTO users (memID, auth0ID, rID) VALUES (?, ?, 2);`, [member_id, data.auth0ID]
+        const [adminResult] = await connection.execute(
+            `
+            INSERT INTO users (auth0ID, memID, rID, minID)
+            VALUES (?, ?, 2, NULL)
+            ON DUPLICATE KEY UPDATE 
+                rID = VALUES(rID),
+                minID = VALUES(minID);
+            `,
+            [data.auth0ID, member_id]
         );
 
         await connection.commit(); // Commit the transaction
