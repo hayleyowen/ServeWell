@@ -8,25 +8,28 @@ export default async function MinistryPage({ params }: { params: { id: string } 
 
     try {
         const ministry = await getMinistryByID(parseInt(ministryId));
+        console.log('Fetched ministry:', ministry);
 
         if (!ministry) {
             console.log('Ministry not found for ID:', ministryId);
             return (
-                <div className="text-center p-4">
-                    <h1 className="text-2xl font-bold text-red-500">Ministry not found</h1>
+                <div className="min-h-screen bg-blue-500 flex items-center justify-center">
+                    <div className="bg-white p-8 rounded-lg">
+                        <h1 className="text-2xl font-bold text-red-500">
+                            Ministry not found (ID: {ministryId})
+                        </h1>
+                    </div>
                 </div>
             );
         }
 
         return (
-            <section className="min-h-screen bg-gray-100">
-                <div className="container mx-auto px-4 py-8">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-gray-800">{ministry.ministryname}</h1>
-                        <p className="text-gray-600 mt-2">{ministry.description || 'No description available'}</p>
+            <section className="t-20 min-h-screen flex flex-col">
+                <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
+                    <div className="flex flex-col items-center justify-center pt-8">
+                        <h2 className="text-2xl font-bold text-white mb-8">{ministry.ministryname} Homepage</h2>
                     </div>
-
-                    <div className="flex-1 flex flex-col items-center justify-center px-4">
+                    <div className="flex-1 flex flex-col items-center justify-center">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
                             <a href={`/ministry/${ministryId}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Member Tracking</h3>
@@ -46,8 +49,15 @@ export default async function MinistryPage({ params }: { params: { id: string } 
     } catch (error) {
         console.error('Error fetching ministry:', error);
         return (
-            <div className="text-center p-4">
-                <h1 className="text-2xl font-bold text-red-500">Error loading ministry</h1>
+            <div className="min-h-screen bg-blue-500 flex items-center justify-center">
+                <div className="bg-white p-8 rounded-lg">
+                    <h1 className="text-2xl font-bold text-red-500">
+                        Error loading ministry
+                    </h1>
+                    <p className="mt-2 text-gray-600">
+                        Please try again later
+                    </p>
+                </div>
             </div>
         );
     }
