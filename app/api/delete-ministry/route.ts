@@ -1,18 +1,18 @@
-import { deleteMinistryByURLPath } from '@/app/lib/data';
+import { deleteMinistryByID } from '@/app/lib/data';
 
 export async function DELETE(req: Request) {
     try {
         const body = await req.json();
-        const { name } = body;
+        const { id } = body;
 
-        if (!name) {
-            return new Response(JSON.stringify({ error: 'Ministry name is required' }), {
+        if (!id) {
+            return new Response(JSON.stringify({ error: 'Ministry ID is required' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const success = await deleteMinistryByURLPath(name);
+        const success = await deleteMinistryByID(id);
         if (success) {
             return new Response(JSON.stringify({ message: 'Ministry deleted successfully' }), {
                 status: 200,
