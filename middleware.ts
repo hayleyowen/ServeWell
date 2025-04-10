@@ -3,6 +3,11 @@ import { getSession } from '@auth0/nextjs-auth0/edge'
 import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
 
 export async function middleware(req: NextRequest) {
+  // early escape to avoid infinite redirect loop
+  if (req.nextUrl.pathname.startsWith('/api/auth')) {
+    return NextResponse.next()
+  }
+
   // We need to assign the routes that each user can access based on their role
 
   // for superadmins, we don't need to do anything, they can access everything
