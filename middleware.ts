@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtDecode } from 'jwt-decode'
+import { getSession } from '@auth0/nextjs-auth0/edge'
 import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
 
 export async function middleware(req: NextRequest) {
@@ -22,13 +23,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/api/auth/login', req.url))
   }
 
-  // Decode the session cookie to get the Auth0 user ID (sub)
-  let auth_ID: string | undefined
   try {
 
     // retrieve the user's session data 
-    const session = await getSession(req, NextResponse.next())
+    const session = await getSession(req, res)
     console.log('Session:', session)
+
+    if (!session) {
+      console.log('No session found, redirecting to login')
+      return NextResponse.redirect(new URL('/api/auth/login', req.url))
+    }
 
     // extract their auth0ID
     let auth_ID = session?.user.sub
@@ -40,7 +44,7 @@ export async function middleware(req: NextRequest) {
 
     if (!existingUserFlag) {
       console.log('Redirecting to login,', auth_ID)
-      return NextResponse.json({error: 'Not logged in', session, auth_ID}, {status: 401})
+      return NextResponse.redirect(new URL('/', req.url))
     }
 
   // now we retrieve the user's role from the database
@@ -78,6 +82,10 @@ export async function middleware(req: NextRequest) {
     } else {
       return NextResponse.redirect(new URL('/', req.url))
     }
+  }
+  } catch (error) {
+    console.error('Error in middleware:', error)
+    return NextResponse.redirect(new URL('/', req.url))
   }
 }
 
