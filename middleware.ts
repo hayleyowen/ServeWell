@@ -25,18 +25,23 @@ export async function middleware(req: NextRequest) {
   // Decode the session cookie to get the Auth0 user ID (sub)
   let auth_ID: string | undefined
   try {
-    const decoded: any = jwtDecode(sessionCookie)
-    auth_ID = decoded.sub
-  } catch (e) {
-    console.error('Failed to decode session cookie:', e)
-    return NextResponse.redirect(new URL('/api/auth/login', req.url))
-  }
 
-  // make sure the user even has an account
-  const existingUserFlag = await newUser(auth_ID)
-  if (!existingUserFlag) {
-    return NextResponse.redirect(new URL('/api/auth/login', req.url))
-  }
+    // retrieve the user's session data 
+    const session = await getSession(req, NextResponse.next())
+    console.log('Session:', session)
+
+    // extract their auth0ID
+    let auth_ID = session?.user.sub
+
+    // use that to make sure that the user even has an account, and
+    // if they don't, we send them to the login page
+    const existingUserFlag = await newUser(auth_ID)
+    console.log('Does user exist?', existingUserFlag)
+
+    if (!existingUserFlag) {
+      console.log('Redirecting to login,', auth_ID)
+      return NextResponse.json({error: 'Not logged in', session, auth_ID}, {status: 401})
+    }
 
   // now we retrieve the user's role from the database
   const result = await userStuff(auth_ID)
@@ -79,10 +84,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/((?!api/auth|_next|static|favicon.ico).*)',
-    '/ministry/:path*',
-    '/church-creation',
-    '/',
-    '/api/:path*',
   ],
 }
 
