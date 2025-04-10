@@ -1,20 +1,22 @@
-import { getMinistryByName } from '@/app/lib/data';
+import { getMinistryByID } from '@/app/lib/data';
 import '@/app/globals.css';
 import DeleteMinistryButton from '@/app/components/buttons/DeleteMinistry';
 
-export default async function MinistryPage({ params }: { params: { name: string } }) {
-    console.log('Received params:', params.name); // Debug log
-    
+export default async function MinistryPage({ params }: { params: { id: string } }) {
+    const ministryId = params.id;
+    console.log('Received params:', ministryId);
+
     try {
-        const ministry = await getMinistryByName(params.name);
-        
+        const ministry = await getMinistryByID(parseInt(ministryId));
+        console.log('Fetched ministry:', ministry);
+
         if (!ministry) {
-            console.log('Ministry not found for name:', params.name); // Debug log
+            console.log('Ministry not found for ID:', ministryId);
             return (
                 <div className="min-h-screen bg-blue-500 flex items-center justify-center">
                     <div className="bg-white p-8 rounded-lg">
                         <h1 className="text-2xl font-bold text-red-500">
-                            Ministry not found (Name: {params.name})
+                            Ministry not found (ID: {ministryId})
                         </h1>
                     </div>
                 </div>
@@ -29,23 +31,23 @@ export default async function MinistryPage({ params }: { params: { name: string 
                     </div>
                     <div className="flex-1 flex flex-col items-center justify-center">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-                            <a href={`/ministry/${params.name}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${ministryId}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Member Tracking</h3>
                             </a>
-                            <a href={`/ministry/${params.name}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${ministryId}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Financial Tracking</h3>
                             </a>
-                            <a href={`/ministry/${params.name}/calendar`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                            <a href={`/ministry/${ministryId}/calendar`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                                 <h3 className="text-xl font-bold mb-2">Calendar</h3>
                             </a>
                         </div>
                     </div>
                 </div>
-                <DeleteMinistryButton ministryName={params.name} />
+                <DeleteMinistryButton ministryId={ministryId} />
             </section>
         );
     } catch (error) {
-        console.error('Error in MinistryPage:', error);
+        console.error('Error fetching ministry:', error);
         return (
             <div className="min-h-screen bg-blue-500 flex items-center justify-center">
                 <div className="bg-white p-8 rounded-lg">

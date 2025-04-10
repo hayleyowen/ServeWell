@@ -2,9 +2,13 @@
 import '@/app/globals.css';
 
 import { useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function ChurchCreationForm() {
+    const { user } = useUser();
     const [step, setStep] = useState(1);
+    const [churchId, setChurchId] = useState<string | null>(null);
+    const [registeredChurch, setRegisteredChurch] = useState<{ id: string | null; name: string | null }>({ id: null, name: null });
     const [formData, setFormData] = useState({
         churchName: '',
         denomination: '',
@@ -36,7 +40,7 @@ export default function ChurchCreationForm() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleChurchAndAdminSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const formattedCity = `${formData.city}, ${formData.state}`;
@@ -58,16 +62,85 @@ export default function ChurchCreationForm() {
             });
 
             if (response.ok) {
+                const result = await response.json();
+                console.log('ChurchID = ', result['churchId']); // Debug log
+                setChurchId(result['churchId']);
+                setRegisteredChurch({
+                    id: result['churchId'],
+                    name: formData.churchName
+                });
+            } else {
+                alert('Failed to register the church.');
+            }
+
+            const superadmin = await fetch('/api/superadmin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: user?.nickname,
+                    email: user?.email,
+                    church_id: churchId,
+                    auth0ID: user?.sub,
+                })
+            });
+
+            if (superadmin.ok) {
                 alert('Church registered successfully!');
                 window.location.href = '/';
             } else {
-                alert('Failed to register the church.');
+                const error = await response.json();
+                console.error('Registration failed:', error);
+                alert('Failed to register SuperAdmin.');
             }
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred.');
         }
     };
+
+    // const handleSuperAdminSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+
+    //     if (!churchId) {
+    //         console.error('No church ID available'); // Debug log
+    //         alert('Failed to register SuperAdmin. Church ID is missing!');
+    //         return;
+    //     }
+
+    //     const superAdminData = {
+    //         firstName: formData.firstName,
+    //         middleName: formData.middleName,
+    //         lastName: formData.lastName,
+    //         email: formData.email,
+    //         phoneNumber: formData.phoneNumber,
+    //         username: formData.username,
+    //         password: formData.password,
+    //         church_id: churchId,  // Add the stored church_id
+    //         auth0ID: user?.sub,
+    //     };
+
+    //     console.log('Sending SuperAdmin data:', superAdminData); // Debug log
+
+    //     try {
+    //         const response = await fetch('/api/superadmin', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify(superAdminData),
+    //         });
+            
+    //         if (response.ok) {
+    //             alert('SuperAdmin registered successfully!');
+    //             window.location.href = '/';
+    //         } else {
+    //             const error = await response.json();
+    //             console.error('Registration failed:', error);
+    //             alert('Failed to register SuperAdmin.');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         alert('An error occurred.');
+    //     }
+    // };
 
     // Calculate progress (percentage based on current step)
     const progress = (step - 1) * 50;
@@ -79,7 +152,7 @@ export default function ChurchCreationForm() {
             </div>
 
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleChurchAndAdminSubmit}>
                     {step === 1 && (
                         <div>
                             <h2 className="text-2xl font-bold mb-4">Church Details</h2>
