@@ -51,7 +51,6 @@ export default function UserHomepage() {
                 throw new Error('Failed to fetch user churches');
             }
             const data = await response.json();
-            console.log('User Church:', data.length);
             if (data.length === 0) {
               setUsers(null);
             } else {
