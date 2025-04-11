@@ -3,41 +3,49 @@
 import '@/app/globals.css';
 import MinistryDropdown from '../components/buttons/MinistryDropdown';
 import RejectButton from '@/app/components/buttons/RejectButton';
+import PromoteSuperAdminButton from '../components/buttons/PromoteSuperAdminButton';
 import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
+interface Admin {
+    member_id: number;
+    fname: string;
+    email: string;
+    minID: number | null;
+    church_id: number | null;
+}
+
 export default function AdminAssignPage() {
-    const [admins, setAdmins] = useState([]);
+    const [admins, setAdmins] = useState<Admin[]>([]);
     const { user } = useUser();
     const auth0ID = user?.sub;
 
-    useEffect(() => {
-        if (!auth0ID) {
-            return;
-        }
-        const fetchAdmins = async () => {
-            try {
-                const response = await fetch('/api/admin/request-admin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ auth0ID: auth0ID }),
-                });
+    const refreshAdmins = async () => {
+        if (!auth0ID) return;
+        
+        try {
+            const response = await fetch('/api/admin/request-admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ auth0ID: auth0ID }),
+            });
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch admins');
-                }
-
-                const data = await response.json();
-                console.log('Fetched admins:', data);
-                setAdmins(data);
-            } catch (error) {
-                console.error('Error fetching admins:', error);
+            if (!response.ok) {
+                throw new Error('Failed to fetch admins');
             }
-        };
 
-        fetchAdmins();
+            const data = await response.json();
+            console.log('Fetched admins:', data);
+            setAdmins(data);
+        } catch (error) {
+            console.error('Error fetching admins:', error);
+        }
+    };
+
+    useEffect(() => {
+        refreshAdmins();
     }, [auth0ID]);
 
     return (
@@ -62,20 +70,24 @@ export default function AdminAssignPage() {
                                         <td>{admin.fname}</td>
                                         <td>{admin.email}</td>
                                         <td>
-                                            {admin.minID !== null? (
+                                            {admin.minID !== null ? (
                                                 <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
                                                     Assigned
                                                 </div>    
                                             ) : (
                                                 <MinistryDropdown member_id={admin.member_id} />
                                             )}
-                                            {admin.church_id !== null? (
+                                            {admin.church_id !== null ? (
                                                 <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
                                                     Accepted
                                                 </div>    
                                             ) : (
                                                 <RejectButton member_id={admin.member_id} />
                                             )}
+                                            <PromoteSuperAdminButton 
+                                                member_id={admin.member_id} 
+                                                onPromote={refreshAdmins}
+                                            />
                                         </td>
                                     </tr>
                                 ))
