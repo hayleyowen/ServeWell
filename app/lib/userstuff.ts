@@ -35,6 +35,7 @@ export async function userMinistryID(authid: string) {
 }
 
 export async function newUser(auth_ID: string) {
+    console.log('Auth ID:', auth_ID);
     try {
         const result = await fetch('http://localhost:3000/api/users', {
             method: 'POST',
@@ -45,7 +46,7 @@ export async function newUser(auth_ID: string) {
         });
 
         const data = await result.json();
-        if (result.length === 0 ) {
+        if (data.length === 0 ) {
             return false;
         } else {
             return true;
