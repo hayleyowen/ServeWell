@@ -13,7 +13,6 @@ export async function POST(request: Request) {
       MinistryName: data.MinistryName,
       Description: data.Description,
       Church_ID: data.Church_ID,
-      Budget: data.Budget,
     });
 
     console.log('Created ministry:', result);
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       success: true, 
       message: 'Ministry created successfully',
-      ministryId: result.insertId, // Returning the new ministry's ID
+      ministryId: result.insertedId, // Returning the new ministry's ID
     });
 
   } catch (error) {

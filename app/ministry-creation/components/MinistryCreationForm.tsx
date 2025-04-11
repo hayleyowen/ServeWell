@@ -1,34 +1,78 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@auth0/nextjs-auth0/client'
 import styles from '../styles/MinistryCreationForm.module.css'
 
 interface MinistryFormData {
   MinistryName: string;
-  Church_ID: number;
-  Budget: number;
+  Church_ID: number | null;
   Description: string;
 }
 
 export default function MinistryCreationForm() {
   const router = useRouter()
+  const { user } = useUser()
   const [formData, setFormData] = useState<MinistryFormData>({
     MinistryName: '',
     Description: '',
-    Church_ID: 1, // We might want to make this dynamic later
-    Budget: 0  // Make sure this is initialized as a number
+    Church_ID: null,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  // Fetch user's church ID when component mounts
+  useEffect(() => {
+    const fetchUserChurch = async () => {
+      if (!user?.sub) return;
+
+      try {
+        const response = await fetch('/api/userChurch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ auth0_id: user.sub }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user church');
+        }
+
+        const data = await response.json();
+        if (data.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            Church_ID: data[0].church_id
+          }));
+        } else {
+          setError('You must be associated with a church to create a ministry');
+        }
+      } catch (error) {
+        console.error('Error fetching user church:', error);
+        setError('Failed to fetch church information');
+      }
+    };
+
+    fetchUserChurch();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.Church_ID) {
+      setError('You must be associated with a church to create a ministry');
+      return;
+    }
+
     setIsLoading(true)
     setError('')
+    setSuccess('')
     
     try {
-      console.log('Submitting form data:', formData) // Log the data being sent
+      console.log('Submitting form data:', formData)
 
       const response = await fetch('/api/ministries', {
         method: 'POST',
@@ -39,7 +83,7 @@ export default function MinistryCreationForm() {
       })
 
       const data = await response.json()
-      console.log('Response received:', data) // Log the response
+      console.log('Response received:', data)
       
       if (!response.ok) {
         console.log('Error response:', {
@@ -50,14 +94,17 @@ export default function MinistryCreationForm() {
         throw new Error(data.details || data.error || 'Failed to create ministry')
       }
 
-      // Create URL-friendly version of the ministry name
-      const urlFriendlyName = formData.MinistryName.toLowerCase().replace(/[^a-z0-9]/g, '')
+      // Show success message
+      setSuccess('Ministry created successfully! Redirecting...')
       
       // First refresh to update the TopNav
       router.refresh()
       
-      // Then redirect to the new ministry's homepage
-      router.push(`/ministry/${urlFriendlyName}`)
+      // Wait a moment to show the success message
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Then redirect to the new ministry's homepage using its ID
+      router.push(`/ministry/${data.ministryId}`)
       
       // Additional refresh after navigation to ensure everything is updated
       router.refresh()
@@ -81,6 +128,16 @@ export default function MinistryCreationForm() {
     }))
   }
 
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <div className="text-center text-red-500">
+          Please log in to create a ministry
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
@@ -97,6 +154,12 @@ export default function MinistryCreationForm() {
             </div>
           )}
 
+          {success && (
+            <div className="text-green-500 mb-4 text-center font-semibold">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -106,6 +169,7 @@ export default function MinistryCreationForm() {
               onChange={handleChange}
               required
               className={styles.input}
+              disabled={isLoading}
             />
 
             <textarea
@@ -115,23 +179,13 @@ export default function MinistryCreationForm() {
               onChange={handleChange}
               className={styles.input}
               rows={4}
-            />
-
-            <input
-              type="number"
-              name="Budget"
-              placeholder="Budget"
-              value={formData.Budget}
-              onChange={handleChange}
-              className={styles.input}
-              step="0.01"
-              min="0"
+              disabled={isLoading}
             />
 
             <button
               type="submit"
-              className={styles.button}
-              disabled={isLoading}
+              className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isLoading || !formData.Church_ID}
             >
               {isLoading ? 'Creating...' : 'Create Ministry'}
             </button>
