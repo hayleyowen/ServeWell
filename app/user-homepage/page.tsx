@@ -4,6 +4,9 @@ import '@/app/globals.css';
 import { getMinistries } from '@/app/lib/data';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
+import { ChurchCreationButton } from '../components/buttons/ChurchCreationButton';
+import AssignmentRequestButton from '../components/buttons/AssignmentRequestButton';
+import Image from 'next/image';
 
 export default function UserHomepage() {
   // fetch user session
@@ -86,14 +89,22 @@ export default function UserHomepage() {
   }
 
   if (users === null) {
-    return (
-      <main className="min-h-screen bg-gradient-to-t from-blue-300 to-blue-600 p-8 flex items-center justify-center">
-        <div className="max-w-6xl w-full">
-          <h1 className="text-3xl font-bold text-white text-center mb-12">You are not assigned to any church</h1>
-          <h3 className="text-3xl font-bold text-white text-center mb-12">Go back to the homepage and request to be assigned</h3>
-        </div>
-      </main>
-    );
+return (
+        <section className="t-20 min-h-screen flex flex-col">
+          <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="flex flex-row items-center text-center space-x-6">
+                <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
+                <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+                <ChurchCreationButton />
+                <AssignmentRequestButton />
+              </div>
+            </div>
+          </div>
+        </section>
+      );
   }
 
   else {
