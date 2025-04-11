@@ -17,6 +17,24 @@ export default function UserHomepage() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
 
+  // insert new users into users table if they don't already exist
+  useEffect(() => {
+    if (user) {
+      const insertUser = async () => {
+        try {
+          await fetch('/api/admin/insert-admins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
+          });
+        } catch (err) {
+          console.error('Failed to insert new user:', err);
+        }
+      };
+      insertUser();
+    }
+  }, [user]);
+  
   useEffect(() => {
     const fetchMinistries = async () => {
       try {
@@ -117,7 +135,7 @@ return (
             {ministries.map((ministry) => (
               <a 
                 key={ministry.ministry_id} 
-                href={`/ministry/${ministry.url_path}`} 
+                href={`/ministry/${ministry.ministry_id}`} 
                 className="block bg-white rounded-lg shadow-lg p-6 hover:transform hover:scale-105 transition-transform duration-200 ease-in-out"
               >
                 <h2 className="text-xl font-semibold text-gray-800 text-center">{ministry.ministryname}</h2>

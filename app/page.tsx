@@ -1,7 +1,7 @@
 'use client';
 import '@/app/globals.css';
 import { LoginButton } from './components/buttons/LoginButton';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation'; 
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
@@ -19,23 +19,23 @@ export default function Home() {
       }
     }, [user, router]);
     
-  // insert new users into users table if they don't already exist
-  useEffect(() => {
-    if (user) {
-      const insertUser = async () => {
-        try {
-          await fetch('/api/admin/insert-admins', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
-          });
-        } catch (err) {
-          console.error('Failed to insert new user:', err);
-        }
-      };
-      insertUser();
-    }
-  }, [user]);
+  // // insert new users into users table if they don't already exist
+  // useEffect(() => {
+  //   if (user) {
+  //     const insertUser = async () => {
+  //       try {
+  //         await fetch('/api/admin/insert-admins', {
+  //           method: 'POST',
+  //           headers: { 'Content-Type': 'application/json' },
+  //           body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
+  //         });
+  //       } catch (err) {
+  //         console.error('Failed to insert new user:', err);
+  //       }
+  //     };
+  //     insertUser();
+  //   }
+  // }, [user]);
 
   const auth0_id = user?.sub;
   const [users, setUsers] = useState([]);
@@ -87,19 +87,4 @@ export default function Home() {
       </section>
     );
   }
-    return (
-      <section className="t-20 min-h-screen flex flex-col">
-        <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="flex flex-row items-center text-center space-x-6">
-              <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
-              <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
-            </div>
-            <div className="grid grid-cols-1 gap-8 w-full max-w-4xl">
-              <LoginButton />
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+}
