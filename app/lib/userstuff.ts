@@ -26,6 +26,7 @@ export async function userMinistryID(authid: string) {
             body: JSON.stringify({authid}),
         });
         const data = await result.json();
+        console.log('Ministry ID:', data);
         return data;
     }
     catch (error) {
