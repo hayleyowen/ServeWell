@@ -14,10 +14,15 @@ interface Ministry {
   description: string | null;
 }
 
+interface Church {
+  church_id: number;
+  churchname: string;
+}
+
 export default function UserHomepage() {
   const { user, isLoading } = useUser();
   const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
-  const [churchName, setChurchName] = useState<string | null>(null);
+  const [churches, setChurches] = useState<Church[]>([]);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -30,17 +35,15 @@ export default function UserHomepage() {
           const ministries = await getMinistriesByID(auth0ID);
           setCustomMinistries(ministries as Ministry[]);
 
-          // Fetch church name
+          // Fetch churches
           const churchData = await getUserChurch(auth0ID);
-          if (churchData.length > 0) {
-            setChurchName(churchData[0].churchname); // Assuming churchname is part of the result
-          }
+          setChurches(churchData as Church[]); // Assuming churchData is an array of churches
         } catch (error) {
           console.error('Failed to fetch data:', error);
         }
       } else {
         setCustomMinistries([]);
-        setChurchName(null);
+        setChurches([]);
       }
     };
 
@@ -49,11 +52,9 @@ export default function UserHomepage() {
 
   return (
     <section className="t-20 min-h-screen flex flex-col">
-      <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-40">
+      <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
         <div className="flex flex-col items-center justify-center pt-8">
-          <h2 className="text-2xl font-bold text-white mb-8">
-            {churchName ? `${churchName} Homepage` : 'Homepage'}
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-8">Homepage</h2>
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
               {customMinistries.map((ministry) => (
@@ -65,15 +66,19 @@ export default function UserHomepage() {
                   <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
                 </a>
               ))}
-              <a 
-                href="user-homepage/church" 
-                className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-              >
-                <h3 className="text-xl font-bold mb-2">Church</h3>
-              </a>
+              {churches.map((church) => (
+                <a
+                  key={church.church_id}
+                  href={`/user-homepage/church/${church.church_id}`}
+                  className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
+                >
+                  <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
+                </a>
+              ))}
             </div>
           </div>
         </div>
       </div>
     </section>
   );
+}

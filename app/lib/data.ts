@@ -12,7 +12,7 @@ export async function getUserChurch(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT c.churchname 
+            `SELECT c.church_id, c.churchname 
              FROM church c
              INNER JOIN churchmember cm ON c.church_id = cm.church_id
              WHERE cm.member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
@@ -187,6 +187,24 @@ export async function createChurch(churchData: {
     } catch (error) {
         console.error("Failed to create church:", error);
         throw new Error("Failed to create church.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+export async function getChurchByID(churchID: number) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute<RowDataPacket[]>(
+            `SELECT * FROM church WHERE church_id = ? LIMIT 1`,
+            [churchID]
+        );
+        connection.release();
+        return data[0] || null; // Return the first result or null if not found
+    } catch (error) {
+        console.error("Failed to fetch church by ID:", error);
+        throw new Error("Failed to fetch church.");
     } finally {
         if (connection) connection.release();
     }
