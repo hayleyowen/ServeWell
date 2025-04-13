@@ -25,15 +25,11 @@ interface Church {
 export default function UserHomepage() {
   const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
   const [churches, setChurches] = useState<Church[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const pathname = usePathname();
-  // fetch user session
   const { user, error, isLoading } = useUser();
-  // console.log('User Sub:', user?.sub);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
 
-  // insert new users into users table if they don't already exist
+  // Insert new users into the database
   useEffect(() => {
     if (user) {
       const insertUser = async () => {
@@ -50,7 +46,8 @@ export default function UserHomepage() {
       insertUser();
     }
   }, [user]);
-  
+
+  // Fetch ministries and churches
   useEffect(() => {
     const fetchData = async () => {
       if (user?.sub) {
@@ -63,9 +60,11 @@ export default function UserHomepage() {
 
           // Fetch churches
           const churchData = await getUserChurch(auth0ID);
-          setChurches(churchData as Church[]); // Assuming churchData is an array of churches
+          setChurches(churchData as Church[]);
+          setFetchError(null); // Clear any previous errors
         } catch (error) {
           console.error('Failed to fetch data:', error);
+          setFetchError('Failed to load data. Please try again later.');
         }
       } else {
         setCustomMinistries([]);
@@ -73,13 +72,10 @@ export default function UserHomepage() {
       }
     };
 
-    fetchUsers();
-}, [auth0_id]);
-  
     fetchData();
-}, [user, pathname]);
+  }, [user, getMinistriesByID, getUserChurch]);
 
-  if (isLoading || loading) {
+  if (isLoading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <p className="text-white">Loading...</p>
@@ -90,57 +86,42 @@ export default function UserHomepage() {
   if (fetchError) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Failed to load ministries. Please try again later.</p>
+        <p className="text-red-500">{fetchError}</p>
       </main>
     );
   }
 
-  if (users === null) {
-return (
-        <section className="t-20 min-h-screen flex flex-col">
-          <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="flex flex-row items-center text-center space-x-6">
-                <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
-                <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                <ChurchCreationButton />
-                <AssignmentRequestButton />
-              </div>
+  return (
+    <section className="t-20 min-h-screen flex flex-col">
+      <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
+        <div className="flex flex-col items-center justify-center pt-8">
+          <h2 className="text-2xl font-bold text-white mb-8">
+            {churches.length > 0
+              ? `${churches[0].churchname} Homepage`
+              : 'Homepage'}
+          </h2>
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
+              {customMinistries.map((ministry) => (
+                <a
+                  key={ministry.ministry_id}
+                  href={`/ministry/${ministry.ministry_id}`}
+                  className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
+                  aria-label={`View details for ministry ${ministry.ministryname}`}
+                >
+                  <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
+                </a>
+              ))}
+              {churches.map((church) => (
+                <a
+                  key={church.church_id}
+                  href={`/user-homepage/church/${church.church_id}`}
+                  className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
+                >
+                  <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
+                </a>
+              ))}
             </div>
-          </div>
-        </section>
-      );
-  }
-
-  else {
-    return (
-      <section className="t-20 min-h-screen flex flex-col">
-        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
-          <div className="flex flex-col items-center justify-center pt-8">
-            <h2 className="text-2xl font-bold text-white mb-8">Homepage</h2>
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
-                {customMinistries.map((ministry) => (
-                  <a
-                    key={ministry.ministry_id}
-                    href={`/ministry/${ministry.ministry_id}`}
-                    className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                  >
-                    <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
-                  </a>
-                ))}
-                {churches.map((church) => (
-                  <a
-                    key={church.church_id}
-                    href={`/user-homepage/church/${church.church_id}`}
-                    className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                  >
-                    <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
-                  </a>
-                ))}
-              </div>
           </div>
         </div>
       </div>

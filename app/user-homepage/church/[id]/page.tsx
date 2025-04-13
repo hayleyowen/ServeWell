@@ -1,6 +1,6 @@
 import { getChurchByID } from '@/app/lib/data';
 import '@/app/globals.css';
-import DeleteChurchButton from '@/app/components/buttons/DeleteChurch';
+// import DeleteChurchButton from '@/app/components/buttons/DeleteChurch';
 
 export default async function ChurchHomepage({ params }: { params: { id: string } }) {
   const churchId = parseInt(params.id);
