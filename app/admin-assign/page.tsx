@@ -2,19 +2,27 @@
 
 import '@/app/globals.css';
 import MinistryDropdown from '../components/buttons/MinistryDropdown';
+import RejectButton from '@/app/components/buttons/RejectButton';
 import { useEffect, useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function AdminAssignPage() {
     const [admins, setAdmins] = useState([]);
+    const { user } = useUser();
+    const auth0ID = user?.sub;
 
     useEffect(() => {
+        if (!auth0ID) {
+            return;
+        }
         const fetchAdmins = async () => {
             try {
-                const response = await fetch('/api/admin', {
-                    method: 'GET',
+                const response = await fetch('/api/admin/request-admin', {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({ auth0ID: auth0ID }),
                 });
 
                 if (!response.ok) {
@@ -30,7 +38,7 @@ export default function AdminAssignPage() {
         };
 
         fetchAdmins();
-    }, []);
+    }, [auth0ID]);
 
     return (
         <section className="mt-20 min-h-screen flex flex-col">
@@ -43,9 +51,7 @@ export default function AdminAssignPage() {
                         <thead>
                             <tr className="bg-gray-200">
                                 <th>First Name</th>
-                                <th>Last Name</th>
                                 <th>Email</th>
-                                <th>Phone</th>
                                 <th>Assignment Status</th>
                             </tr>
                         </thead>
@@ -54,16 +60,21 @@ export default function AdminAssignPage() {
                                 admins.map((admin) => (
                                     <tr key={admin.member_id}>
                                         <td>{admin.fname}</td>
-                                        <td>{admin.lname}</td>
                                         <td>{admin.email}</td>
-                                        <td>{admin.memberphone}</td>
                                         <td>
-                                            {admin.Ministry_ID !== null? (
+                                            {admin.minID !== null? (
                                                 <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
                                                     Assigned
                                                 </div>    
                                             ) : (
                                                 <MinistryDropdown member_id={admin.member_id} />
+                                            )}
+                                            {admin.church_id !== null? (
+                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
+                                                    Accepted
+                                                </div>    
+                                            ) : (
+                                                <RejectButton member_id={admin.member_id} />
                                             )}
                                         </td>
                                     </tr>

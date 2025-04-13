@@ -8,13 +8,9 @@ export async function POST(request: Request) {
 
         const result = await createSuperAdmin({
             firstName: data.firstName,
-            middleName: data.middleName,
-            lastName: data.lastName,
             email: data.email,
-            phoneNumber: data.phoneNumber,
-            username: data.username,
-            password: data.password,
-            church_id: data.church_id
+            church_id: data.church_id,
+            auth0ID: data.auth0ID
         });
 
         console.log('SuperAdmin creation result:', result);
