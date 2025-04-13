@@ -35,7 +35,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
     // rID 0 = Base User - can only see homepage and can create a church
-    if (role === 0) {
+    else if (role === 0) {
       console.log('User is a base user, checking access...');
       const baseUserRoutes = ['/', '/church-creation'];
       if (baseUserRoutes.includes(req.nextUrl.pathname)) {
@@ -46,30 +46,46 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/', req.url));
       }
     }
-    // else if (role === 1) {
-    //   console.log('User is a ministry admin, checking access...');
-    //   if (req.nextUrl.pathname.startsWith('/ministry')) {
-    //     console.log('Ministry admin trying to access ministry route...');
-    //     const ministryId = req.nextUrl.pathname.split('/')[2];
-    //   }
-    //   const ministryId = req.nextUrl.pathname.split('/')[2];
-    //   console.log('Ministry ID from URL:', ministryId);
-    //   const userMinistry = await userMinistryID(authid);
 
-    //   if (
-    //     req.nextUrl.pathname.startsWith(`/ministry/${ministryId}`) &&
-    //     ministryId === userMinistry[0]?.ministryID?.toString()
-    //   ) {
-    //     return NextResponse.next();
-    //   } else {
-    //     console.log('Ministry admin trying to access restricted route, redirecting...');
-    //     return NextResponse.redirect(new URL('/', req.url));
-    //   }
-    // }
-    
-    // const ministryID = await userMinistryID(authid);
-    // const userMinistry = ministryID[0]?.ministryID?.toString();
-    // console.log('User Ministry ID:', userMinistry);
+    // rID 1 = Ministry Admin - can only see their ministry's routes and the user-homepage
+    else if (role === 1) {
+      console.log('User is a ministry admin, checking access...');
+
+      // if they are trying to access the user homepage, allow access
+      if (req.nextUrl.pathname === '/' || req.nextUrl.pathname === '/user-homepage') {
+        console.log('Ministry admin trying to access user homepage...');
+        return NextResponse.next();
+      }
+
+      // get the specific minID for the signed-in user
+      const userMinistry = await userMinistryID(authid);
+      const ministryID = userMinistry[0]?.minID;
+
+      // if they are trying to access their ministry's routes, allow access
+      if (req.nextUrl.pathname.startsWith('/ministry')) {
+        console.log('Ministry admin trying to access ministry route...');
+
+        // this would retrieve the ID of the ministry that is trying to be accessed
+        const ministryId = req.nextUrl.pathname.split('/')[2];
+        console.log('Ministry ID from URL:', ministryId);
+
+        // now do a check to see if the ministryId matches the user's ministry ID
+        if (
+          req.nextUrl.pathname.startsWith(`/ministry/${ministryId}`) &&
+          ministryId === ministryID.toString()
+        ) {
+          return NextResponse.next();
+        } else {
+          console.log('Ministry admin trying to access an unauthorized ministry, redirecting...');
+          return NextResponse.redirect(new URL('/', req.url));
+        }
+      }
+    }
+    // the else case is for when the user has a role that is not within our defined roles
+    else {
+      console.log('User role not recognized, redirecting to homepage...');
+      return NextResponse.redirect(new URL('/', req.url));
+    }
 
   } catch (error) {
     console.error('Error in middleware:', error);
