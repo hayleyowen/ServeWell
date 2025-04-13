@@ -419,7 +419,6 @@ export async function createMinistry(ministryData: {
 // Function to update a ministry
 export async function updateMinistry(ministryData: {
     ministryName: string;
-    budget: number;
     description: string;
 }) {
     let connection;
@@ -435,8 +434,8 @@ export async function updateMinistry(ministryData: {
         if (existingMinistry.length > 0) {
             // Update the existing ministry
             await connection.execute(
-                `UPDATE ministry SET budget = ?, description = ? WHERE ministryname = ?`,
-                [ministryData.budget, ministryData.description, ministryData.ministryName]
+                `UPDATE ministry SET description = ? WHERE ministryname = ?`,
+                [ministryData.description, ministryData.ministryName]
             );
             return { success: true, message: 'Ministry updated successfully' };
         } else {
