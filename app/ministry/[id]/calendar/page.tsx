@@ -98,7 +98,7 @@ export default function CalendarPage() {
             <div className="bg-white p-4 text-center">
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
-            <div className="flex-1 flex flex-col bg-blue-500 justify-center items-center p-10">
+            <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 justify-center items-center p-10">
                 <div className="calendar-container flex justify-center items-center mt-6 w-full max-w-4xl">
                     <div className="w-full">
                         <h1 className="text-xl font-semibold text-gray-700 mb-4">Event Calendar</h1>

@@ -76,7 +76,7 @@ export default function Home() {
   if (!user) {
     return (
       <section className="t-20 min-h-screen flex flex-col">
-        <div className="t-15 flex-1 flex flex-col bg-gradient-to-t from-blue-300 to-blue-600 p-30">
+        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
           <div className="flex-1 flex flex-col items-center justify-center">
             <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
             <div className="grid grid-cols-1 gap-8 w-full max-w-4xl">
