@@ -12,7 +12,10 @@ export async function getUserChurch(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
+            `SELECT c.church_id, c.churchname 
+             FROM church c
+             INNER JOIN churchmember cm ON c.church_id = cm.church_id
+             WHERE cm.member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
             [auth0ID]
         );
         connection.release();
@@ -184,6 +187,24 @@ export async function createChurch(churchData: {
     } catch (error) {
         console.error("Failed to create church:", error);
         throw new Error("Failed to create church.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
+export async function getChurchByID(churchID: number) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [data] = await connection.execute<RowDataPacket[]>(
+            `SELECT * FROM church WHERE church_id = ? LIMIT 1`,
+            [churchID]
+        );
+        connection.release();
+        return data[0] || null; // Return the first result or null if not found
+    } catch (error) {
+        console.error("Failed to fetch church by ID:", error);
+        throw new Error("Failed to fetch church.");
     } finally {
         if (connection) connection.release();
     }
@@ -398,7 +419,6 @@ export async function createMinistry(ministryData: {
 // Function to update a ministry
 export async function updateMinistry(ministryData: {
     ministryName: string;
-    budget: number;
     description: string;
 }) {
     let connection;
@@ -414,8 +434,8 @@ export async function updateMinistry(ministryData: {
         if (existingMinistry.length > 0) {
             // Update the existing ministry
             await connection.execute(
-                `UPDATE ministry SET budget = ?, description = ? WHERE ministryname = ?`,
-                [ministryData.budget, ministryData.description, ministryData.ministryName]
+                `UPDATE ministry SET description = ? WHERE ministryname = ?`,
+                [ministryData.description, ministryData.ministryName]
             );
             return { success: true, message: 'Ministry updated successfully' };
         } else {
