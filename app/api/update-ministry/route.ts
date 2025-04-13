@@ -4,17 +4,16 @@ import { updateMinistry } from '@/app/lib/data';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { ministryName, budget, description } = body;
+    const { ministryName, description } = body;
 
     // Validate the input
-    if (!ministryName || !budget || !description) {
+    if (!ministryName || !description) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
     // Call the updateMinistry function from data.ts
     const result = await updateMinistry({
       ministryName,
-      budget: parseFloat(budget), // Ensure budget is a number
       description,
     });
 
