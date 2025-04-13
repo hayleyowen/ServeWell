@@ -90,41 +90,61 @@ export default function UserHomepage() {
       </main>
     );
   }
-
-  return (
-    <section className="t-20 min-h-screen flex flex-col">
-      <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
-        <div className="flex flex-col items-center justify-center pt-8">
-          <h2 className="text-2xl font-bold text-white mb-8">
-            {churches.length > 0
-              ? `${churches[0].churchname} Homepage`
-              : 'Homepage'}
-          </h2>
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
-              {customMinistries.map((ministry) => (
-                <a
-                  key={ministry.ministry_id}
-                  href={`/ministry/${ministry.ministry_id}`}
-                  className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                  aria-label={`View details for ministry ${ministry.ministryname}`}
-                >
-                  <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
-                </a>
-              ))}
-              {churches.map((church) => (
-                <a
-                  key={church.church_id}
-                  href={`/user-homepage/church/${church.church_id}`}
-                  className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                >
-                  <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
-                </a>
-              ))}
+  if (user && churches.length == 0) {
+    return (
+            <section className="t-20 min-h-screen flex flex-col">
+              <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="flex flex-row items-center text-center space-x-6">
+                    <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
+                    <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+                    <ChurchCreationButton />
+                    <AssignmentRequestButton />
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+      }
+      else {
+        return (
+          <section className="t-20 min-h-screen flex flex-col">
+            <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
+              <div className="flex flex-col items-center justify-center pt-8">
+                <h2 className="text-2xl font-bold text-white mb-8">
+                  {churches.length > 0
+                    ? `${churches[0].churchname} Homepage`
+                    : 'Homepage'}
+                </h2>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
+                    {customMinistries.map((ministry) => (
+                      <a
+                        key={ministry.ministry_id}
+                        href={`/ministry/${ministry.ministry_id}`}
+                        className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
+                        aria-label={`View details for ministry ${ministry.ministryname}`}
+                      >
+                        <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
+                      </a>
+                    ))}
+                    {churches.map((church) => (
+                      <a
+                        key={church.church_id}
+                        href={`/user-homepage/church/${church.church_id}`}
+                        className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
+                      >
+                        <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+          </section>
+        );
+      }
+  
 }

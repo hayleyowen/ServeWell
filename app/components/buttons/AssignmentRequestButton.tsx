@@ -76,7 +76,7 @@ export default function AssignmentRequestButton() {
   }
 
   return (
-    <div ref={dropdownRef} className="bg-blue-600 text-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 hover:bg-blue-700">
+    <div ref={dropdownRef} className="bg-blue-800 text-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 hover:bg-blue-700">
       <button 
         onClick={() => setIsOpen(!isOpen)}
       >
