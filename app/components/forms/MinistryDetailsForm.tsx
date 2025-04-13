@@ -4,20 +4,13 @@ import { useState } from 'react';
 
 export default function MinistryDetailsForm() {
   const [ministryName, setMinistryName] = useState('');
-  const [budget, setBudget] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null); // Clear any previous messages
-  
-    // Validate and parse the budget
-    const parsedBudget = parseFloat(budget);
-    if (isNaN(parsedBudget)) {
-      setMessage('Please enter a valid number for the budget.');
-      return;
-    }
+
   
     try {
       const response = await fetch('/api/update-ministry', {
@@ -25,7 +18,7 @@ export default function MinistryDetailsForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ministryName, budget: parsedBudget, description }),
+        body: JSON.stringify({ ministryName, description }),
       });
   
       if (!response.ok) {
@@ -37,7 +30,6 @@ export default function MinistryDetailsForm() {
       setMessage(data.message || 'Ministry details updated successfully');
       // Clear the form fields
       setMinistryName('');
-      setBudget('');
       setDescription('');
       
     } catch (error: any) {
@@ -56,17 +48,6 @@ export default function MinistryDetailsForm() {
             id="ministryName"
             value={ministryName}
             onChange={(e) => setMinistryName(e.target.value)}
-            className="mt-1 block w-full p-2 border rounded bg-gray-100 text-gray-700"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="budget" className="block text-gray-700 text-lg font-bold mb-2">Budget</label>
-          <input
-            type="number"
-            id="budget"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
             className="mt-1 block w-full p-2 border rounded bg-gray-100 text-gray-700"
             required
           />
