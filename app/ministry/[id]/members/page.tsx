@@ -391,6 +391,12 @@ export default function FinancesTrackingPage() {
             if (loadedCharts.length > 0) {
                 setActiveChart(loadedCharts[0].id);
             }
+
+            // ✅ Add this to regenerate chartData from spreadsheet data
+            loadedCharts.forEach(chart => {
+                updateChartData(chart.id, chart.data);
+            });
+            
     
         } catch (error) {
             console.error("❌ Error fetching stored files:", error);
