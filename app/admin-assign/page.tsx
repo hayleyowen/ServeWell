@@ -67,8 +67,16 @@ export default function AdminAssignPage() {
         }
     };
 
+    // Set up auto-refresh interval
     useEffect(() => {
+        // Initial fetch
         fetchAllAdmins();
+
+        // Set up interval for periodic refresh (every 30 seconds)
+        const intervalId = setInterval(fetchAllAdmins, 30000);
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
     }, [auth0ID]);
 
     return (
@@ -104,7 +112,10 @@ export default function AdminAssignPage() {
                                                     {admin.ministryname || 'Unknown Ministry'}
                                                 </div>    
                                             ) : (
-                                                <MinistryDropdown member_id={admin.member_id} />
+                                                <MinistryDropdown 
+                                                    member_id={admin.member_id}
+                                                    onUpdate={fetchAllAdmins}
+                                                />
                                             )}
                                         </td>
                                         <td className="px-4 py-2">
