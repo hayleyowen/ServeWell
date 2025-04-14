@@ -14,6 +14,7 @@ interface Admin {
     email: string;
     minID: number | null;
     church_id: number | null;
+    ministryname: string | null;
 }
 
 interface SuperAdmin {
@@ -145,18 +146,11 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
                                             {admin.minID !== null ? (
-                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center">
-                                                    Assigned
+                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center">
+                                                    {admin.ministryname || 'Unknown Ministry'}
                                                 </div>    
                                             ) : (
                                                 <MinistryDropdown member_id={admin.member_id} />
-                                            )}
-                                            {admin.church_id !== null ? (
-                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg w-32 inline-block text-center ml-2">
-                                                    Accepted
-                                                </div>    
-                                            ) : (
-                                                <RejectButton member_id={admin.member_id} />
                                             )}
                                         </td>
                                         <td className="px-4 py-2">

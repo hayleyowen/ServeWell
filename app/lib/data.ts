@@ -64,7 +64,27 @@ export async function showRequestingAdmins(auth0ID: string) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const query = `SELECT cm.fname, cm.email, cm.member_id, u.minID, cm.church_id FROM churchmember cm INNER JOIN users u ON cm.member_id = u.memID INNER JOIN requestingAdmins ra ON u.auth0ID = ra.auth0ID WHERE ra.churchID = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?));`
+        const query = `
+            SELECT 
+                cm.fname, 
+                cm.email, 
+                cm.member_id, 
+                u.minID, 
+                cm.church_id,
+                m.ministryname
+            FROM churchmember cm 
+            INNER JOIN users u ON cm.member_id = u.memID 
+            INNER JOIN requestingAdmins ra ON u.auth0ID = ra.auth0ID 
+            LEFT JOIN ministry m ON u.minID = m.ministry_id
+            WHERE ra.churchID = (
+                SELECT church_id 
+                FROM churchmember 
+                WHERE member_id = (
+                    SELECT memID 
+                    FROM users 
+                    WHERE auth0ID = ?
+                )
+            );`
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
         connection.release();
