@@ -133,7 +133,9 @@ INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity
 ('Jane', 'Doe', 'Smith', 'F', 'jdsmith@email.com', '318-555-5555', 'Active', 1),
 ('Mary', 'Ann', 'Johnson', 'F', 'mjohnson@email.com', '318-555-5333', 'Active', 2),
 ('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3),
-('developer', 'null', 'null', 'M', 'developer@gmail.com', '318-456-7890', 'Active', 3);
+('developer', 'null', 'null', 'M', 'developer@gmail.com', '318-456-7890', 'Active', 3),
+('james', null, null, 'M', 'james@email.com', '318-546-1234', 'Active', 3),
+('bobert', null, null, 'M', 'bobert@email.com', '318-980-1212', 'Active', 3);
 
 Insert INTO roles (Role_ID, RoleName, Description) VALUES 
 (0, 'BaseUser', 'Can only request to join a ministry'),
@@ -141,7 +143,9 @@ Insert INTO roles (Role_ID, RoleName, Description) VALUES
 (2, 'SuperAdmin', 'Can see all pages and edit all ministries');
 
 Insert into users (auth0ID, minID, rID, memID) VALUES 
-('auth0|67f6cca18ffc0293d013acf9',null,2,5);
+('auth0|67f6cca18ffc0293d013acf9',null,2,5),
+('auth0|67bcb00e834426c4e6977bf4', 3,1,6),
+('auth0|67fc53397136d22bbaaf5bf3', null, 0, 7);
 
 INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
 ('Sunday Morning Service', 'sermon', 'sample-youtube-id-1', '2024-03-24', 'Morning worship service', 1),

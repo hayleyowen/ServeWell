@@ -35,7 +35,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next();
     }
     // rID 0 = Base User - can only see homepage and can create a church
-    else if (role === 0) {
+    if (role === 0) {
       console.log('User is a base user, checking access...');
       const baseUserRoutes = ['/', '/church-creation'];
       if (baseUserRoutes.includes(req.nextUrl.pathname)) {
@@ -48,7 +48,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // rID 1 = Ministry Admin - can only see their ministry's routes and the user-homepage
-    else if (role === 1) {
+    if (role === 1) {
       console.log('User is a ministry admin, checking access...');
 
       // if they are trying to access the user homepage, allow access
@@ -80,12 +80,16 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(new URL('/', req.url));
         }
       }
+      // if they are trying to access any other route, redirect them to the homepage
+      else {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
-    // the else case is for when the user has a role that is not within our defined roles
-    else {
-      console.log('User role not recognized, redirecting to homepage...');
-      return NextResponse.redirect(new URL('/', req.url));
-    }
+    // // the else case is for when the user has a role that is not within our defined roles
+    // else {
+    //   console.log('User role not recognized, redirecting to homepage...');
+    //   return NextResponse.redirect(new URL('/', req.url));
+    // }
 
   } catch (error) {
     console.error('Error in middleware:', error);
