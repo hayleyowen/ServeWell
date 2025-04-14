@@ -145,7 +145,7 @@ Insert INTO roles (Role_ID, RoleName, Description) VALUES
 
 Insert into users (auth0ID, minID, rID, memID) VALUES 
 ('auth0|67f6cca18ffc0293d013acf9',null,2,5),
-('auth0|67bcb00e834426c4e6977bf4', 3,1,6),
+('auth0|67bcb00e834426c4e6977bf4', 4,1,6),
 ('auth0|67fc53397136d22bbaaf5bf3', null, 0, 7);
 
 INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
