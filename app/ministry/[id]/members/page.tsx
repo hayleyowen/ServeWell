@@ -595,7 +595,7 @@ export default function FinancesTrackingPage() {
                 <h1 className="text-2xl font-bold text-gray-800">ServeWell</h1>
             </div>
     
-            <div className="flex-1 flex flex-col bg-blue-500 justify-center">
+            <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 justify-center">
                 <div className={`bg-white rounded-lg shadow-md p-6 m-4 flex flex-col items-center overflow-auto ${
                     isFullScreen ? "fixed inset-0 z-50" : ""
                 }`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
