@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { getMinistries, getMinistriesByID } from '@/app/lib/data';
+import { getMinistriesByID } from '@/app/lib/data';
 import Spinner from '@/app/components/spinner/spinner';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '../buttons/LogoutButton';
