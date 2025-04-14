@@ -135,7 +135,7 @@ INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity
 ('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3),
 ('developer', 'null', 'null', 'M', 'developer@gmail.com', '318-456-7890', 'Active', 3),
 ('james', null, null, 'M', 'james@email.com', '318-546-1234', 'Active', 3),
-('bobert', null, null, 'M', 'bobert@email.com', '318-980-1212', 'Active', 3);
+('bobert', null, null, 'M', 'bobert@email.com', '318-980-1212', 'Active', null);
 
 Insert INTO roles (Role_ID, RoleName, Description) VALUES 
 (0, 'BaseUser', 'Can only request to join a ministry'),

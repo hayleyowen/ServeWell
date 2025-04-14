@@ -37,7 +37,7 @@ export async function middleware(req: NextRequest) {
     // rID 0 = Base User - can only see homepage and can create a church
     if (role === 0) {
       console.log('User is a base user, checking access...');
-      const baseUserRoutes = ['/', '/church-creation'];
+      const baseUserRoutes = ['/', '/church-creation', '/user-homepage'];
       if (baseUserRoutes.includes(req.nextUrl.pathname)) {
         console.log('Base user trying to access allowed route...');
         return NextResponse.next();
