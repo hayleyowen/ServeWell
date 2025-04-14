@@ -72,7 +72,7 @@ export default function FinancesTrackingPage() {
             if (!activeChart) {
                 // Generate automatic chart name
                 const nextChartNumber = charts.length + 1;
-                const newChartName = `Member Chart ${nextChartNumber}`;
+                const newChartName = `Finance Chart ${nextChartNumber}`;
                 const newChart = {
                     id: Date.now(),
                     name: newChartName,
@@ -349,6 +349,11 @@ export default function FinancesTrackingPage() {
             if (loadedCharts.length > 0) {
                 setActiveChart(loadedCharts[0].id);
             }
+            // ✅ Add this to regenerate chartData from spreadsheet data
+            loadedCharts.forEach(chart => {
+                updateChartData(chart.id, chart.data);
+            });
+            
     
         } catch (error) {
             console.error("❌ Error fetching stored files:", error);
@@ -497,19 +502,32 @@ export default function FinancesTrackingPage() {
                                 </div>
                             ) : (
                                 <div className="w-full overflow-auto border border-gray-300 rounded-lg">
-                                    <div className="flex justify-end mb-2">
-                                        <button onClick={addRow} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2">Add Row</button>
-                                        <button onClick={addColumn} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Add Column</button>
-                                    </div>
                                     {activeChart && (
                                         <Spreadsheet
                                             data={charts.find(chart => chart.id === activeChart).data}
                                             onChange={(newData) => {
+                                                const hasDataInLastRow = newData[newData.length - 1].some(cell => cell.value !== "");
+                                                const hasDataInLastCol = newData.some(row => row[row.length - 1]?.value !== "");
+                                            
+                                                let updatedData = [...newData];
+                                            
+                                                // Add an empty row if the last row has data
+                                                if (hasDataInLastRow) {
+                                                    const emptyRow = Array(newData[0].length).fill({ value: "" });
+                                                    updatedData.push(emptyRow);
+                                                }
+                                            
+                                                // Add an empty column if the last column has data
+                                                if (hasDataInLastCol) {
+                                                    updatedData = updatedData.map(row => [...row, { value: "" }]);
+                                                }
+                                            
                                                 setCharts(prevCharts => prevCharts.map(chart =>
-                                                    chart.id === activeChart ? { ...chart, data: newData } : chart
+                                                    chart.id === activeChart ? { ...chart, data: updatedData } : chart
                                                 ));
-                                                updateChartData(activeChart, newData);
-                                            }}
+                                            
+                                                updateChartData(activeChart, updatedData);
+                                            }}                                            
                                         />
                                     )}
                                 </div>

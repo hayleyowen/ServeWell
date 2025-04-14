@@ -42,6 +42,38 @@ export default function FinancesTrackingPage() {
     const [emailRecipient, setEmailRecipient] = useState(null);
     const [memberSearchQuery, setMemberSearchQuery] = useState("");
 
+    useEffect(() => {
+        const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
+        const defaultMemberSheet = {
+            id: Date.now(),
+            name: "Member Sheet",
+            data: [defaultHeader.map(label => ({ value: label })), ...generateData(4, 4)],
+            chartType: "pie",
+            chartData: null,
+        };
+    
+        // ✅ Declare these FIRST
+        const pathSegments = pathname.split("/");
+        const ministry = pathSegments[2] || "defaultMinistry";
+        const pageType = pathSegments[3] || "defaultPageType";
+    
+        const loadInitialCharts = async () => {
+            await fetchStoredFiles(ministry, pageType);
+    
+            setCharts(prev => {
+                const exists = prev.some(chart => chart.name === "Member Sheet");
+                if (!exists) {
+                    return [defaultMemberSheet, ...prev];
+                }
+                return prev;
+            });
+    
+            setActiveChart(prev => prev || defaultMemberSheet.id);
+        };
+    
+        loadInitialCharts();
+    }, []);
+    
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
         return Array.from({ length: rows }, () =>
@@ -120,15 +152,18 @@ export default function FinancesTrackingPage() {
         setAnchorEl(null);
     };
 
+    // 💾 Ensure saves use consistent name
     const saveToComputer = () => {
         if (activeChart) {
             const activeChartData = charts.find(chart => chart.id === activeChart);
-            if (!activeChartData) return null; // Prevents errors
+            if (!activeChartData) return;
             const worksheetData = activeChartData.data.map(row => row.map(cell => cell.value));
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-            XLSX.writeFile(workbook, `${charts.find(chart => chart.id === activeChart).name}.xlsx`);
+
+            const filename = activeChartData.name === "Member Sheet" ? "Member Sheet.xlsx" : `${activeChartData.name}.xlsx`;
+            XLSX.writeFile(workbook, filename);
         }
         handleClose();
     };
@@ -137,57 +172,46 @@ export default function FinancesTrackingPage() {
         if (activeChart) {
             const activeChartData = charts.find(chart => chart.id === activeChart);
             if (!activeChartData) return;
-    
+
             const pathSegments = pathname.split('/');
             const ministry = pathSegments[2] || "defaultMinistry";
             const pageType = pathSegments[3] || "defaultPageType";
-            const tabName = activeChartData.name; // Use the existing tab name
-    
-            if (!tabName) {
-                alert("❌ Tab name is missing.");
-                return;
-            }
-    
-            console.log("📤 Uploading file for", ministry, "-", pageType, ":", tabName);
-    
+            const tabName = activeChartData.name === "Member Sheet" ? "Member Sheet" : activeChartData.name;
+
             const worksheetData = activeChartData.data.map(row => row.map(cell => cell.value));
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    
+
             const fileBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
             const blob = new Blob([fileBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    
+
             const formData = new FormData();
             const file = new File([blob], `${tabName}.xlsx`, { type: blob.type });
-    
+
             formData.append("file", file);
             formData.append("tab_name", tabName);
             formData.append("ministry", ministry);
             formData.append("page_type", pageType);
-    
+
             try {
                 const response = await fetch("/api/files", {
                     method: "POST",
                     body: formData,
                 });
-    
-                const text = await response.text();
-                const result = JSON.parse(text);
-    
+
+                const result = await response.json();
                 if (result.success) {
-                    console.log("✅ File uploaded successfully");
                     alert("✅ File uploaded successfully!");
                 } else {
-                    console.error("❌ Upload failed:", result.error);
                     alert("❌ Upload failed! " + result.error);
                 }
             } catch (error) {
-                console.error("❌ Error saving file:", error);
                 alert("❌ Error saving file. See console for details.");
             }
         }
-    };    
+    };
+        
     
     const updateChartData = (chartId, spreadsheetData) => {
         console.log("📊 Received Data in updateChartData:", spreadsheetData);  // Confirm input
@@ -367,6 +391,12 @@ export default function FinancesTrackingPage() {
             if (loadedCharts.length > 0) {
                 setActiveChart(loadedCharts[0].id);
             }
+
+            // ✅ Add this to regenerate chartData from spreadsheet data
+            loadedCharts.forEach(chart => {
+                updateChartData(chart.id, chart.data);
+            });
+            
     
         } catch (error) {
             console.error("❌ Error fetching stored files:", error);
@@ -659,20 +689,39 @@ export default function FinancesTrackingPage() {
                             Create Chart
                         </button>
                     </div>
-    
                     {/* Chart Tabs */}
                     <div className="tabs-container border-b pb-2 h-12 flex-shrink-0">
-                        {charts.map((chart) => (
-                            <div
-                                key={chart.id}
-                                className={clsx("p-2 border rounded-md flex items-center mr-2", { "bg-gray-300": activeChart === chart.id })}
+                    {charts.map((chart) => (
+                        <div
+                        key={chart.id}
+                        className={clsx(
+                            "p-2 border rounded-md flex items-center mr-2",
+                            { "bg-gray-300": activeChart === chart.id }
+                        )}
+                        >
+                        <button onClick={() => setActiveChart(chart.id)} className="mr-2">
+                            {chart.name}
+                        </button>
 
-                                  >
-                                <button onClick={() => setActiveChart(chart.id)} className="mr-2">{chart.name}</button>
-                                <button onClick={() => deleteChart(chart.id, chart.name)} className="text-blue-500 font-bold text-lg">X</button>                      </div>
-                        ))}
-                    </div>
-    
+                        {chart.name !== "Member Sheet" ? (
+                            <button
+                            onClick={() => deleteChart(chart.id, chart.name)}
+                            className="text-blue-500 font-bold text-lg"
+                            >
+                            X
+                            </button>
+                        ) : (
+                            <button
+                            disabled
+                            className="text-gray-400 font-bold text-lg cursor-not-allowed"
+                            title="Cannot delete Member Sheet"
+                            >
+                            X
+                            </button>
+                        )}
+                        </div>
+                    ))}
+                    </div>    
                     <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
                     <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                         Save File
@@ -723,24 +772,45 @@ export default function FinancesTrackingPage() {
                                 </div>
                                 
                                 {/* Existing spreadsheet code */}
-                                <div className="flex justify-end mb-2 p-2">
-                                    <button onClick={addRow} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-green-600 mr-2">
-                                        Add Row
-                                    </button>
-                                    <button onClick={addColumn} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-green-600">
-                                        Add Column
-                                    </button>
-                                </div>
                                 {activeChart && (
                                     <Spreadsheet
-                                        data={searchQuery.trim() ? filteredData : charts.find(chart => chart.id === activeChart).data}
+                                        data={charts.find(chart => chart.id === activeChart)?.data || []}
                                         onChange={(newData) => {
-                                            setCharts(prevCharts => prevCharts.map(chart =>
-                                                chart.id === activeChart ? { ...chart, data: newData } : chart
-                                            ));
-                                            updateChartData(activeChart, newData);
+                                            const chart = charts.find(chart => chart.id === activeChart);
+                                            const isMemberSheet = chart.name === "Member Sheet";
+
+                                            let updatedData = [...newData];
+
+                                            // 🔒 Enforce permanent header row
+                                            if (isMemberSheet) {
+                                            const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
+                                            updatedData[0] = defaultHeader.map(label => ({ value: label }));
+                                            }
+
+                                            const hasDataInLastRow = updatedData[updatedData.length - 1].some(cell => cell.value !== "");
+
+                                            if (hasDataInLastRow) {
+                                            const newRow = Array(updatedData[0]?.length || 4).fill({ value: "" });
+                                            updatedData.push(newRow);
+                                            }
+
+                                            // ✅ Only allow new columns if NOT Member Sheet
+                                            if (!isMemberSheet) {
+                                            const hasDataInLastCol = updatedData.some(row => row[row.length - 1]?.value !== "");
+                                            if (hasDataInLastCol) {
+                                                updatedData = updatedData.map(row => [...row, { value: "" }]);
+                                            }
+                                            }
+
+                                            setCharts(prevCharts =>
+                                            prevCharts.map(c =>
+                                                c.id === activeChart ? { ...c, data: updatedData } : c
+                                            )
+                                            );
+
+                                            updateChartData(activeChart, updatedData);
                                         }}
-                                    />
+                                        />
                                 )}
                             </div>
                         )}
