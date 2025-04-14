@@ -15,73 +15,60 @@ interface Admin {
     minID: number | null;
     church_id: number | null;
     ministryname: string | null;
-}
-
-interface SuperAdmin {
-    member_id: number;
-    fname: string;
-    email: string;
+    isSuper?: boolean;
 }
 
 export default function AdminAssignPage() {
-    const [admins, setAdmins] = useState<Admin[]>([]);
-    const [superAdmins, setSuperAdmins] = useState<SuperAdmin[]>([]);
+    const [allAdmins, setAllAdmins] = useState<Admin[]>([]);
     const { user } = useUser();
     const auth0ID = user?.sub;
 
-    const fetchSuperAdmins = async () => {
+    const fetchAllAdmins = async () => {
         if (!auth0ID) return;
         
         try {
-            const response = await fetch('/api/admin/get-super-admins', {
+            // Fetch regular admins
+            const adminResponse = await fetch('/api/admin/request-admin', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ auth0ID: auth0ID }),
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch super admins');
-            }
-
-            const data = await response.json();
-            console.log('Fetched super admins:', data);
-            setSuperAdmins(data);
-        } catch (error) {
-            console.error('Error fetching super admins:', error);
-        }
-    };
-
-    const refreshAdmins = async () => {
-        if (!auth0ID) return;
-        
-        try {
-            const response = await fetch('/api/admin/request-admin', {
+            // Fetch super admins
+            const superAdminResponse = await fetch('/api/admin/get-super-admins', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ auth0ID: auth0ID }),
             });
 
-            if (!response.ok) {
+            if (!adminResponse.ok || !superAdminResponse.ok) {
                 throw new Error('Failed to fetch admins');
             }
 
-            const data = await response.json();
-            console.log('Fetched admins:', data);
-            setAdmins(data);
-            // Refresh super admins list as well when an admin is promoted
-            fetchSuperAdmins();
+            const adminData = await adminResponse.json();
+            const superAdminData = await superAdminResponse.json();
+
+            // Combine and mark super admins
+            const combinedAdmins = [
+                ...superAdminData.map((admin: Admin) => ({ ...admin, isSuper: true })),
+                ...adminData
+            ];
+
+            // Sort to ensure super admins are always on top
+            const sortedAdmins = combinedAdmins.sort((a, b) => {
+                if (a.isSuper && !b.isSuper) return -1;
+                if (!a.isSuper && b.isSuper) return 1;
+                return 0;
+            });
+
+            setAllAdmins(sortedAdmins);
         } catch (error) {
             console.error('Error fetching admins:', error);
         }
     };
 
     useEffect(() => {
-        refreshAdmins();
-        fetchSuperAdmins();
+        fetchAllAdmins();
     }, [auth0ID]);
 
     return (
@@ -91,61 +78,28 @@ export default function AdminAssignPage() {
                     <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
                 </div>
 
-                {/* Super Admins Section */}
-                <div className="items-center justify-center mb-8">
-                    <h3 className="text-xl font-bold text-white mb-4">Super Administrators</h3>
+                <div className="items-center justify-center">
                     <table className="table-auto flex-initial w-full bg-white rounded-lg shadow-md">
                         <thead>
                             <tr className="bg-gray-200">
                                 <th className="px-4 py-2">Name</th>
-                                <th className="px-4 py-2">Email</th>
-                                <th className="px-4 py-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-center">
-                            {superAdmins.length > 0 ? (
-                                superAdmins.map((superAdmin) => (
-                                    <tr key={superAdmin.member_id}>
-                                        <td className="px-4 py-2">{superAdmin.fname}</td>
-                                        <td className="px-4 py-2">{superAdmin.email}</td>
-                                        <td className="px-4 py-2">
-                                            <DemoteButton 
-                                                member_id={superAdmin.member_id}
-                                                isSuper={true}
-                                                onDemote={refreshAdmins}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={3} className="p-4 text-gray-500">No super administrators found.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Regular Admins Section */}
-                <div className="items-center justify-center">
-                    <h3 className="text-xl font-bold text-white mb-4">Regular Administrators</h3>
-                    <table className="table-auto flex-initial w-full bg-white rounded-lg shadow-md">
-                        <thead>
-                            <tr className="bg-gray-200">
-                                <th className="px-4 py-2">First Name</th>
                                 <th className="px-4 py-2">Email</th>
                                 <th className="px-4 py-2">Status</th>
                                 <th className="px-4 py-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="text-center">
-                            {admins.length > 0 ? (
-                                admins.map((admin) => (
+                            {allAdmins.length > 0 ? (
+                                allAdmins.map((admin) => (
                                     <tr key={admin.member_id}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
-                                            {admin.minID !== null ? (
+                                            {admin.isSuper ? (
+                                                <div className="px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg inline-block text-center font-semibold">
+                                                    Super Admin
+                                                </div>
+                                            ) : admin.minID !== null ? (
                                                 <div className="px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center">
                                                     {admin.ministryname || 'Unknown Ministry'}
                                                 </div>    
@@ -154,20 +108,23 @@ export default function AdminAssignPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-2">
-                                            <PromoteSuperAdminButton 
-                                                member_id={admin.member_id} 
-                                                onPromote={refreshAdmins}
-                                            />
+                                            {!admin.isSuper && (
+                                                <PromoteSuperAdminButton 
+                                                    member_id={admin.member_id} 
+                                                    onPromote={fetchAllAdmins}
+                                                />
+                                            )}
                                             <DemoteButton 
                                                 member_id={admin.member_id}
-                                                onDemote={refreshAdmins}
+                                                isSuper={admin.isSuper}
+                                                onDemote={fetchAllAdmins}
                                             />
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="p-4 text-gray-500">No unassigned admins found.</td>
+                                    <td colSpan={4} className="p-4 text-gray-500">No administrators found.</td>
                                 </tr>
                             )}
                         </tbody>
