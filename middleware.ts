@@ -1,67 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@auth0/nextjs-auth0/edge'
-import  {userStuff, newUser} from '@/app/lib/userstuff'
-import { insertUser } from '@/app/lib/data'
+import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
 
 export async function middleware(req: NextRequest) {
-  // try {
-  const res = NextResponse.next()
 
-  // retrieve the user 
-  const session = await getSession(req, res)
-  // console.log('User's Auth0 ID:', session?.user.sub)
+  try {
 
-  let auth_ID = session?.user.sub
-  let nickname = session?.user.nickname
-  let email = session?.user.email
-  console.log('Auth0 ID:', session?.user)
-  console.log('Nickname:', nickname)
-  console.log('Email:', email)
-  const existingUserFlag = await newUser(auth_ID);
-  console.log('Flag:', existingUserFlag)
+    // Step 1: Make sure the User is logged in thru Auth0 by checking for a valid session
+    const appSession = !!req.cookies.get('appSession')?.value;
+    if (appSession == false) {
+      console.log('No appSession cookie, redirecting to login page...');
+      return NextResponse.redirect(new URL('/api/auth/login', req.url));
+    }
 
-  // if (existingUserFlag == false) {
-  //   console.log('User does not exist')
-  //   const insertion = await insertUser(nickname, auth_ID, email)
-  //   console.log('Insertion:', insertion)
-  // }
-  // send post function here to retrieve role id
-  const result = await userStuff(auth_ID);
-  console.log('Result:', result[0].rID)
-  const role = result[0]?.rID
-  
-  // do a check to make sure that the user is a superadmin
-  if (role === 2) {
-    return NextResponse.next()
-  } else if (role === 0){
-    return NextResponse.redirect(new URL('/', req.url))
+    // Step 2: Retrieve the user's session data
+    const session = await getSession(req, NextResponse.next());
+    if (!session) {
+      console.log('No session found, redirecting to login page...');
+      return NextResponse.redirect(new URL('/api/auth/login', req.url));
+    }
+
+    const authid = session.user.sub;
+
+    // Step 3: Fetch the user's role from the db
+    const userRole = await userStuff(authid);
+    const role = userRole[0]?.rID;
+    console.log('User Role:', role);
+
+    // Step 4: RBAC - Role Based Access Control
+
+    // rID 2 = Super Admin - access to all routes
+    if (role === 2) {
+      console.log('User is a super admin, allowing access...');
+      return NextResponse.next();
+    }
+    // rID 0 = Base User - can only see homepage and can create a church
+    if (role === 0) {
+      console.log('User is a base user, checking access...');
+      const baseUserRoutes = ['/', '/church-creation', '/user-homepage'];
+      if (baseUserRoutes.includes(req.nextUrl.pathname)) {
+        console.log('Base user trying to access allowed route...');
+        return NextResponse.next();
+      } else {
+        console.log('Base user trying to access restricted route, redirecting...');
+        return NextResponse.redirect(new URL('/', req.url));
+      }
+    }
+
+    // rID 1 = Ministry Admin - can only see their ministry's routes and the user-homepage
+    if (role === 1) {
+      console.log('User is a ministry admin, checking access...');
+
+      // if they are trying to access the user homepage, allow access
+      if (req.nextUrl.pathname === '/' || req.nextUrl.pathname === '/user-homepage') {
+        console.log('Ministry admin trying to access user homepage...');
+        return NextResponse.next();
+      }
+
+      // get the specific minID for the signed-in user
+      const userMinistry = await userMinistryID(authid);
+      const ministryID = userMinistry[0]?.minID;
+
+      // if they are trying to access their ministry's routes, allow access
+      if (req.nextUrl.pathname.startsWith('/ministry')) {
+        console.log('Ministry admin trying to access ministry route...');
+
+        // this would retrieve the ID of the ministry that is trying to be accessed
+        const ministryId = req.nextUrl.pathname.split('/')[2];
+        console.log('Ministry ID from URL:', ministryId);
+
+        // now do a check to see if the ministryId matches the user's ministry ID
+        if (
+          req.nextUrl.pathname.startsWith(`/ministry/${ministryId}`) &&
+          ministryId === ministryID.toString()
+        ) {
+          return NextResponse.next();
+        } else {
+          console.log('Ministry admin trying to access an unauthorized ministry, redirecting...');
+          return NextResponse.redirect(new URL('/', req.url));
+        }
+      }
+      // if they are trying to access any other route, redirect them to the homepage
+      else {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
+    }
+    // // the else case is for when the user has a role that is not within our defined roles
+    // else {
+    //   console.log('User role not recognized, redirecting to homepage...');
+    //   return NextResponse.redirect(new URL('/', req.url));
+    // }
+
+  } catch (error) {
+    console.error('Error in middleware:', error);
+
+    // if there's an error, maybe I should direct to a generic error page
+    // however, we currently don't have one
+    return NextResponse.redirect(new URL('/', req.url));
   }
-  // } catch (error) {
-  //   console.error('Error:', error)
-  // }
-  // const protectedRoutes = ['/admin-assign', '/super-homepage', '/ministry-creation']
-  // const publicRoutes = ['/', '/ministry', '/user-homepage', '/church-creation']
-
-  // const path = req.nextUrl.pathname
-  // const isProtected = protectedRoutes.some(route => path.startsWith(route))
-  // const isPublic = publicRoutes.some(route => path.startsWith(route))
-
-  // // Fetch user session using Auth0 (server-side)
-  // const session = await getSession(req, NextResponse.next())
-  // console.log('Session:', session)
-
-  // if (!session || !session.user) {
-  //   return NextResponse.redirect(new URL('/api/auth/login', req.url))
-  // }
-
-  // // Check if user is an admin (Modify based on your actual admin logic)
-  // const isSuper = session.user.role === '2' // Ensure role is being sent in the session
-
-  // if (isProtected && !isSuper) {
-  //   return NextResponse.redirect(new URL('/', req.url))
-  // }
 }
 
 export const config = {
-  matcher: ['/super-homepage', '/admin-assign', '/ministry/:path*'],
-}
+  matcher: [
+    '/((?!api|_next|favicon.ico|pages/|api/auth/).*)' 
+  ],
+};
