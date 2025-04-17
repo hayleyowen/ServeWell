@@ -5,6 +5,22 @@ import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
 export async function middleware(req: NextRequest) {
 
   try {
+    // Step 0: Make sure the appSession cookie is cleared out
+    const appSessionCleared = req.cookies.get('appSessionCleared')?.value;
+    console.log('appSessionCleared:', appSessionCleared);
+
+    if (!appSessionCleared) {
+      console.log('Clearing appSession cookie on first page load...');
+      const response = NextResponse.next();
+
+      // Clear the appSession cookie
+      response.cookies.set('appSession', '', { maxAge: 0 });
+
+      // Set a flag to indicate the appSession cookie has been cleared
+      response.cookies.set('appSessionCleared', 'true');
+
+      return response;
+    }
 
     // Step 1: Make sure the User is logged in thru Auth0 by checking for a valid session
     const appSession = !!req.cookies.get('appSession')?.value;
