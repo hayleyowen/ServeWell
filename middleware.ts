@@ -5,8 +5,12 @@ import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
 export async function middleware(req: NextRequest) {
 
   try {
+
+    const referrer = req.headers.get('referer');
+    console.log('Referrer:', referrer);
     // Step 0: Make sure the appSession cookie is cleared out
     const appSessionCleared = req.cookies.get('appSessionCleared')?.value;
+  
     console.log('appSessionCleared:', appSessionCleared);
 
     if (!appSessionCleared) {
@@ -59,7 +63,13 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
       } else {
         console.log('Base user trying to access restricted route, redirecting...');
-        return NextResponse.redirect(new URL('/', req.url));
+        if (referrer) {
+          console.log('Referrer:', referrer);
+          return NextResponse.redirect(referrer);
+        } else {
+          console.log('No referrer found, redirecting to homepage...');
+          return NextResponse.redirect(new URL('/', req.url));
+        }
       }
     }
 
@@ -93,12 +103,24 @@ export async function middleware(req: NextRequest) {
           return NextResponse.next();
         } else {
           console.log('Ministry admin trying to access an unauthorized ministry, redirecting...');
-          return NextResponse.redirect(new URL('/', req.url));
+          if (referrer) {
+            console.log('Referrer:', referrer);
+            return NextResponse.redirect(referrer);
+          } else {
+            console.log('No referrer found, redirecting to homepage...');
+            return NextResponse.redirect(new URL('/', req.url));
+          }
         }
       }
       // if they are trying to access any other route, redirect them to the homepage
       else {
-        return NextResponse.redirect(new URL('/', req.url));
+        if (referrer) {
+          console.log('Referrer:', referrer);
+          return NextResponse.redirect(referrer);
+        } else {
+          console.log('No referrer found, redirecting to homepage...');
+          return NextResponse.redirect(new URL('/', req.url));
+        }
       }
     }
     // // the else case is for when the user has a role that is not within our defined roles
