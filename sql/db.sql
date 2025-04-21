@@ -56,24 +56,6 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (rID) REFERENCES roles(Role_ID),
     FOREIGN KEY (memID) REFERENCES churchmember(member_id)
 );
-    
-
-    -- Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
-    -- member_id VARCHAR(50) NOT NULL,
-    -- Ministry_ID INT DEFAULT NULL,
-    -- Auth0_ID VARCHAR(50),
-    -- Role_ID INT DEFAULT 1,    -- if role_id = 2, they are a superadmin
-    -- FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
-    -- FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
-    -- FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
-
--- CREATE TABLE IF NOT EXISTS superadmin (
---     superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
---     member_id INTEGER NOT NULL,
---     church_id INTEGER NOT NULL,
---     FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
---     FOREIGN KEY (church_id) REFERENCES church(church_id)
--- );
 
 CREATE TABLE IF NOT EXISTS requestingAdmins (
     reqID INT PRIMARY KEY AUTO_INCREMENT,

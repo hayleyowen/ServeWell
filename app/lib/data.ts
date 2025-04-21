@@ -26,39 +26,7 @@ export async function getUserChurch(auth0ID: string) {
     } finally {
         if (connection) connection.release();
     }
-}
-
-export async function getRequestingAdmins(auth0ID: string) {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute(``);
-        connection.release();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch requesting admins:", error);
-        throw new Error("Failed to fetch requesting admins.");
-    } finally {
-        if (connection) connection.release();
-    }
-}    
-
-export async function getUnAssignedAdmins() {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute(
-            `SELECT * FROM admin WHERE ministry_id IS NULL`
-        );
-        connection.release();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch unassigned admins:", error);
-        throw new Error("Failed to fetch unassigned admins.");
-    } finally {
-        if (connection) connection.release();
-    }
-}
+}   
 
 export async function showRequestingAdmins(auth0ID: string) {
     let connection;
@@ -608,4 +576,3 @@ export async function getMedia() {
         throw new Error('Failed to fetch media.');
     }
 }
-
