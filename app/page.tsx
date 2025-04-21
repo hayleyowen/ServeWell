@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
+import Spinner from './components/spinner/spinner';
 
 
 export default function Home() {
@@ -71,6 +72,13 @@ export default function Home() {
 
     fetchUsers();
 }, [auth0_id]); 
+
+  if (isLoading) {
+    return null;
+  }
+  if (user) {
+    return null;
+  }
 
   // if no session (i.e. user is not logged in), show login button
   if (!user) {
