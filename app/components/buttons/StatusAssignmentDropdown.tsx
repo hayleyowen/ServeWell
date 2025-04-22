@@ -166,16 +166,20 @@ export default function StatusAssignmentDropdown({
            {/* Divider */}
            <hr className="my-1" />
 
-           {/* Ministry Options - Updated Text */}
-          {ministries.length > 0 ? ministries.map((ministry) => (
-            <div
-              key={ministry.ministry_id}
-              onClick={() => assignMinistry(ministry)}
-              className="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
-            >
-              {ministry.ministryname} {/* Removed "Assign: " prefix */}
-            </div>
-          )) : (
+           {/* Ministry Options - Filtered */}
+          {ministries.length > 0 
+            ? ministries
+                .filter(ministry => ministry.ministry_id !== minID) // Filter out the currently assigned ministry
+                .map((ministry) => (
+                  <div
+                    key={ministry.ministry_id}
+                    onClick={() => assignMinistry(ministry)}
+                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
+                  >
+                    {ministry.ministryname} {/* Removed "Assign: " prefix */}
+                  </div>
+                ))
+                : (
              <div className="px-4 py-2 text-gray-500 italic">No ministries found</div>
           )}
         </div>
