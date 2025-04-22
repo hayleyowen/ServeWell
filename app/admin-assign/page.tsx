@@ -101,20 +101,15 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
-                                            {admin.isSuper ? (
-                                                <div className="px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg inline-block text-center font-semibold">
-                                                    Super Admin
-                                                </div>
-                                            ) : (
-                                                <StatusAssignmentDropdown 
-                                                    member_id={admin.member_id}
-                                                    fname={admin.fname}
-                                                    minID={admin.minID}
-                                                    ministryname={admin.ministryname}
-                                                    auth0ID={auth0ID || ''}
-                                                    onUpdate={fetchAllAdmins}
-                                                />
-                                            )}
+                                            <StatusAssignmentDropdown 
+                                                member_id={admin.member_id}
+                                                fname={admin.fname}
+                                                minID={admin.minID}
+                                                ministryname={admin.isSuper ? "Super Admin" : admin.ministryname}
+                                                auth0ID={auth0ID || ''}
+                                                onUpdate={fetchAllAdmins}
+                                                isSuper={admin.isSuper}
+                                            />
                                         </td>
                                         <td className="px-4 py-2 flex justify-center items-center">
                                             <DemoteButton 

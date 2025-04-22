@@ -14,11 +14,12 @@ interface StatusAssignmentDropdownProps {
   ministryname: string | null;
   auth0ID: string; // Logged-in super admin's auth0ID
   onUpdate?: () => void; // Callback for parent refresh
+  isSuper?: boolean; // Add isSuper flag
 }
 
 export default function StatusAssignmentDropdown({ 
   member_id, fname, minID, ministryname,
-  auth0ID, onUpdate 
+  auth0ID, onUpdate, isSuper = false // Default to false
 }: StatusAssignmentDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -79,27 +80,58 @@ export default function StatusAssignmentDropdown({
     };
   }, [dropdownRef]);
 
-  // Function to assign a ministry
+  // Function to assign a ministry - when clicking a ministry in the dropdown
   async function assignMinistry(ministry: Ministry) {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin", { // Endpoint to assign ministry
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memID: member_id, minID: ministry.ministry_id }),
-      });
-
-      if (response.ok) {
-        console.log(`Assigned ministry ${ministry.ministryname} to ${fname}`);
-        if (onUpdate) onUpdate();
+      // Special handling if user is currently a super admin
+      // We need to demote them first from super admin (rID=2) to regular admin (rID=1)
+      // and assign ministry at the same time
+      if (isSuper) {
+        // Call a new API route that handles demoting and assigning in a single transaction
+        const response = await fetch("/api/admin/demote-and-assign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            member_id: member_id, 
+            minID: ministry.ministry_id,
+            auth0ID: auth0ID // Pass the current user's auth0ID
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error(`Error demoting super admin and assigning ministry:`, errorData);
+          alert(`Failed to update user. ${errorData.error || ''}`);
+          setLoading(false);
+          setIsOpen(false);
+          return;
+        }
       } else {
-         const errorData = await response.json().catch(() => ({}));
-        console.error(`Error assigning ministry to ${fname}:`, errorData);
-         alert(`Failed to assign ministry. ${errorData.error || ''}`);
+        // Regular admin assignment - use the existing API
+        const response = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memID: member_id, minID: ministry.ministry_id }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error(`Error assigning ministry:`, errorData);
+          alert(`Failed to assign ministry. ${errorData.error || ''}`);
+          setLoading(false);
+          setIsOpen(false);
+          return;
+        }
       }
+      
+      // Successful assignment
+      console.log(`Assigned ${fname} to ${ministry.ministryname}`);
+      if (onUpdate) onUpdate(); // Refresh the parent component data
+      
     } catch (error) {
-      console.error("Failed to assign ministry:", error);
-       alert('An error occurred while assigning the ministry.');
+      console.error("Failed to update user:", error);
+      alert('An error occurred while updating the user.');
     }
     setLoading(false);
     setIsOpen(false);
@@ -138,10 +170,12 @@ export default function StatusAssignmentDropdown({
     setIsOpen(false);
   }
 
-  // Determine button style based on assignment
-   const buttonClass = minID !== null
-    ? "px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center hover:bg-green-600 transition-colors" // Assigned style (Green)
-    : "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors"; // Unassigned style (Blue)
+  // Determine button style based on assignment or super admin status
+  const buttonClass = isSuper
+    ? "px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center hover:bg-green-600 transition-colors" // Super Admin (Green)
+    : minID !== null
+      ? "px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center hover:bg-green-600 transition-colors" // Assigned style (Green)
+      : "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors"; // Unassigned style (Blue)
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -155,16 +189,18 @@ export default function StatusAssignmentDropdown({
 
       {isOpen && (
         <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 max-h-60 overflow-y-auto">
-           {/* Promote Option - Updated Style */}
-           <div
-              onClick={promoteToSuperAdmin}
-              className="px-4 py-2 font-bold text-black hover:bg-gray-100 cursor-pointer transition-colors" // Changed text color, weight, and hover
-            >
-              Promote to Super Admin
-            </div>
+           {/* Promote Option - Only show for non-super admins */}
+           {!isSuper && (
+             <div
+                onClick={promoteToSuperAdmin}
+                className="px-4 py-2 font-bold text-black hover:bg-gray-100 cursor-pointer transition-colors"
+              >
+                Promote to Super Admin
+              </div>
+           )}
 
-           {/* Divider */}
-           <hr className="my-1" />
+           {/* Divider - Only show if both sections are visible */}
+           {!isSuper && ministries.length > 0 && <hr className="my-1" />}
 
            {/* Ministry Options - Filtered */}
           {ministries.length > 0 

@@ -609,3 +609,40 @@ export async function getMedia() {
     }
 }
 
+export async function getAllAdmins(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const query = `
+            SELECT 
+                cm.fname, 
+                cm.email, 
+                cm.member_id, 
+                u.minID, 
+                cm.church_id,
+                m.ministryname
+            FROM churchmember cm 
+            INNER JOIN users u ON cm.member_id = u.memID 
+            LEFT JOIN ministry m ON u.minID = m.ministry_id
+            WHERE u.rID = 1  -- Regular admins (rID = 1)
+            AND cm.church_id = (
+                SELECT church_id 
+                FROM churchmember 
+                WHERE member_id = (
+                    SELECT memID 
+                    FROM users 
+                    WHERE auth0ID = ?
+                )
+            );`
+        const values = [auth0ID];
+        const [data] = await connection.execute(query, values);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch all admins:", error);
+        throw new Error("Failed to fetch all admins.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
