@@ -115,6 +115,7 @@ export default function AdminAssignPage() {
                                                 <MinistryDropdown 
                                                     member_id={admin.member_id}
                                                     onUpdate={fetchAllAdmins}
+                                                    auth0ID={auth0ID || ''}
                                                 />
                                             )}
                                         </td>
