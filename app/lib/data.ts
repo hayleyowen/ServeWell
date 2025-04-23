@@ -12,10 +12,7 @@ export async function getUserChurch(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT c.church_id, c.churchname 
-             FROM church c
-             INNER JOIN churchmember cm ON c.church_id = cm.church_id
-             WHERE cm.member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
+            `SELECT churchID FROM users WHERE auth0ID = ?`,
             [auth0ID]
         );
         connection.release();
@@ -33,26 +30,17 @@ export async function showRequestingAdmins(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const query = `
-            SELECT 
-                cm.fname, 
-                cm.email, 
-                cm.member_id, 
-                u.minID, 
-                cm.church_id,
-                m.ministryname
-            FROM churchmember cm 
-            INNER JOIN users u ON cm.member_id = u.memID 
-            INNER JOIN requestingAdmins ra ON u.auth0ID = ra.auth0ID 
-            LEFT JOIN ministry m ON u.minID = m.ministry_id
-            WHERE ra.churchID = (
-                SELECT church_id 
-                FROM churchmember 
-                WHERE member_id = (
-                    SELECT memID 
-                    FROM users 
-                    WHERE auth0ID = ?
-                )
-            );`
+    SELECT 
+        u.fname, 
+        u.email,
+        u.minID, 
+        u.churchID,
+        m.ministryname,
+    FROM users u
+    INNER JOIN ministry m ON u.minID = m.ministry_id
+    INNER JOIN requestingAdmins ra ON ra.auth0ID = u.auth0ID
+    WHERE ra.auth0ID = ?
+`;
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
         connection.release();
@@ -70,15 +58,9 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
     try {
         const client = await pool.getConnection();
 
-        // create a new member record, if they are a new user
-        const insertMember = `insert ignore into churchmember (fname, email) values (?, ?);`;
-        const values = [nickname, email];
-        const [newMember] = await client.execute<ResultSetHeader>(insertMember, values);
-        const memID = newMember.insertId;
-
         // create a new user record, if they are a new user
-        const insertUser = `insert ignore into users (auth0ID, memID) values (?, ?);`;
-        const values1 = [Auth0_ID, memID];
+        const insertUser = `insert ignore into users (auth0ID, fname, email) values (?, ?, ?);`;
+        const values1 = [Auth0_ID, nickname, email];
         const [newUser] = await client.execute<ResultSetHeader>(insertUser, values1);
         client.release();
 

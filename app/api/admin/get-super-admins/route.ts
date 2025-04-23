@@ -9,17 +9,12 @@ export async function POST(req: Request) {
     // Get all super admins (rID = 2) from the same church as the requesting user
     const query = `
       SELECT cm.fname, cm.email, cm.member_id
-      FROM churchmember cm
-      INNER JOIN users u ON cm.member_id = u.memID
+      FROM users
       WHERE u.rID = 2
       AND cm.church_id = (
-        SELECT church_id 
-        FROM churchmember 
-        WHERE member_id = (
-          SELECT memID 
-          FROM users 
-          WHERE auth0ID = ?
-        )
+        SELECT churchID 
+        FROM users
+        WHERE auth0ID = ?
       )
     `;
     

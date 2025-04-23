@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface Admin {
+    user_id: number;
     member_id: number;
     fname: string;
     email: string;
@@ -99,7 +100,7 @@ export default function AdminAssignPage() {
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={admin.member_id}>
+                                    <tr key={admin.user_id}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
@@ -121,12 +122,12 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">
                                             {!admin.isSuper && (
                                                 <PromoteSuperAdminButton 
-                                                    member_id={admin.member_id} 
+                                                    user_id={admin.user_id} 
                                                     onPromote={fetchAllAdmins}
                                                 />
                                             )}
                                             <DemoteButton 
-                                                member_id={admin.member_id}
+                                                user_id={admin.user_id}
                                                 isSuper={admin.isSuper}
                                                 onDemote={fetchAllAdmins}
                                             />
