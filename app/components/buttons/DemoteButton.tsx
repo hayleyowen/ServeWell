@@ -12,7 +12,7 @@ export default function DemoteButton({ member_id, isSuper = false, onDemote }: D
 
     const handleDemote = async () => {
         const userType = isSuper ? 'super-admin' : 'admin';
-        if (!confirm(`Are you sure you want to remove this ${userType}? They will become a regular user.`)) {
+        if (!confirm(`Are you sure you want to remove this ${userType}? They will be removed from your church.`)) {
             return;
         }
 

@@ -32,8 +32,8 @@ export async function POST(req: Request) {
     }
     const requestingUserChurchId = adminUserRows[0].church_id;
 
-    // 2. Update promoted user's role to super-admin (rID = 2) in users table
-    const updateUserQuery = `UPDATE users SET rID = 2 WHERE memID = ?`;
+    // 2. Update promoted user's role to super-admin (rID = 2) and set minID to NULL in users table
+    const updateUserQuery = `UPDATE users SET rID = 2, minID = NULL WHERE memID = ?`;
     await client.execute(updateUserQuery, [member_id]);
     
     // 3. Update promoted user's church_id in churchmember table
