@@ -8,11 +8,11 @@ interface Ministry {
 }
 
 interface MinistryDropdownProps {
-  member_id: number;
+  userID: number;
   onUpdate?: () => void; // Add callback for parent refresh
 }
 
-export default function MinistryDropdown({ member_id, onUpdate }: MinistryDropdownProps) {
+export default function MinistryDropdown({ userID, onUpdate }: MinistryDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +55,7 @@ export default function MinistryDropdown({ member_id, onUpdate }: MinistryDropdo
       const response = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memID: member_id, minID: ministry.ministry_id }),
+        body: JSON.stringify({ userID: userID, minID: ministry.ministry_id }),
       });
 
       if (response.ok) {

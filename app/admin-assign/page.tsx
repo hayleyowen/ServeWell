@@ -9,8 +9,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface Admin {
-    user_id: number;
-    member_id: number;
+    userID: number;
     fname: string;
     email: string;
     minID: number | null;
@@ -62,6 +61,7 @@ export default function AdminAssignPage() {
                 return 0;
             });
 
+            console.log('Fetched admins:', sortedAdmins);
             setAllAdmins(sortedAdmins);
         } catch (error) {
             console.error('Error fetching admins:', error);
@@ -100,7 +100,7 @@ export default function AdminAssignPage() {
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={admin.user_id}>
+                                    <tr key={admin.userID}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
@@ -114,7 +114,7 @@ export default function AdminAssignPage() {
                                                 </div>    
                                             ) : (
                                                 <MinistryDropdown 
-                                                    member_id={admin.member_id}
+                                                    userID={admin.userID}
                                                     onUpdate={fetchAllAdmins}
                                                 />
                                             )}
@@ -122,12 +122,12 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">
                                             {!admin.isSuper && (
                                                 <PromoteSuperAdminButton 
-                                                    user_id={admin.user_id} 
+                                                    userID={admin.userID} 
                                                     onPromote={fetchAllAdmins}
                                                 />
                                             )}
                                             <DemoteButton 
-                                                user_id={admin.user_id}
+                                                userID={admin.userID}
                                                 isSuper={admin.isSuper}
                                                 onDemote={fetchAllAdmins}
                                             />

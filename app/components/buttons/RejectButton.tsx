@@ -2,16 +2,16 @@
 import { useState, useEffect, useRef } from "react";
 
 interface RejectButtonProps {
-    member_id: number; // Pass member_id as a prop
+    userID: number; // Pass member_id as a prop
 }
 
-export default function RejectButton({ member_id }: RejectButtonProps) {
+export default function RejectButton({ userID }: RejectButtonProps) {
     async function rejectUser() {
         try {
             const response = await fetch("/api/rejectUser", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ member_id: member_id }),
+                body: JSON.stringify({ userID }),
             });
             const data = await response.json();
             if (!response.ok) {

@@ -3,7 +3,7 @@ import pool from "@/app/lib/database";
 
 export async function POST(req: Request) {
   try {
-    const { user_id } = await req.json();
+    const { userID } = await req.json();
     const client = await pool.getConnection();
 
     // Update user's role to super-admin (rID = 2)
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       WHERE userID = ?
     `;
     
-    await client.execute(updateQuery, [user_id]);
+    await client.execute(updateQuery, [userID]);
     
     // Remove from requestingAdmins table since they're now a super-admin
     const deleteQuery = `
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       )
     `;
     
-    await client.execute(deleteQuery, [user_id]);
+    await client.execute(deleteQuery, [userID]);
 
     client.release();
     return NextResponse.json({ success: true });

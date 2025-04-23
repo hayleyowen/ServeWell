@@ -8,10 +8,10 @@ export async function POST(req: Request) {
 
     // Get all super admins (rID = 2) from the same church as the requesting user
     const query = `
-      SELECT cm.fname, cm.email, cm.member_id
+      SELECT fname, email
       FROM users
-      WHERE u.rID = 2
-      AND cm.church_id = (
+      WHERE rID = 2
+      AND churchID = (
         SELECT churchID 
         FROM users
         WHERE auth0ID = ?

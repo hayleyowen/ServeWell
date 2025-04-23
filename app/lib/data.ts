@@ -12,7 +12,7 @@ export async function getUserChurch(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT churchID FROM users WHERE auth0ID = ?`,
+            `SELECT church_id, churchname from church where church_id = (Select churchID FROM users WHERE auth0ID = ?)`,
             [auth0ID]
         );
         connection.release();
@@ -30,19 +30,20 @@ export async function showRequestingAdmins(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const query = `
-    SELECT 
-        u.fname, 
-        u.email,
-        u.minID, 
-        u.churchID,
-        m.ministryname,
-    FROM users u
-    INNER JOIN ministry m ON u.minID = m.ministry_id
-    INNER JOIN requestingAdmins ra ON ra.auth0ID = u.auth0ID
-    WHERE ra.auth0ID = ?
-`;
+            SELECT 
+                u.fname, 
+                u.email,
+                u.minID, 
+                u.churchID,
+                m.ministryname
+            FROM users u
+            INNER JOIN ministry m ON u.minID = m.ministry_id
+            INNER JOIN requestingAdmins ra ON ra.auth0ID = u.auth0ID
+            WHERE ra.auth0ID = ?
+        `;
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
+        console.log("Requesting admins data:", data);
         connection.release();
         return data;
     } catch (error) {
@@ -270,7 +271,7 @@ export async function getMinistriesByID(auth0ID: string) {
                 -- If rID is 2, match the church_id
                 (
                     (SELECT rID FROM users WHERE auth0ID = ?) = 2 
-                    AND church_id = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?))
+                    AND church_id = (SELECT churchID from users WHERE auth0ID = ?)
                 )
             `,
             [auth0ID, auth0ID, auth0ID, auth0ID]

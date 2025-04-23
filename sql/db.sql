@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS roles (
 
 CREATE TABLE IF NOT EXISTS users (
     userID INT PRIMARY KEY AUTO_INCREMENT,
-    fname VARCHAR(50) NOT NULL,
-    email VARCHAR(100) NOT NULL,
+    fname VARCHAR(50) Default '' NOT NULL,
+    email VARCHAR(100) Default '' NOT NULL,
     auth0ID VARCHAR(75) NOT NULL UNIQUE,
     minID INT DEFAULT NULL,
     rID INT DEFAULT 0,
@@ -105,10 +105,10 @@ Insert INTO roles (Role_ID, RoleName, Description) VALUES
 (1, 'MinistryAdmin', 'Can only see their ministry pages'),
 (2, 'SuperAdmin', 'Can see all pages and edit all ministries');
 
-Insert into users (auth0ID, minID, rID, churchID) VALUES 
-('auth0|67f6cca18ffc0293d013acf9',null,2,3),
-('auth0|67bcb00e834426c4e6977bf4', 4,1,3),
-('auth0|67fc53397136d22bbaaf5bf3', null, 0, NULL);
+Insert into users (auth0ID, fname, email, minID, rID, churchID) VALUES 
+('auth0|67f6cca18ffc0293d013acf9','developer', 'developer@gmail.com', null,2,3),
+('auth0|67bcb00e834426c4e6977bf4', 'james', 'james@email.com', 4,1,3),
+('auth0|67fc53397136d22bbaaf5bf3', 'bobert', 'bobert@email.com', null, 0, NULL);
 
 INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
 ('Sunday Morning Service', 'sermon', 'sample-youtube-id-1', '2024-03-24', 'Morning worship service', 1),
