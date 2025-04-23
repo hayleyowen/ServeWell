@@ -172,9 +172,9 @@ export default function StatusAssignmentDropdown({
 
   // Determine button style based on assignment or super admin status
   const buttonClass = isSuper
-    ? "px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center hover:bg-green-600 transition-colors" // Super Admin (Green)
+    ? "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors" // Super Admin (Blue)
     : minID !== null
-      ? "px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center hover:bg-green-600 transition-colors" // Assigned style (Green)
+      ? "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors" // Assigned style (Blue)
       : "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors"; // Unassigned style (Blue)
 
   return (
