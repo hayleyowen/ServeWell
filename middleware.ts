@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0/edge';
 import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff';
+import { getUserChurch } from './app/lib/data';
 
 export async function middleware(req: NextRequest) {
   try {
     const currentUrl = req.nextUrl.pathname;
     const previousUrl = req.cookies.get('prevUrl')?.value;
-    const appSessionCleared = req.cookies.get('appSessionCleared')?.value;
 
     console.log('Current URL:', currentUrl);
     console.log('Previous URL (cookie):', previousUrl);
-
-    // Step 0: Clear appSession on first page load
-    if (!appSessionCleared) {
-      console.log('Clearing appSession cookie on first page load...');
-      const response = NextResponse.next();
-      response.cookies.set('appSession', '', { maxAge: 0 });
-      response.cookies.set('appSessionCleared', 'true');
-      response.cookies.set('prevUrl', currentUrl); // track for next request
-      return response;
-    }
 
     // Step 1: Check for appSession
     const appSession = !!req.cookies.get('appSession')?.value;
@@ -32,7 +22,14 @@ export async function middleware(req: NextRequest) {
 
     // Step 2: Get session
     const session = await getSession(req, NextResponse.next());
-    if (!session) {
+    const currTime = Date.now() / 1000; // Convert to seconds
+    const sessionExpiration1hr = session?.accessTokenExpiresAt - 82800; // Adjust for timezone offset
+    //const sessionExpiration1min = sessionExpiration1hr - 3540;
+    const timeRemaining = Math.floor((sessionExpiration1hr - currTime) / 60); // Convert to minutes
+    const secondsRemaining = Math.floor((sessionExpiration1hr - currTime) % 60); // Remaining seconds
+    console.log('Time Remaining:', timeRemaining, "minutes and", secondsRemaining, "seconds"); 
+    if (!session || sessionExpiration1hr < currTime) {
+      req.cookies.delete('appSession');
       console.log('No session found, redirecting to login...');
       const response = NextResponse.redirect(new URL('/api/auth/login', req.url));
       response.cookies.set('prevUrl', currentUrl);
@@ -41,7 +38,9 @@ export async function middleware(req: NextRequest) {
 
     const authid = session.user.sub;
 
-    // Step 3: Get user role
+    // Step 3: Get user role & churchID
+    const userChurch = await getUserChurch(authid);
+    console.log('User Church:', userChurch);
     const userRole = await userStuff(authid);
     const role = userRole[0]?.rID;
     console.log('User Role:', role);

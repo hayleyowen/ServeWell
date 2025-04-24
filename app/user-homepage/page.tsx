@@ -63,6 +63,7 @@ export default function UserHomepage() {
 
           // Fetch churches
           const churchData = await getUserChurch(auth0ID);
+          console.log('Church Data:', churchData); // Log the fetched church data
           setChurches(churchData as Church[]);
           setFetchError(null); // Clear any previous errors
         } catch (error) {

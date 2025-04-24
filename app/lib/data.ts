@@ -1,7 +1,6 @@
 "use server";
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-import { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2';
 
 ////////////////////////////////////////
 /////// User-related functions ///////
@@ -10,19 +9,23 @@ import { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2';
 export async function getUserChurch(auth0ID: string) {
     let connection;
     try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT church_id, churchname from church where church_id = (Select churchID FROM users WHERE auth0ID = ?)`,
-            [auth0ID]
-        );
-        connection.release();
+        const result = await fetch(`http://localhost:3000/api/userChurch`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ auth0ID }),
+        });
+        const data = await result.json();
+        console.log("User Church Data:", data);
         return data;
-    } catch (error) {
-        console.error("Failed to fetch user church:", error);
-        throw new Error("Failed to fetch user church.");
+    }
+    catch (error) {
+        console.error("Error fetching user church:", error);
+        return { error: "Failed to fetch user church" };
     } finally {
         if (connection) connection.release();
-    }
+    }    
 }   
 
 export async function showRequestingAdmins(auth0ID: string) {
@@ -62,7 +65,7 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
         // create a new user record, if they are a new user
         const insertUser = `insert ignore into users (auth0ID, fname, email) values (?, ?, ?);`;
         const values1 = [Auth0_ID, nickname, email];
-        const [newUser] = await client.execute<ResultSetHeader>(insertUser, values1);
+        const [newUser] = await client.execute(insertUser, values1);
         client.release();
 
         return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
@@ -139,7 +142,7 @@ export async function createChurch(churchData: {
 
     try {
         connection = await pool.getConnection();
-        const [result] = await connection.execute<ResultSetHeader>(
+        const [result] = await connection.execute(
             `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -167,12 +170,12 @@ export async function getChurchByID(churchID: number) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [data] = await connection.execute<RowDataPacket[]>(
+        const [data] = await connection.execute(
             `SELECT * FROM church WHERE church_id = ? LIMIT 1`,
             [churchID]
         );
         connection.release();
-        return data[0] || null; // Return the first result or null if not found
+        return data || null; // Return the first result or null if not found
     } catch (error) {
         console.error("Failed to fetch church by ID:", error);
         throw new Error("Failed to fetch church.");
@@ -196,7 +199,7 @@ export async function updateChurch(churchData: {
         connection = await pool.getConnection();
     
         // Check if the church exists
-        const [existingChurch] = await connection.execute<RowDataPacket[]>(
+        const [existingChurch] = await connection.execute(
             `SELECT church_id FROM church WHERE churchname = ?`,
             [churchData.churchName]
         );

@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
-import { getUserChurch } from "@/app/lib/data";
+import pool from "@/app/lib/database";
 
 export async function POST(req: Request) {
     try {
-        const { auth0_id } = await req.json();
+        const { auth0ID } = await req.json();
         
-        if (!auth0_id) {
+        if (!auth0ID) {
             return NextResponse.json({ error: "Auth0 ID is required" }, { status: 400 });
         }
 
-        const result = await getUserChurch(auth0_id);
+        // Fetch user church information
+        const connection = await pool.getConnection();
+        const query = `SELECT church_id, churchname from church where church_id = (Select churchID FROM users WHERE auth0ID = ?)`;
+        const [result] = await connection.execute(query, [auth0ID]);
+        console.log("User Church Data:", result);
+        connection.release();
+
         return NextResponse.json(result);
     } catch (error) {
         console.error("Error fetching user churches:", error);
