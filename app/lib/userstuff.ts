@@ -15,6 +15,39 @@ export async function userStuff(authid: string) {
         return { error: 'Failed to fetch user role' };
     }
 }
+export async function userChurchID(authid: string) {
+    try {
+        const result = await fetch('http://localhost:3000/api/userChurch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({auth0ID: authid}),
+        });
+        const data = await result.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching user church ID:', error);
+        return { error: 'Failed to fetch user church ID' };
+    }
+}
+
+export async function userMinistry(authid: string) {
+    try {
+        const result = await fetch('http://localhost:3000/api/userMinistry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({authid}),
+        });
+        const data = await result.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching user ministry:', error);
+        return { error: 'Failed to fetch user ministry' };
+    }
+}
 
 export async function userMinistryID(authid: string) {
     try {

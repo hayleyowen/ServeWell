@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0/edge';
-import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff';
-import { getUserChurch } from './app/lib/data';
+import { userStuff, newUser, userMinistryID, userChurchID } from '@/app/lib/userstuff';
 
 export async function middleware(req: NextRequest) {
   try {
@@ -39,17 +38,29 @@ export async function middleware(req: NextRequest) {
     const authid = session.user.sub;
 
     // Step 3: Get user role & churchID
-    const userChurch = await getUserChurch(authid);
-    console.log('User Church:', userChurch);
+    const userChurch = await userChurchID(authid);
+    const churchID = userChurch[0]?.church_id;
+    console.log('User Church ID:', churchID);
     const userRole = await userStuff(authid);
     const role = userRole[0]?.rID;
     console.log('User Role:', role);
 
     // Step 4: RBAC
     if (role === 2) {
-      console.log('Super Admin - allow');
-      const response = NextResponse.next();
-      response.cookies.set('prevUrl', currentUrl);
+      if (currentUrl.includes('/ministry') || currentUrl.includes('/church')){
+        const ministryId = currentUrl.split('/')[2];
+        const churchId = currentUrl.split('/')[3];
+        if (ministryId === churchID.toString() || churchId === churchID.toString()) {
+          console.log('Super admin accessing authorized route');
+          const response = NextResponse.next();
+          response.cookies.set('prevUrl', currentUrl);
+        }
+        console.log('Super admin unauthorized access to ministry/church route');
+        const redirectUrl = new URL(previousUrl || '/', req.url);
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.set('prevUrl', currentUrl);  
+
+      }
       return response;
     }
 
