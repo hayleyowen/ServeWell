@@ -10,9 +10,10 @@ interface Ministry {
 interface MinistryDropdownProps {
   member_id: number;
   onUpdate?: () => void; // Add callback for parent refresh
+  auth0ID: string; // Add auth0ID prop
 }
 
-export default function MinistryDropdown({ member_id, onUpdate }: MinistryDropdownProps) {
+export default function MinistryDropdown({ member_id, onUpdate, auth0ID }: MinistryDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -21,20 +22,40 @@ export default function MinistryDropdown({ member_id, onUpdate }: MinistryDropdo
 
   useEffect(() => {
     async function fetchMinistries() {
+      if (!auth0ID) return; // Don't fetch if auth0ID is not provided
       try {
-        const response = await fetch("/api/ministries", {
+        // Pass auth0ID as a query parameter
+        const response = await fetch(`/api/ministries?auth0ID=${encodeURIComponent(auth0ID)}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
+
+        // Check if the response was successful
+        if (!response.ok) {
+          console.error("Failed to fetch ministries, status:", response.status);
+          const errorData = await response.json().catch(() => ({})); // Try to get error details
+          console.error("Error details:", errorData);
+          setMinistries([]); // Set to empty array on error
+          return; // Stop execution
+        }
+
         const data = await response.json();
-        setMinistries(data);
+
+        // Ensure data is an array before setting state
+        if (Array.isArray(data)) {
+          setMinistries(data);
+        } else {
+          console.error("Received non-array data for ministries:", data);
+          setMinistries([]); // Set to empty array if data is not an array
+        }
+
       } catch (error) {
         console.error("Failed to load ministries", error);
       }
     }
 
     fetchMinistries();
-  }, []);
+  }, [auth0ID]); // Add auth0ID to dependency array
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

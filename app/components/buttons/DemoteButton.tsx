@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaTrash } from 'react-icons/fa';
 
 interface DemoteButtonProps {
     member_id: number;
@@ -11,7 +12,7 @@ export default function DemoteButton({ member_id, isSuper = false, onDemote }: D
 
     const handleDemote = async () => {
         const userType = isSuper ? 'super-admin' : 'admin';
-        if (!confirm(`Are you sure you want to remove this ${userType}? They will become a regular user.`)) {
+        if (!confirm(`Are you sure you want to remove this ${userType}? They will be removed from your church.`)) {
             return;
         }
 
@@ -45,9 +46,13 @@ export default function DemoteButton({ member_id, isSuper = false, onDemote }: D
         <button
             onClick={handleDemote}
             disabled={isLoading}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+            className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed ml-2"
+            title="Remove admin"
         >
-            {isLoading ? 'Removing...' : 'Remove'}
+            {isLoading ? 
+                <span className="px-1">...</span> : 
+                <FaTrash size={16} />
+            }
         </button>
     );
 } 
