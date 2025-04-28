@@ -78,8 +78,20 @@ export default function Home() {
       <section className="t-20 min-h-screen flex flex-col">
         <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
-            <div className="grid grid-cols-1 gap-8 w-full max-w-4xl">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <Image src="/Servewell.png" width={500} height={500} alt="Logo" />
+              <div className="bg-white bg-opacity-20 p-8 rounded-lg shadow-lg text-center text-white max-w-lg">    
+                <p className="text-lg leading-relaxed">
+                  <span className="font-bold">Empower Your Church to Thrive with ServeWell — the Church Management Software Designed for Small and Rural Churches. </span>
+                  <br />
+                    Small churches deserve powerful tools without the heavy price tag. ServeWell is a free church management software built specifically for small and rural churches — designed to help you manage your finances, members, and schedules with ease.
+                    We focus on a clean, simple interface that’s easy for everyone to use, so you can spend less time figuring out software and more time focusing on ministry. We make it easy (and affordable) to make the most of what you have — so your ministry can not just survive, but grow and thrive in today’s world.
+                  <br />
+                  <span className="font-bold">Join us to get everything you need to help your church stay organized, healthy, and ready to grow.</span>
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-8 w-full max-w-6xl mt-8">
               <LoginButton />
             </div>
           </div>
