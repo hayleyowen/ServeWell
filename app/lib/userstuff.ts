@@ -39,7 +39,7 @@ export async function userMinistry(authid: string) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({authid}),
+            body: JSON.stringify({auth0ID :authid}),
         });
         const data = await result.json();
         return data;

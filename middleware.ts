@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0/edge';
-import { userStuff, newUser, userMinistryID, userChurchID } from '@/app/lib/userstuff';
+import { userStuff, newUser, userMinistry, userMinistryID, userChurchID } from '@/app/lib/userstuff';
+import { MinistryDetailsButton } from './app/components/buttons/MinistryDetailsButton';
 
 export async function middleware(req: NextRequest) {
   try {
@@ -14,23 +15,26 @@ export async function middleware(req: NextRequest) {
     const appSession = !!req.cookies.get('appSession')?.value;
     if (!appSession) {
       console.log('No appSession cookie, redirecting to login...');
-      const response = NextResponse.redirect(new URL('/api/auth/login', req.url));
+      const response = NextResponse.redirect(new URL('/', req.url));
       response.cookies.set('prevUrl', currentUrl); // track before redirect
       return response;
     }
 
     // Step 2: Get session
     const session = await getSession(req, NextResponse.next());
+
     const currTime = Date.now() / 1000; // Convert to seconds
     const sessionExpiration1hr = session?.accessTokenExpiresAt - 82800; // Adjust for timezone offset
     //const sessionExpiration1min = sessionExpiration1hr - 3540;
     const timeRemaining = Math.floor((sessionExpiration1hr - currTime) / 60); // Convert to minutes
     const secondsRemaining = Math.floor((sessionExpiration1hr - currTime) % 60); // Remaining seconds
     console.log('Time Remaining:', timeRemaining, "minutes and", secondsRemaining, "seconds"); 
+
+
     if (!session || sessionExpiration1hr < currTime) {
       req.cookies.delete('appSession');
       console.log('No session found, redirecting to login...');
-      const response = NextResponse.redirect(new URL('/api/auth/login', req.url));
+      const response = NextResponse.redirect(new URL('/', req.url));
       response.cookies.set('prevUrl', currentUrl);
       return response;
     }
@@ -47,21 +51,44 @@ export async function middleware(req: NextRequest) {
 
     // Step 4: RBAC
     if (role === 2) {
-      if (currentUrl.includes('/ministry') || currentUrl.includes('/church')){
+      if (currentUrl.includes('/ministry')){
         const ministryId = currentUrl.split('/')[2];
-        const churchId = currentUrl.split('/')[3];
-        if (ministryId === churchID.toString() || churchId === churchID.toString()) {
-          console.log('Super admin accessing authorized route');
+        console.log('Ministry ID:', ministryId);
+        const userMinistries = await userMinistry(authid);
+        const ministryID = userMinistries[0]?.ministry_id;
+        console.log('Ministries associated with user church:', ministryID);
+        if (ministryId === ministryID.toString()) {
+          console.log('Super admin accessing authorized ministry route');
           const response = NextResponse.next();
           response.cookies.set('prevUrl', currentUrl);
+          return response;
         }
-        console.log('Super admin unauthorized access to ministry/church route');
+        console.log('Super admin trying access ministry route not in their church');
         const redirectUrl = new URL(previousUrl || '/', req.url);
         const response = NextResponse.redirect(redirectUrl);
         response.cookies.set('prevUrl', currentUrl);  
+        return response;
+      }
+      else if (currentUrl.includes('/church')) {
+        const churchId = currentUrl.split('/')[3];
+        console.log('Church ID:', churchId);
+        const userChurches = await userChurchID(authid);
+        const churchID = userChurches[0]?.church_id;
+        console.log('Churches associated with user church:', churchID);
+        if (churchId === churchID.toString()) {
+          console.log('Super admin accessing authorized church route');
+          const response = NextResponse.next();
+          response.cookies.set('prevUrl', currentUrl);
+          return response;
+        } else {
+          console.log('Super admin trying access church route not their church');
+          const redirectUrl = new URL(previousUrl || '/', req.url);
+          const response = NextResponse.redirect(redirectUrl);
+          response.cookies.set('prevUrl', currentUrl);  
+          return response;
+        }
 
       }
-      return response;
     }
 
     if (role === 0) {
@@ -123,5 +150,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|public|favicon.ico|pages/|api/auth/).*)'],
+  matcher: ['/((?!api|_next|public|favicon.ico|pages/|api/auth/|).*)'],
 };

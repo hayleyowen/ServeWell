@@ -500,33 +500,15 @@ export async function createSuperAdmin(data: {
 
         const churchId = churchIdResult[0]?.church_id; // Increment the church ID for the new church
 
-        // Insert into churchmember table
-        const [memberResult] = await connection.execute(
-            `
-            INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status)
-            VALUES (?, null, null, ?, null, ?, 'Active')
-            ON DUPLICATE KEY UPDATE 
-                church_id = VALUES(church_id);
-            `,
-                [
-                    data.firstName,
-                    data.email,
-                    churchId
-                ]
-            
-        );
-
-        const member_id = memberResult.insertId;
-
         const [adminResult] = await connection.execute(
             `
-            INSERT INTO users (auth0ID, memID, rID, minID)
-            VALUES (?, ?, 2, NULL)
+            INSERT INTO users (fname, email, auth0ID, rID, minID, churchID)
+            VALUES (?, ?, ?, 2, NULL, ?)
             ON DUPLICATE KEY UPDATE 
                 rID = VALUES(rID),
                 minID = VALUES(minID);
             `,
-            [data.auth0ID, member_id]
+            [data.firstName, data.email, data.auth0ID, churchId]
         );
 
         await connection.commit(); // Commit the transaction
@@ -534,7 +516,6 @@ export async function createSuperAdmin(data: {
 
         return {
             success: true,
-            member_id: member_id,
             admin_id: adminResult.insertId
         };
     } catch (error) {
