@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import TopNav from '@/app/components/navigation/TopNav';
 import { UserProvider } from "@auth0/nextjs-auth0/client";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +28,19 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <UserProvider>
-
           <TopNav />
           {children}
-
+          <footer className="fixed bottom-0 left-0 right-0 flex justify-center py-4">
+            <div className="flex space-x-4">
+              <span className="text-white">|</span>
+              <Link href="https://github.com/seanb0/ServeWell/wiki/Usage" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:underline">How To Use</Link>
+              <span className="text-white">|</span>
+              <Link href="https://github.com/seanb0/ServeWell/wiki/About-Us" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:underline">About Us</Link>
+              <span className="text-white">|</span>
+              <Link href="https://github.com/seanb0/ServeWell/wiki/Contact-Us" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:underline">Contact Us</Link>
+              <span className="text-white">|</span>
+            </div>
+          </footer>
         </UserProvider>
       </body>
     </html>
