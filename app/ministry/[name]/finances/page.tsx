@@ -22,6 +22,14 @@ export default function FinancesTrackingPage() {
     const [switchingView, setSwitchingView] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [isFullScreen, setIsFullScreen] = useState(false);
+<<<<<<< Updated upstream:app/ministry/[name]/finances/page.tsx
+=======
+    const router = useRouter();
+    const pathname = usePathname();
+    const pathSegments = pathname.split('/'); // ✅ ADD THIS
+    const ministryID = pathSegments[2];       // ✅ ADD THIS
+    const pageType = pathSegments[3];         // ✅ ADD THIS
+>>>>>>> Stashed changes:app/ministry/[id]/finances/page.tsx
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -138,6 +146,11 @@ export default function FinancesTrackingPage() {
     
             formData.append("file", file);
             formData.append("tab_name", tabName);
+<<<<<<< Updated upstream:app/ministry/[name]/finances/page.tsx
+=======
+            formData.append("ministry_id", ministryID);
+            formData.append("page_type", pageType);
+>>>>>>> Stashed changes:app/ministry/[id]/finances/page.tsx
     
             try {
                 const response = await fetch("/api/files", {
@@ -202,6 +215,7 @@ export default function FinancesTrackingPage() {
         }, 500);
     };
 
+<<<<<<< Updated upstream:app/ministry/[name]/finances/page.tsx
     const deleteChart = (chartId) => {
         setCharts(charts.filter(chart => chart.id !== chartId));
         if (activeChart === chartId) {
@@ -210,6 +224,143 @@ export default function FinancesTrackingPage() {
     };
 
 
+=======
+    const deleteChart = async (chartId, tabName) => {
+        const pathSegments = pathname.split('/');
+        const ministry = pathSegments[2] || "defaultMinistry";
+        const pageType = pathSegments[3] || "defaultPageType";
+    
+        if (!tabName) {
+            alert("❌ Tab name is missing.");
+            return;
+        }
+    
+        try {
+            const response = await fetch("/api/files", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tab_name: tabName, ministry_id: ministryID, page_type: pageType }),
+            });
+    
+            const result = await response.json();
+    
+            if (result.success) {
+                console.log("✅ File deleted successfully");
+    
+                setCharts(prevCharts => {
+                    const updatedCharts = prevCharts.filter(chart => chart.id !== chartId);
+                    
+                    // Ensure we set a new active chart if the deleted chart was active
+                    if (activeChart === chartId) {
+                        setActiveChart(updatedCharts.length > 0 ? updatedCharts[0].id : null);
+                    }
+    
+                    return updatedCharts;
+                });
+    
+            } else {
+                console.error("❌ Delete failed:", result.error);
+                alert("❌ Delete failed! " + result.error);
+            }
+        } catch (error) {
+            console.error("❌ Error deleting file:", error);
+            alert("❌ Error deleting file. See console for details.");
+        }
+    };
+
+    
+    useEffect(() => {
+        console.log("✅ useEffect is running");
+    
+        const pathSegments = pathname.split('/');
+        const ministry = pathSegments[2] || "defaultMinistry";
+        const pageType = pathSegments[3] || "defaultPageType";
+    
+        console.log(`📢 Fetching files for: Ministry = ${ministry}, Page Type = ${pageType}`);
+    
+        fetchStoredFiles(ministry, pageType);
+    }, [router.isReady]);
+    
+    const fetchStoredFiles = async (ministryID, pageType) => {
+        const apiURL = `/api/files?ministry_id=${encodeURIComponent(ministryID)}&page_type=${encodeURIComponent(pageType)}`;
+    
+        console.log("🌍 Attempting API request:", apiURL);
+    
+        try {
+            const response = await fetch(apiURL);
+            console.log("📡 Response Status:", response.status);
+    
+            if (!response.ok) {
+                console.error(`❌ API Request Failed: ${response.statusText}`);
+                return;
+            }
+    
+            const result = await response.json();
+            console.log("✅ API Response:", result);
+    
+            if (!result.success || !result.files) {
+                console.warn("⚠️ No valid file data found.");
+                return;
+            }
+    
+            const newCharts = result.files.map((file, index) => {
+                const byteCharacters = atob(file.fileData);
+                const byteArray = new Uint8Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteArray[i] = byteCharacters.charCodeAt(i);
+                }
+    
+                const blob = new Blob([byteArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                const fileReader = new FileReader();
+    
+                return new Promise((resolve) => {
+                    fileReader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: "array" });
+    
+                        if (!workbook.SheetNames.length) {
+                            console.error("❌ No sheets found in workbook.");
+                            return;
+                        }
+    
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
+                        const formattedData = jsonData.map(row =>
+                            row.map(cell => ({ value: cell || "" }))
+                        );
+    
+                        resolve({
+                            id: Date.now() + index,
+                            name: file.tabName || `Finance Chart ${index + 1}`,
+                            data: formattedData,
+                            chartType: "pie",
+                            chartData: null,
+                        });
+                    };
+    
+                    fileReader.readAsArrayBuffer(blob);
+                });
+            });
+    
+            const loadedCharts = await Promise.all(newCharts);
+            setCharts(loadedCharts);
+            if (loadedCharts.length > 0) {
+                setActiveChart(loadedCharts[0].id);
+            }
+            // ✅ Add this to regenerate chartData from spreadsheet data
+            loadedCharts.forEach(chart => {
+                updateChartData(chart.id, chart.data);
+            });
+            
+    
+        } catch (error) {
+            console.error("❌ Error fetching stored files:", error);
+            alert(`Error fetching files: ${error.message}`);
+        }
+    }; 
+    
+>>>>>>> Stashed changes:app/ministry/[id]/finances/page.tsx
     const toggleChart = () => {
         if (!activeChart || !charts.find(chart => chart.id === activeChart).data ||
             charts.find(chart => chart.id === activeChart).data.length === 0 ||
@@ -361,9 +512,20 @@ export default function FinancesTrackingPage() {
             <div className="flex-1 flex flex-col bg-blue-500 justify-center">
                 <div className={`bg-white rounded-lg shadow-md p-6 mt-10 flex flex-col items-center overflow-auto ${isFullScreen ? "fixed inset-0 z-50" : ""}`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
                     <div className="flex justify-between items-center w-full mb-4">
-                        <h1 className="text-xl font-semibold text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-semibold text-gray-700">
                             Finance SpreadSheet
-                        </h1>
+                            </h1>
+                            {/* Hint Icon */}
+                            <div className="relative group">
+                            <div className="w-5 h-5 bg-blue-200 text-blue-700 font-bold rounded-full flex items-center justify-center text-xs cursor-pointer">
+                                ?
+                            </div>
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
+                                This is the inline help tip! You can explain to your users what this section is about.
+                            </div>
+                            </div>
+                        </div>
                         <div className="flex gap-4">
                             <label className="flex items-center text-sm font-medium text-gray-700">
                                 <input
@@ -382,7 +544,6 @@ export default function FinancesTrackingPage() {
                             </button>
                         </div>
                     </div>
-
                     <div className="flex gap-2 mb-4">
                         <input
                             type="text"
@@ -404,16 +565,36 @@ export default function FinancesTrackingPage() {
                             </div>
                         ))}
                     </div>
-                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
-                    <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save File</button>
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                    {/* Hidden real file input */}
+                    <input
+                        id="fileUpload"
+                        type="file"
+                        accept=".xlsx, .xls, .csv"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                    />
+
+                    {/* Custom Upload Button */}
+                    <label htmlFor="fileUpload">
+                        <div className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600">
+                            Upload File
+                        </div>
+                    </label>
+
+                    {/* Save File Button */}
+                    <button
+                        onClick={handleSaveClick}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
-                        <MenuItem onClick={saveToComputer}>Save to this computer</MenuItem>
-                        <MenuItem onClick={saveToCloud}>Save to the cloud</MenuItem>
-                    </Menu>
+                        Save File
+                    </button>
+                </div>
+
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                    <MenuItem onClick={saveToComputer}>Save to this computer</MenuItem>
+                    <MenuItem onClick={saveToCloud}>Save to the cloud</MenuItem>
+                </Menu>
                     {isLoading || switchingView ? (
                         <LoadingSpinner />
                     ) : (

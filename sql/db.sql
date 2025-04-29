@@ -72,8 +72,16 @@ CREATE TABLE uploaded_files (
     file_name TEXT NOT NULL,
     file_data LONGBLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+<<<<<<< Updated upstream
     tab_name VARCHAR(255) NOT NULL
+=======
+    tab_name VARCHAR(255) NOT NULL,
+    ministry_id INT NOT NULL,
+    page_type VARCHAR(255) NOT NULL,
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
+>>>>>>> Stashed changes
 );
+
 
 CREATE TABLE IF NOT EXISTS media (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -87,7 +95,20 @@ CREATE TABLE IF NOT EXISTS media (
     FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
+<<<<<<< Updated upstream
 -- Inserting data into the tables
+=======
+CREATE TABLE calendar_events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    start DATETIME NOT NULL,
+    ministry VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description VARCHAR(255) NULL
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
+
+);
+>>>>>>> Stashed changes
 
 INSERT INTO church (churchname, churchphone, streetaddress, postalcode, city, denomination, email) 
 VALUES ('Temple Baptist Church', '318-555-5555', '1234 Main St', '71111', 'Shreveport', 'Baptist', 'hello@temple.life'),
