@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     // Update user's role to super-admin (rID = 2)
     const updateQuery = `
       UPDATE users 
-      SET rID = 2 
+      SET rID = 2 , minID = NULL
       WHERE userID = ?
     `;
     

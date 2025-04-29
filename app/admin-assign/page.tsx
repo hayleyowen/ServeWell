@@ -27,12 +27,14 @@ export default function AdminAssignPage() {
         if (!auth0ID) return;
         
         try {
-            // Fetch regular admins
+            // Fetch requesting admins
             const adminResponse = await fetch('/api/admin/request-admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ auth0ID: auth0ID }),
             });
+
+            // Fetch assigned admins
 
             // Fetch super admins
             const superAdminResponse = await fetch('/api/admin/get-super-admins', {
@@ -100,7 +102,7 @@ export default function AdminAssignPage() {
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={admin.userID}>
+                                    <tr key={[admin.userID, admin.fname]}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">

@@ -17,9 +17,9 @@ export async function POST(req: Request) {
         WHERE auth0ID = ?
       )
     `;
-    
     const [superAdmins] = await client.execute(query, [auth0ID]);
     
+    console.log("Super admins fetched:", superAdmins);
     client.release();
     return NextResponse.json(superAdmins);
   } catch (error) {

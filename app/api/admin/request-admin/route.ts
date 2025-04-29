@@ -7,9 +7,7 @@ export async function POST(req: Request) {
   try {
     const client = await pool.getConnection();
 
-    console.log('Auth0ID at API:', auth0ID);
     const ra = await showRequestingAdmins(auth0ID);
-    console.log(ra);
     client.release();
 
     return NextResponse.json(ra);

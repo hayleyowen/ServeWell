@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
 interface DemoteButtonProps {
-    user_id: number;
+    userID: number;
     isSuper?: boolean;
     onDemote?: () => void;
 }
 
-export default function DemoteButton({ user_id, isSuper = false, onDemote }: DemoteButtonProps) {
+export default function DemoteButton({ userID, isSuper = false, onDemote }: DemoteButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleDemote = async () => {
@@ -22,7 +22,7 @@ export default function DemoteButton({ user_id, isSuper = false, onDemote }: Dem
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user_id }),
+                body: JSON.stringify({ userID }),
             });
 
             if (!response.ok) {

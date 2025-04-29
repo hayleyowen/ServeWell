@@ -44,8 +44,12 @@ export default function Home() {
     if (!auth0_id) {
       return;
     }
+    if (isLoading) {
+      return;
+    }
 
     const fetchUsers = async () => {
+      if (!isLoading){
         try {
             const response = await fetch('/api/userChurch', {
                 method: 'POST',
@@ -68,10 +72,11 @@ export default function Home() {
         } catch (error) {
             console.error('Error fetching user church:', error);
         }
+      }  
     };
 
     fetchUsers();
-}, [auth0_id]); 
+}, [auth0_id, isLoading]); 
 
   if (isLoading) {
     return null;

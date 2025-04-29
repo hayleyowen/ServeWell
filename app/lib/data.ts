@@ -33,16 +33,16 @@ export async function showRequestingAdmins(auth0ID: string) {
     try {
         connection = await pool.getConnection();
         const query = `
-            SELECT 
+            SELECT
+                u.userID, 
                 u.fname, 
                 u.email,
-                u.minID, 
-                u.churchID,
+                u.minID,
                 m.ministryname
             FROM users u
-            INNER JOIN ministry m ON u.minID = m.ministry_id
+            LEFT JOIN ministry m on u.minID = m.ministry_id
             INNER JOIN requestingAdmins ra ON ra.auth0ID = u.auth0ID
-            WHERE ra.auth0ID = ?
+            WHERE ra.churchID = (Select churchID from users where auth0ID = ?);
         `;
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
