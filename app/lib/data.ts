@@ -279,6 +279,25 @@ export async function updateChurch(churchData: {
     }
 }
 
+// Delete church by ID
+export async function deleteChurchByID(id: number) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute<ResultSetHeader>(
+            "DELETE FROM church WHERE church_id = ?",
+            [id]
+        );
+        connection.release();
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error("Failed to delete church:", error);
+        throw new Error("Failed to delete church.");
+    } finally {
+        if (connection) connection.release();
+    }
+}
+
 ////////////////////////////////////////
 ////// Ministry-related functions //////
 ////////////////////////////////////////
