@@ -1,24 +1,35 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
+// 🔧 Helper to resolve slug to numeric ministry_id
+async function getMinistryIdBySlug(connection: any, slug: string): Promise<number | null> {
+    const [rows] = await connection.execute("SELECT ministry_id FROM ministry WHERE url_path = ?", [slug]);
+    return rows.length > 0 ? rows[0].ministry_id : null;
+}
+
+// GET: Fetch events by ministry slug
 export async function GET(req: Request) {
     let connection;
     try {
         const { searchParams } = new URL(req.url);
-        // GET handler
-        const ministryId = searchParams.get("ministryId");
+        const ministrySlug = searchParams.get("ministryId"); // actually a slug now
 
-        if (!ministryId) {
-            return NextResponse.json({ success: false, error: "Ministry ID is required" }, { status: 400 });
+        if (!ministrySlug) {
+            return NextResponse.json({ success: false, error: "Ministry ID (slug) is required" }, { status: 400 });
         }
 
         connection = await pool.getConnection();
+        const ministryId = await getMinistryIdBySlug(connection, ministrySlug);
+
+        if (!ministryId) {
+            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+        }
+
         const [rows] = await connection.execute(
-            "SELECT id, title, start, ministry, description FROM calendar_events WHERE ministry = ?",
+            "SELECT id, title, start, ministry_id, description FROM calendar_events WHERE ministry_id = ?",
             [ministryId]
         );
 
-        connection.release();
         return NextResponse.json({ success: true, events: rows });
 
     } catch (error) {
@@ -29,35 +40,31 @@ export async function GET(req: Request) {
     }
 }
 
+// POST: Add new event by ministry slug
 export async function POST(req: Request) {
     let connection;
     try {
-        const { title, start, ministry, description } = await req.json();
+        const { title, start, ministry, description } = await req.json(); // ministry is a slug
 
-        // POST and PUT: check ministry is number
         if (!title || !start || ministry === undefined) {
             return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
         }
 
-
-        console.log("🛠️ Received Event:", { title, start, ministry, description });
-
-        // Convert start time to MySQL format with correct timezone handling
         const eventTime = new Date(start);
         const localTime = new Date(eventTime.getTime() - eventTime.getTimezoneOffset() * 60000);
-        const formattedStart = localTime.toISOString().slice(0, 19).replace("T", " "); // "YYYY-MM-DD HH:MM:SS"
-
-        console.log("📅 Corrected Start Time:", formattedStart);
+        const formattedStart = localTime.toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
-        await connection.execute(
-            "INSERT INTO calendar_events (title, start, ministry, description) VALUES (?, ?, ?, ?)",
-            [title, formattedStart, ministry, description || ""]
-        );
-        
+        const ministryId = await getMinistryIdBySlug(connection, ministry);
 
-        console.log("✅ Insert Success");
-        connection.release();
+        if (!ministryId) {
+            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+        }
+
+        await connection.execute(
+            "INSERT INTO calendar_events (title, start, ministry_id, description) VALUES (?, ?, ?, ?)",
+            [title, formattedStart, ministryId, description || ""]
+        );
 
         return NextResponse.json({ success: true });
 
@@ -69,29 +76,31 @@ export async function POST(req: Request) {
     }
 }
 
+// PUT: Update event by ministry slug
 export async function PUT(req: Request) {
     let connection;
     try {
-        const { id, title, start, ministry, description } = await req.json();
+        const { id, title, start, ministry, description } = await req.json(); // ministry is a slug
 
         if (!id || !title || !start || !ministry) {
             return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
         }
-
-        console.log("🛠️ Updating Event:", { id, title, start, ministry, description });
 
         const eventTime = new Date(start);
         const localTime = new Date(eventTime.getTime() - eventTime.getTimezoneOffset() * 60000);
         const formattedStart = localTime.toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
-        const [result] = await connection.execute(
-            "UPDATE calendar_events SET title = ?, start = ?, ministry = ?, description = ? WHERE id = ?",
-            [title, formattedStart, ministry, description || "", id]
-        );
+        const ministryId = await getMinistryIdBySlug(connection, ministry);
 
-        console.log("✅ Update Success:", result);
-        connection.release();
+        if (!ministryId) {
+            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+        }
+
+        await connection.execute(
+            "UPDATE calendar_events SET title = ?, start = ?, ministry_id = ?, description = ? WHERE id = ?",
+            [title, formattedStart, ministryId, description || "", id]
+        );
 
         return NextResponse.json({ success: true });
 
@@ -103,7 +112,7 @@ export async function PUT(req: Request) {
     }
 }
 
-
+// DELETE: Delete event by event ID
 export async function DELETE(req: Request) {
     let connection;
     try {
@@ -116,7 +125,6 @@ export async function DELETE(req: Request) {
         connection = await pool.getConnection();
         await connection.execute("DELETE FROM calendar_events WHERE id = ?", [id]);
 
-        connection.release();
         return NextResponse.json({ success: true });
 
     } catch (error) {

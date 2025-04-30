@@ -42,10 +42,11 @@ export default function FinancesTrackingPage() {
     const [emailServiceModalOpen, setEmailServiceModalOpen] = useState(false);
     const [emailRecipient, setEmailRecipient] = useState(null);
     const [memberSearchQuery, setMemberSearchQuery] = useState("");
-    const pathSegments = pathname.split('/'); // ✅ ADD THIS
-    const ministryID = pathSegments[2];       // ✅ ADD THIS
-    const pageType = pathSegments[3];         // ✅ ADD THIS
+    const pathSegments = pathname.split('/'); 
+    const ministryID = pathSegments[2];       
+    const pageType = pathSegments[3];        
 
+    
     useEffect(() => {
         const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
         const defaultMemberSheet = {
@@ -751,6 +752,9 @@ export default function FinancesTrackingPage() {
                         ) : (
                         <button
                             onClick={async () => {
+                                const confirmed = window.confirm("⚠️ Are you sure you want to wipe the Member Sheet? This action cannot be undone.");
+                                if (!confirmed) return;
+
                                 const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
                                 const clearedData = [
                                     defaultHeader.map(label => ({ value: label })),
@@ -782,7 +786,7 @@ export default function FinancesTrackingPage() {
                                     console.error("❌ Failed to delete old Member Sheet before wiping", err);
                                 }
                             }}
-                            className="text-red-500 font-bold text-lg"
+                            className="text-blue-500 font-bold text-lg"
                             title="Clear Member Sheet"
                         >
                             X
