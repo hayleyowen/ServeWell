@@ -1,10 +1,8 @@
 'use client'; // This must be at the top to ensure it's a client component
 
 import '@/app/globals.css';
-import MinistryDropdown from '../components/buttons/MinistryDropdown';
-import RejectButton from '@/app/components/buttons/RejectButton';
-import PromoteSuperAdminButton from '../components/buttons/PromoteSuperAdminButton';
 import DemoteButton from '../components/buttons/DemoteButton';
+import StatusAssignmentDropdown from '../components/buttons/StatusAssignmentDropdown';
 import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
@@ -106,28 +104,17 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
-                                            {admin.isSuper ? (
-                                                <div className="px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg inline-block text-center font-semibold">
-                                                    Super Admin
-                                                </div>
-                                            ) : admin.minID !== null ? (
-                                                <div className="px-4 py-2 bg-green-500 text-white rounded-lg inline-block text-center">
-                                                    {admin.ministryname || 'Unknown Ministry'}
-                                                </div>    
-                                            ) : (
-                                                <MinistryDropdown 
-                                                    userID={admin.userID}
-                                                    onUpdate={fetchAllAdmins}
-                                                />
-                                            )}
+                                            <StatusAssignmentDropdown 
+                                                member_id={admin.userID}
+                                                fname={admin.fname}
+                                                minID={admin.minID}
+                                                ministryname={admin.isSuper ? "Super Admin" : admin.ministryname}
+                                                auth0ID={auth0ID || ''}
+                                                onUpdate={fetchAllAdmins}
+                                                isSuper={admin.isSuper}
+                                            />
                                         </td>
-                                        <td className="px-4 py-2">
-                                            {!admin.isSuper && (
-                                                <PromoteSuperAdminButton 
-                                                    userID={admin.userID} 
-                                                    onPromote={fetchAllAdmins}
-                                                />
-                                            )}
+                                        <td className="px-4 py-2 flex justify-center items-center">
                                             <DemoteButton 
                                                 userID={admin.userID}
                                                 isSuper={admin.isSuper}

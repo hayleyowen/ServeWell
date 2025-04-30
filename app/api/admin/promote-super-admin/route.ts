@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
+import { PoolConnection } from "mysql2/promise"; // Import type for connection
 
 export async function POST(req: Request) {
+  let client: PoolConnection | null = null; // Define client connection variable
+
   try {
     const { userID } = await req.json();
     const client = await pool.getConnection();
@@ -29,8 +32,14 @@ export async function POST(req: Request) {
 
     client.release();
     return NextResponse.json({ success: true });
+
   } catch (error) {
     console.error("Error promoting to super-admin:", error);
+    // Rollback transaction in case of error
+    if (client) {
+        await client.rollback();
+        client.release();
+    }
     return NextResponse.json({ error: "Failed to promote to super-admin" }, { status: 500 });
   }
 } 

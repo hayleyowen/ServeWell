@@ -142,6 +142,11 @@ export default function UserHomepage() {
                         <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
                       </a>
                     ))}
+                    <a
+                      href="/tools"
+                      className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center">
+                      <h3 className="text-xl font-bold mb-2">SuperAdmin Tools</h3>
+                    </a>
                   </div>
                 </div>
               </div>
