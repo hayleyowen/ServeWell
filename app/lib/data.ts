@@ -46,7 +46,6 @@ export async function showRequestingAdmins(auth0ID: string) {
         `;
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
-        console.log("Requesting admins data:", data);
         connection.release();
         return data;
     } catch (error) {
@@ -541,5 +540,38 @@ export async function getMedia() {
     } catch (error) {
         console.error('Error fetching media:', error);
         throw new Error('Failed to fetch media.');
+    }
+}
+
+export async function getAllAdmins(auth0ID: string) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const query = `
+            SELECT 
+                u.userID,
+                u.fname, 
+                u.email, 
+                u.rID,
+                u.minID, 
+                u.churchID,
+                m.ministryname
+            FROM users u 
+            LEFT JOIN ministry m ON u.minID = m.ministry_id
+            WHERE u.rID = 1  -- Regular admins (rID = 1)
+            AND u.churchID = (
+                SELECT churchID 
+                FROM users 
+                WHERE auth0ID = ?
+            );`
+        const values = [auth0ID];
+        const [data] = await connection.execute(query, values);
+        connection.release();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch all admins:", error);
+        throw new Error("Failed to fetch all admins.");
+    } finally {
+        if (connection) connection.release();
     }
 }
