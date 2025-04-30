@@ -35,11 +35,6 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Error promoting to super-admin:", error);
-    // Rollback transaction in case of error
-    if (client) {
-        await client.rollback();
-        client.release();
-    }
     return NextResponse.json({ error: "Failed to promote to super-admin" }, { status: 500 });
   }
 } 

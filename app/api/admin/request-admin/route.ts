@@ -11,6 +11,8 @@ export async function POST(req: Request) {
    // Get both requesting admins AND regular admins with proper type casting
    const requestingAdmins = await showRequestingAdmins(auth0ID) as RowDataPacket[];
    const regularAdmins = await getAllAdmins(auth0ID) as RowDataPacket[];
+   console.log('Requesting admins:', requestingAdmins);
+   console.log('Regular admins:', regularAdmins);
    
    // Combine the results, preferring regularAdmins if there's overlap
    // This is to ensure we don't lose anyone from either list

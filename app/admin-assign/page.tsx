@@ -32,8 +32,6 @@ export default function AdminAssignPage() {
                 body: JSON.stringify({ auth0ID: auth0ID }),
             });
 
-            // Fetch assigned admins
-
             // Fetch super admins
             const superAdminResponse = await fetch('/api/admin/get-super-admins', {
                 method: 'POST',
@@ -105,7 +103,7 @@ export default function AdminAssignPage() {
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
                                             <StatusAssignmentDropdown 
-                                                member_id={admin.userID}
+                                                userID={admin.userID}
                                                 fname={admin.fname}
                                                 minID={admin.minID}
                                                 ministryname={admin.isSuper ? "Super Admin" : admin.ministryname}

@@ -9,19 +9,11 @@ export async function POST(req: Request) {
     // Change user's rID to 0 (regular user) and minID to NULL
     const updateQuery = `
       UPDATE users 
-      SET rID = 0, minID = NULL 
+      SET rID = 0, minID = NULL, churchID = NULL 
       WHERE userID = ?
     `;
     
     await client.execute(updateQuery, [userID]);
-    
-    // Set church_id to NULL in the churchmember table
-    const updateChurchMemberQuery = `
-      UPDATE churchmember
-      SET church_id = NULL
-      WHERE member_id = ?
-    `;
-    await client.execute(updateChurchMemberQuery, [member_id]);
 
     // Remove from requestingAdmins table
     const deleteQuery = `

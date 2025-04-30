@@ -6,9 +6,9 @@ export async function POST(req: Request) {
   let client: PoolConnection | null = null; // Define client connection variable
 
   try {
-    const { member_id, minID, auth0ID } = await req.json();
+    const { minID, userID } = await req.json();
 
-    if (!member_id || !minID) {
+    if (!userID || !minID) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
@@ -19,17 +19,17 @@ export async function POST(req: Request) {
     const updateRoleQuery = `
       UPDATE users
       SET rID = 1
-      WHERE memID = ?
+      WHERE userID = ?
     `;
-    await client.execute(updateRoleQuery, [member_id]);
+    await client.execute(updateRoleQuery, [userID]);
 
     // 2. Assign ministry to the user
     const assignMinistryQuery = `
       UPDATE users
       SET minID = ?
-      WHERE memID = ?
+      WHERE userID = ?
     `;
-    await client.execute(assignMinistryQuery, [minID, member_id]);
+    await client.execute(assignMinistryQuery, [minID, userID]);
 
     // 3. Make sure the user has the correct church_id
     // First, get the church_id for this ministry
@@ -46,13 +46,13 @@ export async function POST(req: Request) {
     
     const churchId = ministryRows[0].church_id;
     
-    // Update the user's church_id in churchmember table
+    // Update the user's church_id in users table
     const updateChurchMemberQuery = `
-      UPDATE churchmember
-      SET church_id = ?
-      WHERE member_id = ?
+      UPDATE users
+      SET churchID = ?
+      WHERE userID = ?
     `;
-    await client.execute(updateChurchMemberQuery, [churchId, member_id]);
+    await client.execute(updateChurchMemberQuery, [churchId, userID]);
 
     await client.commit(); // Commit transaction
     client.release();
