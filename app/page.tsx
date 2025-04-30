@@ -56,7 +56,7 @@ export default function Home() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ auth0_id }),
+                body: JSON.stringify({ auth0ID: auth0_id }),
             });
 
             if (!response.ok) {
