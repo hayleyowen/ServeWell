@@ -34,7 +34,7 @@ export default function MinistryCreationForm() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ auth0_id: user.sub }),
+          body: JSON.stringify({ auth0ID: user.sub }),
         });
 
         if (!response.ok) {

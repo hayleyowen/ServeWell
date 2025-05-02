@@ -26,19 +26,6 @@ CREATE TABLE IF NOT EXISTS ministry (
     CONSTRAINT ministry_church_id_fkey FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
-CREATE TABLE IF NOT EXISTS churchmember (
-    member_id INT PRIMARY KEY AUTO_INCREMENT,
-    fname VARCHAR(50) NOT NULL,
-    mname VARCHAR(50),
-    lname VARCHAR(50),
-    sex CHAR(1),
-    email VARCHAR(100) UNIQUE NOT NULL,
-    memberphone VARCHAR(15),
-    activity_status VARCHAR(20),
-    church_id INT,
-    FOREIGN KEY (church_id) REFERENCES church(church_id)
-);
-
 CREATE TABLE IF NOT EXISTS roles (
     Role_ID INT PRIMARY KEY,
     RoleName VARCHAR(50) NOT NULL,
@@ -47,33 +34,17 @@ CREATE TABLE IF NOT EXISTS roles (
 
 CREATE TABLE IF NOT EXISTS users (
     userID INT PRIMARY KEY AUTO_INCREMENT,
+    fname VARCHAR(50) Default '' NOT NULL,
+    email VARCHAR(100) Default '' NOT NULL,
     auth0ID VARCHAR(75) NOT NULL UNIQUE,
     minID INT DEFAULT NULL,
     rID INT DEFAULT 0,
-    memID INT NOT NULL,
+    churchID INT Default NULL,
 
     FOREIGN KEY (minID) REFERENCES ministry(ministry_id),
     FOREIGN KEY (rID) REFERENCES roles(Role_ID),
-    FOREIGN KEY (memID) REFERENCES churchmember(member_id)
+    FOREIGN KEY (churchID) REFERENCES church(church_id)
 );
-    
-
-    -- Admin_ID INT PRIMARY KEY AUTO_INCREMENT,
-    -- member_id VARCHAR(50) NOT NULL,
-    -- Ministry_ID INT DEFAULT NULL,
-    -- Auth0_ID VARCHAR(50),
-    -- Role_ID INT DEFAULT 1,    -- if role_id = 2, they are a superadmin
-    -- FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
-    -- FOREIGN KEY (Role_ID) REFERENCES Roles(Role_ID),
-    -- FOREIGN KEY (Ministry_ID) REFERENCES ministry(Ministry_ID)
-
--- CREATE TABLE IF NOT EXISTS superadmin (
---     superadmin_id INT PRIMARY KEY AUTO_INCREMENT,
---     member_id INTEGER NOT NULL,
---     church_id INTEGER NOT NULL,
---     FOREIGN KEY (member_id) REFERENCES churchmember(member_id),
---     FOREIGN KEY (church_id) REFERENCES church(church_id)
--- );
 
 CREATE TABLE IF NOT EXISTS requestingAdmins (
     reqID INT PRIMARY KEY AUTO_INCREMENT,
@@ -129,24 +100,15 @@ INSERT INTO ministry (ministryname, church_id, budget, description, url_path) VA
 ('Worship Ministry', 2, 2000.00, 'Ministry for the worship team', 'worshipministry'),
 ('Missions Ministry', 3, 1500.00, 'Ministry for the missions team', 'missionsministry');
 
-INSERT INTO churchmember (fname, mname, lname, sex, email, memberphone, activity_status, church_id) VALUES 
-('John', 'Doe', 'Smith', 'M', 'jsmith@email.com', '318-555-5444', 'Active', 1),
-('Jane', 'Doe', 'Smith', 'F', 'jdsmith@email.com', '318-555-5555', 'Active', 1),
-('Mary', 'Ann', 'Johnson', 'F', 'mjohnson@email.com', '318-555-5333', 'Active', 2),
-('Michael', 'David', 'Brown', 'M', 'mbrown@email.com', '318-555-5222', 'Active', 3),
-('developer', 'null', 'null', 'M', 'developer@gmail.com', '318-456-7890', 'Active', 3),
-('james', null, null, 'M', 'james@email.com', '318-546-1234', 'Active', 3),
-('bobert', null, null, 'M', 'bobert@email.com', '318-980-1212', 'Active', null);
-
 Insert INTO roles (Role_ID, RoleName, Description) VALUES 
 (0, 'BaseUser', 'Can only request to join a ministry'),
 (1, 'MinistryAdmin', 'Can only see their ministry pages'),
 (2, 'SuperAdmin', 'Can see all pages and edit all ministries');
 
-Insert into users (auth0ID, minID, rID, memID) VALUES 
-('auth0|67f6cca18ffc0293d013acf9',null,2,5),
-('auth0|67bcb00e834426c4e6977bf4', 4,1,6),
-('auth0|67fc53397136d22bbaaf5bf3', null, 0, 7);
+Insert into users (auth0ID, fname, email, minID, rID, churchID) VALUES 
+('auth0|67f6cca18ffc0293d013acf9','developer', 'developer@gmail.com', null,2,3),
+('auth0|67bcb00e834426c4e6977bf4', 'james', 'james@email.com', 4,1,3),
+('auth0|67fc53397136d22bbaaf5bf3', 'bobert', 'bobert@email.com', null, 0, NULL);
 
 INSERT INTO media (title, type, youtube_id, date, description, church_id) VALUES 
 ('Sunday Morning Service', 'sermon', 'sample-youtube-id-1', '2024-03-24', 'Morning worship service', 1),

@@ -950,4 +950,5 @@ export default function FinancesTrackingPage() {
         )}
     </section>
     );
+}
     

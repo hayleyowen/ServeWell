@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 interface PromoteSuperAdminButtonProps {
-    member_id: number;
+    userID: number;
     onPromote?: () => void;
 }
 
-export default function PromoteSuperAdminButton({ member_id, onPromote }: PromoteSuperAdminButtonProps) {
+export default function PromoteSuperAdminButton({ userID, onPromote }: PromoteSuperAdminButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handlePromote = async () => {
@@ -20,7 +20,7 @@ export default function PromoteSuperAdminButton({ member_id, onPromote }: Promot
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ member_id }),
+                body: JSON.stringify({ userID }),
             });
 
             if (!response.ok) {
