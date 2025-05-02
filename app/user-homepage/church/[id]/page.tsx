@@ -27,10 +27,10 @@ export default async function ChurchHomepage({ params }: { params: { id: string 
           <h2 className="text-2xl font-bold flex-row text-white mb-8">{church[0].churchname} Homepage</h2>
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
-              <a href={`/church/${churchId}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <a href={`/user-homepage/church/${churchId}/members`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                 <h3 className="text-xl font-bold mb-2">Member Tracking</h3>
               </a>
-              <a href={`/church/${churchId}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+              <a href={`/user-homepage/church/${churchId}/finances`} className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                 <h3 className="text-xl font-bold mb-2">Financial Tracking</h3>
               </a>
               <a href="/media" className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
