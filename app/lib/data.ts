@@ -512,11 +512,7 @@ export async function createSuperAdmin(data: {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
 
-        const [churchIdResult] = await connection.execute(
-            "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
-        );
-
-        const churchId = churchIdResult[0]?.church_id; // Increment the church ID for the new church
+        console.log("ChurchID in data.ts", data.church_id);
 
         const [adminResult] = await connection.execute(
             `
@@ -524,9 +520,10 @@ export async function createSuperAdmin(data: {
             VALUES (?, ?, ?, 2, NULL, ?)
             ON DUPLICATE KEY UPDATE 
                 rID = VALUES(rID),
-                minID = VALUES(minID);
+                minID = VALUES(minID),
+                churchID = VALUES(churchID);
             `,
-            [data.firstName, data.email, data.auth0ID, churchId]
+            [data.firstName, data.email, data.auth0ID, data.church_id]
         );
 
         await connection.commit(); // Commit the transaction
