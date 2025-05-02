@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
+import Spinner from './components/spinner/spinner';
 
 
 export default function Home() {
@@ -43,15 +44,19 @@ export default function Home() {
     if (!auth0_id) {
       return;
     }
+    if (isLoading) {
+      return;
+    }
 
     const fetchUsers = async () => {
+      if (!isLoading){
         try {
             const response = await fetch('/api/userChurch', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ auth0_id }),
+                body: JSON.stringify({ auth0ID: auth0_id }),
             });
 
             if (!response.ok) {
@@ -67,10 +72,18 @@ export default function Home() {
         } catch (error) {
             console.error('Error fetching user church:', error);
         }
+      }  
     };
 
     fetchUsers();
-}, [auth0_id]); 
+}, [auth0_id, isLoading]); 
+
+  if (isLoading) {
+    return null;
+  }
+  if (user) {
+    return null;
+  }
 
   // if no session (i.e. user is not logged in), show login button
   // if no session (i.e. user is not logged in), show login button

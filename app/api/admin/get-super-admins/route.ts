@@ -8,23 +8,18 @@ export async function POST(req: Request) {
 
     // Get all super admins (rID = 2) from the same church as the requesting user
     const query = `
-      SELECT cm.fname, cm.email, cm.member_id, cm.church_id
-      FROM churchmember cm
-      INNER JOIN users u ON cm.member_id = u.memID
-      WHERE u.rID = 2
-      AND cm.church_id = (
-        SELECT church_id 
-        FROM churchmember 
-        WHERE member_id = (
-          SELECT memID 
-          FROM users 
-          WHERE auth0ID = ?
-        )
+      SELECT rID, userID, fname, email
+      FROM users
+      WHERE rID = 2
+      AND churchID = (
+        SELECT churchID 
+        FROM users
+        WHERE auth0ID = ?
       )
     `;
-    
     const [superAdmins] = await client.execute(query, [auth0ID]);
     
+    console.log("Super admins fetched:", superAdmins);
     client.release();
     return NextResponse.json(superAdmins);
   } catch (error) {

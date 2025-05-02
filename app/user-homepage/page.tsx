@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { ChurchCreationButton } from '../components/buttons/ChurchCreationButton';
 import AssignmentRequestButton from '../components/buttons/AssignmentRequestButton';
 import Image from 'next/image';
+import Spinner from '../components/spinner/spinner';
 
 interface Ministry {
   ministry_id: number;
@@ -26,6 +27,7 @@ export default function UserHomepage() {
   const [customMinistries, setCustomMinistries] = useState<Ministry[]>([]);
   const [churches, setChurches] = useState<Church[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
   const pathname = usePathname();
   const { user, error, isLoading } = useUser();
 
@@ -52,6 +54,7 @@ export default function UserHomepage() {
     const fetchData = async () => {
       if (user?.sub) {
         try {
+          setDataLoading(true); // Set loading to true before fetching data
           const auth0ID = user.sub;
 
           // Fetch ministries
@@ -60,27 +63,27 @@ export default function UserHomepage() {
 
           // Fetch churches
           const churchData = await getUserChurch(auth0ID);
+          console.log('Church Data:', churchData); // Log the fetched church data
           setChurches(churchData as Church[]);
           setFetchError(null); // Clear any previous errors
         } catch (error) {
           console.error('Failed to fetch data:', error);
           setFetchError('Failed to load data. Please try again later.');
+        } finally {
+          setDataLoading(false); // Set loading to false after fetching data
         }
       } else {
         setCustomMinistries([]);
         setChurches([]);
+        setDataLoading(false); // Set loading to false if no user is found
       }
     };
 
     fetchData();
   }, [user, getMinistriesByID, getUserChurch]);
 
-  if (isLoading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-white">Loading...</p>
-      </main>
-    );
+  if (isLoading || dataLoading) {
+    return ( <Spinner /> );
   }
 
   if (fetchError) {
