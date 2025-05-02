@@ -440,7 +440,7 @@ export default function FinancesTrackingPage() {
                                     ?
                                 </div>
                                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
-                                    This is the inline help tip! You can explain to your users what this section is about.
+                                    To make a chart, type a name into the "Chart Name" box and hit create. To be able to use the graphs the first row is used to determine how the graphs are labeled.
                                 </div>
                             </div>
                         </div>

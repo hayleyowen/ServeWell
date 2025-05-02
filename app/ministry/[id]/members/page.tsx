@@ -676,7 +676,7 @@ export default function FinancesTrackingPage() {
                             ?
                         </div>
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
-                            This is the inline help tip! You can explain to your users what this section is about.
+                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Chart Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
                         </div>
                         </div>
                     </div>
