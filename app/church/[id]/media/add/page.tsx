@@ -2,12 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { use } from 'react';
 
-export default function AddMediaPage() {
+type PageParams = {
+  params: Promise<{ id: string }>;
+};
+
+export default function AddMediaPage({ params }: PageParams) {
   const router = useRouter();
+  const resolvedParams = use(params);
+  const churchId = parseInt(resolvedParams.id, 10);
+
   const [formData, setFormData] = useState({
     title: '',
-    type: 'sermon', // or 'announcement'
+    type: 'sermon',
     youtubeUrl: '',
     date: '',
     description: '',
@@ -28,18 +36,19 @@ export default function AddMediaPage() {
         body: JSON.stringify({
           ...formData,
           youtubeId,
+          churchId,
         }),
       });
 
       if (response.ok) {
-        router.push('/media');
+        router.push(`/church/${churchId}/media`);
         router.refresh();
       } else {
         throw new Error('Failed to post media');
       }
     } catch (error) {
       console.error('Error posting media:', error);
-      // Handle error (show message to user)
+      alert('Failed to add media. Please try again.');
     }
   };
 
@@ -80,7 +89,7 @@ export default function AddMediaPage() {
               id="type"
               name="type"
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               <option value="sermon">Sermon</option>
