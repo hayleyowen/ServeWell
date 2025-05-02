@@ -263,7 +263,7 @@ export default function FinancesTrackingPage() {
         setTimeout(() => {
             setCharts(prevCharts => prevCharts.map(chart =>
                 chart.id === chartId ? { ...chart, chartType: type } : chart
-            );
+            ));
             setChartLoading(false);
         }, 300);
     };
