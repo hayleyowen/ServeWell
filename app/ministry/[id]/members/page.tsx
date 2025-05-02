@@ -12,7 +12,6 @@ import { FaSearch, FaEnvelope, FaUsers } from 'react-icons/fa';
 import { useRouter } from "next/navigation"; 
 import { usePathname } from "next/navigation";
 
-
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement);
 
 export default function FinancesTrackingPage() {

@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 
     } catch (error) {
         console.error("❌ Fetch error:", error);
-        return NextResponse.json({ success: false, error: "Failed to fetch file" }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Failed to fetch files" }, { status: 500 });
     } finally {
         if (connection) connection.release();
     }

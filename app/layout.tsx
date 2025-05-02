@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import TopNav from '@/app/components/navigation/TopNav';
 import { UserProvider } from "@auth0/nextjs-auth0/client";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +26,42 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+      >
         <UserProvider>
-
           <TopNav />
-          {children}
-
+          <main className="flex-grow">{children}</main>
+          <footer className="flex justify-center py-4 bg-white bg-opacity-20 backdrop-blur-md">
+            <div className="flex space-x-4">
+              <Link
+                href="https://github.com/seanb0/ServeWell/wiki/Usage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                How To Use
+              </Link>
+              <span className="text-blue-600">|</span>
+              <Link
+                href="https://github.com/seanb0/ServeWell/wiki/About-Us"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                About Us
+              </Link>
+              <span className="text-blue-600">|</span>
+              <Link
+                href="https://github.com/seanb0/ServeWell/wiki/Contact-Us"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </footer>
         </UserProvider>
       </body>
     </html>

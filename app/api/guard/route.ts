@@ -5,12 +5,10 @@ export async function POST(req: Request) {
     try {
         const {authid} = await req.json();
         const client = await pool.getConnection();
-        const query = `select Role_ID from Admin where Auth0_ID = ?;`;
+        const query = `select rID from users where auth0ID = ?;`;
         const [result] = await client.execute(query, [authid]);
         client.release();
 
-        const data = result[0];
-        console.log('Data:', data);
         return NextResponse.json(result);
     } catch (error){
         console.error('Error fetching roles:', error);
