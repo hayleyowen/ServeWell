@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { useState, useEffect, useRef } from "react";
 
 interface Ministry {
@@ -18,6 +19,8 @@ export default function MinistryDropdown({ userID, onUpdate }: MinistryDropdownP
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const {user} = useUser();
+  const auth0ID = user?.sub; // Get auth0ID from user object
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +79,7 @@ export default function MinistryDropdown({ userID, onUpdate }: MinistryDropdownP
       const response = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID: userID, minID: ministry.ministry_id }),
+        body: JSON.stringify({ userID: userID, minID: ministry.ministry_id, auth0ID: auth0ID }), // Include auth0ID in the request body
       });
 
       if (response.ok) {

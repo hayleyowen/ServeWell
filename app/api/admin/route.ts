@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
+import { getSession } from "@auth0/nextjs-auth0";
 import { showRequestingAdmins } from "@/app/lib/data";
+import { updateAdminSchema } from "@/app/utils/zodSchema";
+import { userStuff } from "@/app/lib/userstuff";
 
 export async function GET(req: Request) {
   const { auth0ID } = await req.json();
@@ -20,14 +23,31 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { userID, minID } = await req.json();
-
-    if (!userID) {
-      return NextResponse.json({ error: "Missing userID" }, { status: 400 });
+    const body = await req.json();
+    
+    // use zod to validate the request body
+    const validateData = updateAdminSchema.safeParse(body);
+    if (!validateData.success) {
+      return NextResponse.json({ message: "Invalid Data given" }, { status: 400 });
     }
-    if (!minID) {
-      return NextResponse.json({ error: "Missing ministry_id" }, { status: 400 });
-    }  
+
+    // destructure the body to get the userID and minID
+    const userID = validateData.data.userID;
+    const minID = validateData.data.minID;
+    const auth0ID = validateData.data.auth0ID;
+
+    // now we need to verify that this request is coming from an superadmin
+    const userRole = await userStuff(auth0ID);
+    if (userRole.error) {
+      return NextResponse.json({ message: "Error fetching user role" }, { status: 500 });
+    }
+    const role = userRole[0]?.rID
+    if (role !== 2) {
+      return NextResponse.json({ message: "You are not authorized to perform this action" }, { status: 403 });
+    }
+
+    // now we need to verify that this superadmin is from this church
+    
 
     const client = await pool.getConnection();
 
