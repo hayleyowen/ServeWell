@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS requestingAdmins (
     reqID INT PRIMARY KEY AUTO_INCREMENT,
     auth0ID VARCHAR(75) NOT NULL,
     churchID INT NOT NULL,
-
     FOREIGN KEY (auth0ID) REFERENCES users(auth0ID),
     FOREIGN KEY (churchID) REFERENCES church(church_id)
 );
@@ -61,9 +60,11 @@ CREATE TABLE uploaded_files (
     file_data LONGBLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tab_name VARCHAR(255) NOT NULL,
-    ministry VARCHAR(255) NOT NULL,
-    page_type VARCHAR(255) NOT NULL
+    ministry_id INT NOT NULL,
+    page_type VARCHAR(255) NOT NULL,
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
 );
+
 
 CREATE TABLE IF NOT EXISTS media (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -81,11 +82,12 @@ CREATE TABLE calendar_events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     start DATETIME NOT NULL,
-    ministry VARCHAR(255) NOT NULL,
+    ministry_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    description VARCHAR(255) NULL
-);
+    description VARCHAR(255) NULL,
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
 
+);
 
 -- Inserting data into the tables for testing
 
