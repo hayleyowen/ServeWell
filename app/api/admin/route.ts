@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-import { getSession } from "@auth0/nextjs-auth0";
 import { showRequestingAdmins } from "@/app/lib/data";
 import { updateAdminSchema } from "@/app/utils/zodSchema";
-import { userStuff } from "@/app/lib/userstuff";
+import { userChurchID, userStuff } from "@/app/lib/userstuff";
 
 export async function GET(req: Request) {
   const { auth0ID } = await req.json();
@@ -47,6 +46,14 @@ export async function POST(req: Request) {
     }
 
     // now we need to verify that this superadmin is from this church
+    const churchID = await userChurchID(auth0ID);
+    if (churchID.error) {
+      return NextResponse.json({ message: "Error fetching user church ID" }, { status: 500 });
+    }
+    const churchIDFromDB = churchID[0]?.church_id;
+
+    
+
     
 
     const client = await pool.getConnection();
