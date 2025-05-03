@@ -1,21 +1,29 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
-// 🔧 Helper to resolve slug to numeric ministry_id
+// 🔧 Resolve slug to numeric ministry_id
 async function getMinistryIdBySlug(connection: any, slug: string): Promise<number | null> {
-    const [rows] = await connection.execute("SELECT ministry_id FROM ministry WHERE url_path = ?", [slug]);
+    if (!isNaN(Number(slug))) {
+        return Number(slug); // directly use numeric ID
+    }
+
+    const [rows] = await connection.execute(
+        "SELECT ministry_id FROM ministry WHERE url_path = ?",
+        [slug]
+    );
     return rows.length > 0 ? rows[0].ministry_id : null;
 }
 
-// GET: Fetch events by ministry slug
+
+// 📅 GET: Fetch events by ministry slug
 export async function GET(req: Request) {
     let connection;
     try {
         const { searchParams } = new URL(req.url);
-        const ministrySlug = searchParams.get("ministryId"); // actually a slug now
+        const ministrySlug = searchParams.get("ministryId");
 
         if (!ministrySlug) {
-            return NextResponse.json({ success: false, error: "Ministry ID (slug) is required" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "Ministry slug is required" }, { status: 400 });
         }
 
         connection = await pool.getConnection();
@@ -26,7 +34,7 @@ export async function GET(req: Request) {
         }
 
         const [rows] = await connection.execute(
-            "SELECT id, title, start, ministry_id, description FROM calendar_events WHERE ministry_id = ?",
+            "SELECT id, title, start, ministry_id, description FROM calendar_events WHERE ministry_id = ? ORDER BY start ASC",
             [ministryId]
         );
 
@@ -40,19 +48,17 @@ export async function GET(req: Request) {
     }
 }
 
-// POST: Add new event by ministry slug
+// 📅 POST: Create new event by ministry slug
 export async function POST(req: Request) {
     let connection;
     try {
-        const { title, start, ministry, description } = await req.json(); // ministry is a slug
+        const { title, start, ministry, description } = await req.json();
 
-        if (!title || !start || ministry === undefined) {
-            return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
+        if (!title || !start || !ministry) {
+            return NextResponse.json({ success: false, error: "Title, start time, and ministry slug are required" }, { status: 400 });
         }
 
-        const eventTime = new Date(start);
-        const localTime = new Date(eventTime.getTime() - eventTime.getTimezoneOffset() * 60000);
-        const formattedStart = localTime.toISOString().slice(0, 19).replace("T", " ");
+        const formattedStart = new Date(start).toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
         const ministryId = await getMinistryIdBySlug(connection, ministry);
@@ -76,19 +82,17 @@ export async function POST(req: Request) {
     }
 }
 
-// PUT: Update event by ministry slug
+// ✏️ PUT: Update event
 export async function PUT(req: Request) {
     let connection;
     try {
-        const { id, title, start, ministry, description } = await req.json(); // ministry is a slug
+        const { id, title, start, ministry, description } = await req.json();
 
         if (!id || !title || !start || !ministry) {
-            return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "ID, title, start time, and ministry slug are required" }, { status: 400 });
         }
 
-        const eventTime = new Date(start);
-        const localTime = new Date(eventTime.getTime() - eventTime.getTimezoneOffset() * 60000);
-        const formattedStart = localTime.toISOString().slice(0, 19).replace("T", " ");
+        const formattedStart = new Date(start).toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
         const ministryId = await getMinistryIdBySlug(connection, ministry);
@@ -112,7 +116,7 @@ export async function PUT(req: Request) {
     }
 }
 
-// DELETE: Delete event by event ID
+// ❌ DELETE: Remove event by ID
 export async function DELETE(req: Request) {
     let connection;
     try {
