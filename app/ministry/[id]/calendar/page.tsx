@@ -22,6 +22,8 @@ export default function CalendarPage() {
     const ministryId = id;
     const [snackOpen, setSnackOpen] = useState(false); // Snackbar state
     const router = useRouter(); // Initialize Next.js router
+    const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+
 
     const fetchEvents = async () => {
         const res = await fetch(`/api/calendar?ministryId=${ministryId}`);
@@ -76,6 +78,10 @@ export default function CalendarPage() {
             return;
         }
     
+        // ⏱️ Adjust time by subtracting 5 hours
+        const adjustedStart = new Date(newEvent.start);
+        adjustedStart.setHours(adjustedStart.getHours() - 5);
+    
         const method = isEditing ? "PUT" : "POST";
     
         const res = await fetch(`/api/calendar?ministryId=${ministryId}`, {
@@ -84,12 +90,12 @@ export default function CalendarPage() {
             body: JSON.stringify({ 
                 id: isEditing ? newEvent.id : undefined,
                 title: newEvent.title, 
-                start: newEvent.start, 
+                start: adjustedStart.toISOString(), 
                 ministry: ministryId,
                 description: newEvent.description || ""
             }),
         });
-    
+        
         if (!res.ok) {
             const errorText = await res.text();
             console.error("❌ Failed to save event:", errorText);
@@ -169,28 +175,56 @@ export default function CalendarPage() {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                 });
-                            
                                 const description = eventInfo.event.extendedProps.description;
+                                const fullTitle = eventInfo.event.title;
+                                const maxTitleLength = 12;
+                            
+                                const truncatedTitle = fullTitle.length > maxTitleLength
+                                    ? `${fullTitle.slice(0, maxTitleLength)}...`
+                                    : fullTitle;
                             
                                 return (
                                     <Tooltip 
                                         title={
                                             <div style={{ whiteSpace: "pre-line", padding: 4 }}>
+                                                <strong>{fullTitle}</strong>
+                                                <br />
                                                 {description || "No description"}
                                             </div>
                                         } 
                                         placement="top" 
                                         arrow 
                                     >
-                                        <div style={{ cursor: "pointer" }}>
-                                            <b>{eventInfo.event.title}</b>
-                                            <span style={{ fontSize: '0.9rem', color: '#888', marginLeft: '5px' }}>
+                                        <div style={{
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            gap: "4px",
+                                            maxWidth: "100%"
+                                        }}>
+                                            <span style={{
+                                                fontWeight: "bold",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                maxWidth: "calc(100% - 60px)" // Reserve space for the time
+                                            }}>
+                                                {truncatedTitle}
+                                            </span>
+                                            <span style={{
+                                                fontSize: "0.85rem",
+                                                color: "#888",
+                                                whiteSpace: "nowrap",
+                                                flexShrink: 0
+                                            }}>
                                                 ({formattedStartTime})
                                             </span>
                                         </div>
                                     </Tooltip>
                                 );
-                            }}                            
+                            }}
+                                                                                                    
                             height="auto"
                             dayMaxEventRows={2} // ✅ LIMIT TO 2 VISIBLE
                             moreLinkClick="popover" // ✅ OPEN POPUP ON CLICK
