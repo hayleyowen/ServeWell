@@ -41,7 +41,11 @@ export default function FinancesTrackingPage() {
     const [emailServiceModalOpen, setEmailServiceModalOpen] = useState(false);
     const [emailRecipient, setEmailRecipient] = useState(null);
     const [memberSearchQuery, setMemberSearchQuery] = useState("");
+    const pathSegments = pathname.split('/'); 
+    const ministryID = pathSegments[2];       
+    const pageType = pathSegments[3];        
 
+    
     useEffect(() => {
         const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
         const defaultMemberSheet = {
@@ -178,6 +182,24 @@ export default function FinancesTrackingPage() {
             const pageType = pathSegments[3] || "defaultPageType";
             const tabName = activeChartData.name === "Member Sheet" ? "Member Sheet" : activeChartData.name;
 
+            // If it's the Member Sheet, always delete old version first to avoid duplication
+            if (tabName === "Member Sheet") {
+                try {
+                    await fetch("/api/files", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            tab_name: tabName,
+                            ministry_id: ministryID,
+                            page_type: pageType,
+                        }),
+                    });
+                    console.log("🗑️ Deleted old Member Sheet before saving new one.");
+                } catch (error) {
+                    console.error("❌ Failed to delete old Member Sheet:", error);
+                }
+            }
+    
             const worksheetData = activeChartData.data.map(row => row.map(cell => cell.value));
             const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
             const workbook = XLSX.utils.book_new();
@@ -191,7 +213,7 @@ export default function FinancesTrackingPage() {
 
             formData.append("file", file);
             formData.append("tab_name", tabName);
-            formData.append("ministry", ministry);
+            formData.append("ministry_id", ministryID);
             formData.append("page_type", pageType);
 
             try {
@@ -282,7 +304,7 @@ export default function FinancesTrackingPage() {
             const response = await fetch("/api/files", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ tab_name: tabName, ministry, page_type: pageType }),
+                body: JSON.stringify({ tab_name: tabName, ministry_id: ministryID, page_type: pageType }),
             });
     
             const result = await response.json();
@@ -324,8 +346,8 @@ export default function FinancesTrackingPage() {
         fetchStoredFiles(ministry, pageType);
     }, [router.isReady]);
     
-    const fetchStoredFiles = async (ministry, pageType) => {
-        const apiURL = `/api/files?ministry=${encodeURIComponent(ministry)}&page_type=${encodeURIComponent(pageType)}`;
+    const fetchStoredFiles = async (ministryID, pageType) => {
+        const apiURL = `/api/files?ministry_id=${encodeURIComponent(ministryID)}&page_type=${encodeURIComponent(pageType)}`;
     
         console.log("🌍 Attempting API request:", apiURL);
     
@@ -388,10 +410,22 @@ export default function FinancesTrackingPage() {
     
             const loadedCharts = await Promise.all(newCharts);
             setCharts(loadedCharts);
+            // Ensure "Member Sheet" is preserved or restored
+            const hasMemberSheet = loadedCharts.some(chart => chart.name === "Member Sheet");
+            if (!hasMemberSheet) {
+                const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
+                const memberSheet = {
+                    id: Date.now() + loadedCharts.length + 1,
+                    name: "Member Sheet",
+                    data: [defaultHeader.map(label => ({ value: label })), ...generateData(4, 4)],
+                    chartType: "pie",
+                    chartData: null,
+                };
+                loadedCharts.unshift(memberSheet);
+            }
             if (loadedCharts.length > 0) {
                 setActiveChart(loadedCharts[0].id);
             }
-
             // ✅ Add this to regenerate chartData from spreadsheet data
             loadedCharts.forEach(chart => {
                 updateChartData(chart.id, chart.data);
@@ -631,8 +665,20 @@ export default function FinancesTrackingPage() {
                 }`} style={{ maxHeight: isFullScreen ? '100vh' : '70vh', width: isFullScreen ? '100%' : '90%', margin: isFullScreen ? '0' : '0 auto' }}>
                     
                     <div className="flex justify-between items-center w-full mb-4">
-                        <h1 className="text-xl font-semibold text-gray-700">Member SpreadSheet</h1>
-                        
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl font-semibold text-gray-700">
+                        Member SpreadSheet
+                        </h1>
+                        {/* Hint Icon */}
+                        <div className="relative group">
+                        <div className="w-5 h-5 bg-blue-200 text-blue-700 font-bold rounded-full flex items-center justify-center text-xs cursor-pointer">
+                            ?
+                        </div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
+                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Chart Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
+                        </div>
+                        </div>
+                    </div>
                         <div className="flex gap-4">
                             {/* Search Bar */}
                             <div className="relative flex items-center">
@@ -654,15 +700,6 @@ export default function FinancesTrackingPage() {
                                 )}
                             </div>
     
-                            <label className="flex items-center text-sm font-medium text-gray-700">
-                                <input
-                                    type="checkbox"
-                                    checked={showChart}
-                                    onChange={toggleChart}
-                                    className="mr-2"
-                                />
-                                Show Chart
-                            </label>
                             <button
                                 onClick={() => setIsFullScreen(!isFullScreen)}
                                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
@@ -705,28 +742,83 @@ export default function FinancesTrackingPage() {
 
                         {chart.name !== "Member Sheet" ? (
                             <button
-                            onClick={() => deleteChart(chart.id, chart.name)}
-                            className="text-blue-500 font-bold text-lg"
+                                onClick={() => deleteChart(chart.id, chart.name)}
+                                className="text-blue-500 font-bold text-lg"
+                                title="Delete chart"
                             >
-                            X
+                                X
                             </button>
                         ) : (
-                            <button
-                            disabled
-                            className="text-gray-400 font-bold text-lg cursor-not-allowed"
-                            title="Cannot delete Member Sheet"
-                            >
+                        <button
+                            onClick={async () => {
+                                const confirmed = window.confirm("⚠️ Are you sure you want to wipe the Member Sheet? This action cannot be undone.");
+                                if (!confirmed) return;
+
+                                const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
+                                const clearedData = [
+                                    defaultHeader.map(label => ({ value: label })),
+                                    ...generateData(4, defaultHeader.length),
+                                ];
+
+                                // 1. Update state
+                                setCharts(prev =>
+                                    prev.map(c =>
+                                        c.id === chart.id ? { ...c, data: clearedData } : c
+                                    )
+                                );
+
+                                updateChartData(chart.id, clearedData);
+
+                                // 2. Delete old cloud copy
+                                try {
+                                    await fetch("/api/files", {
+                                        method: "DELETE",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                            tab_name: "Member Sheet",
+                                            ministry_id: ministryID,
+                                            page_type: pageType
+                                        }),
+                                    });
+                                    console.log("✅ Previous 'Member Sheet' deleted from cloud");
+                                } catch (err) {
+                                    console.error("❌ Failed to delete old Member Sheet before wiping", err);
+                                }
+                            }}
+                            className="text-blue-500 font-bold text-lg"
+                            title="Clear Member Sheet"
+                        >
                             X
-                            </button>
+                        </button>
                         )}
                         </div>
                     ))}
                     </div>    
-                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileUpload} className="mb-4" />
-                    <button onClick={handleSaveClick} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                    {/* Hidden real file input */}
+                    <input
+                        id="fileUpload"
+                        type="file"
+                        accept=".xlsx, .xls, .csv"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                    />
+
+                    {/* Custom Upload Button */}
+                    <label htmlFor="fileUpload">
+                        <div className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600">
+                        Upload File
+                        </div>
+                    </label>
+
+                    {/* Save File Button */}
+                    <button
+                        onClick={handleSaveClick}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
                         Save File
                     </button>
-    
+                    </div>    
                     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                         <MenuItem onClick={saveToComputer}>Save to this computer</MenuItem>
                         <MenuItem onClick={saveToCloud}>Save to the cloud</MenuItem>
@@ -950,5 +1042,4 @@ export default function FinancesTrackingPage() {
         )}
     </section>
     );
-}
     
