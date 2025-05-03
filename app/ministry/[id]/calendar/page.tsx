@@ -9,6 +9,8 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button } from "@mui/material";
 import "@/app/globals.css";
 import { Snackbar, Alert } from "@mui/material"; // Import Snackbar and Alert
+import Tooltip from "@mui/material/Tooltip";
+
 
 export default function CalendarPage() {
     const [events, setEvents] = useState([]);
@@ -16,12 +18,13 @@ export default function CalendarPage() {
     const [newEvent, setNewEvent] = useState({ title: "", start: "", end: "" });
     const [isEditing, setIsEditing] = useState(false);
     const params = useParams();
-    const ministry = params.name || "default";
+    const { id } = useParams(); // `id` should be from the dynamic route /ministry/[id]/calendar
+    const ministryId = id;
     const [snackOpen, setSnackOpen] = useState(false); // Snackbar state
     const router = useRouter(); // Initialize Next.js router
 
     const fetchEvents = async () => {
-        const res = await fetch(`/api/calendar?ministry=${ministry}`);
+        const res = await fetch(`/api/calendar?ministryId=${ministryId}`);
         const data = await res.json();
         if (data.success) {
             const formattedEvents = data.events.map(event => ({
@@ -37,7 +40,7 @@ export default function CalendarPage() {
     
     useEffect(() => {
         fetchEvents();
-    }, [ministry]);
+    }, [ministryId]);
     
     const handleDateSelect = (selectionInfo) => {
         setNewEvent({ id: "", title: "", start: selectionInfo.startStr, end: selectionInfo.endStr || selectionInfo.startStr });
@@ -75,14 +78,14 @@ export default function CalendarPage() {
     
         const method = isEditing ? "PUT" : "POST";
     
-        const res = await fetch("/api/calendar", {
+        const res = await fetch(`/api/calendar?ministryId=${ministryId}`, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
                 id: isEditing ? newEvent.id : undefined,
                 title: newEvent.title, 
                 start: newEvent.start, 
-                ministry,
+                ministry: ministryId,
                 description: newEvent.description || ""
             }),
         });
@@ -139,7 +142,20 @@ export default function CalendarPage() {
             <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 justify-center items-center p-10">
                 <div className="calendar-container flex justify-center items-center mt-6 w-full max-w-4xl">
                     <div className="w-full">
-                        <h1 className="text-xl font-semibold text-gray-700 mb-4">Event Calendar</h1>
+                    <div className="flex items-center gap-2 mb-4">
+                    <h1 className="text-xl font-semibold text-gray-700">
+                        Event Calendar
+                    </h1>
+                    {/* Hint Icon */}
+                    <div className="relative group">
+                        <div className="w-5 h-5 bg-blue-200 text-blue-700 font-bold rounded-full flex items-center justify-center text-xs cursor-pointer">
+                            ?
+                        </div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
+                            This calendar shows all events. Click a date to add an event or click an event to edit it.
+                        </div>
+                    </div>
+                </div>
                         <FullCalendar
                             plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
                             initialView="dayGridMonth"
@@ -153,17 +169,31 @@ export default function CalendarPage() {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                 });
-
+                            
+                                const description = eventInfo.event.extendedProps.description;
+                            
                                 return (
-                                    <div title={eventInfo.event.extendedProps.description}>
-                                        <b>{eventInfo.event.title}</b>
-                                        <span style={{ fontSize: '0.9rem', color: '#888', marginLeft: '5px' }}>
-                                            ({formattedStartTime})
-                                        </span>
-                                    </div>
+                                    <Tooltip 
+                                        title={
+                                            <div style={{ whiteSpace: "pre-line", padding: 4 }}>
+                                                {description || "No description"}
+                                            </div>
+                                        } 
+                                        placement="top" 
+                                        arrow 
+                                    >
+                                        <div style={{ cursor: "pointer" }}>
+                                            <b>{eventInfo.event.title}</b>
+                                            <span style={{ fontSize: '0.9rem', color: '#888', marginLeft: '5px' }}>
+                                                ({formattedStartTime})
+                                            </span>
+                                        </div>
+                                    </Tooltip>
                                 );
-                            }}
+                            }}                            
                             height="auto"
+                            dayMaxEventRows={2} // ✅ LIMIT TO 2 VISIBLE
+                            moreLinkClick="popover" // ✅ OPEN POPUP ON CLICK
                         />
                     </div>
                 </div>
