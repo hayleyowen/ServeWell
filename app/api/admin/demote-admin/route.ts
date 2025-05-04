@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 import { demoteAdminSchema } from "@/app/utils/zodSchema";
-import { apiSuperAdminVerification } from "@/app/lib/apiauth";
+import { apiSuperAdminVerification, checkMatchingChurches } from "@/app/lib/apiauth";
 
 export async function POST(req: Request) {
+  const client = await pool.getConnection();
   try {
     const body = await req.json();
     console.log("Demote admin request body:", body);
@@ -29,20 +30,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: superAdminChurchID.error }, { status: 403 });
     }
 
-    // Check for the churchID of the user being demoted
-    const client = await pool.getConnection();
-    const demoteUserChurchIDQuery = `SELECT churchID FROM users WHERE userID = ?`;
-    const [demoteUserChurchIDResult] = await client.query(demoteUserChurchIDQuery, [userID]);
-    const demoteUserChurchID = demoteUserChurchIDResult[0]?.churchID;
-    if (!demoteUserChurchID) {
-      return NextResponse.json({ error: "Demote user church ID not found" }, { status: 404 });
+   // Compare the churchID of the super admin with the user being altered
+    const compare = await checkMatchingChurches(userID, superAdminChurchID);
+    if (!compare) {
+      return NextResponse.json({ error: "You are not authorized to alter this user" }, { status: 403 });
     }
 
-    // Check if the super admin is from the same church as the user being demoted
-    if (demoteUserChurchID !== superAdminChurchID) {
-      return NextResponse.json({ error: "You are not authorized to demote this user" }, { status: 403 });
-    }
-
+    await client.beginTransaction(); // Start transaction
     // Change user's rID to 0 (regular user) and minID to NULL
     const updateQuery = `
       UPDATE users 
@@ -64,10 +58,13 @@ export async function POST(req: Request) {
     
     await client.execute(deleteQuery, [userID]);
 
-    client.release();
+    await client.commit(); // Commit transaction
     return NextResponse.json({ success: true });
   } catch (error) {
+    await client.rollback(); // Rollback transaction in case of error
     console.error("Error demoting admin:", error);
     return NextResponse.json({ error: "Failed to demote admin" }, { status: 500 });
+  } finally {
+    client.release(); // Ensure the connection is released
   }
 } 

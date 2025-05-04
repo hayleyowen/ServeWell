@@ -1,18 +1,44 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-import { PoolConnection } from "mysql2/promise"; // Import type for connection
+import { demoteAndAssignSchema } from "@/app/utils/zodSchema";
+import { apiSuperAdminVerification, checkMatchingChurches } from "@/app/lib/apiauth";
 
 export async function POST(req: Request) {
-  let client: PoolConnection | null = null; // Define client connection variable
-
   try {
-    const { minID, userID } = await req.json();
+    const body = await req.json();
 
-    if (!userID || !minID) {
+    console.log("Demote and assign request body:", body);
+
+    // Validate the request body using Zod schema
+    const validateData = demoteAndAssignSchema.safeParse(body);
+    if (!validateData.success) {
+      console.error("Validation error:", validateData.error);
+      return NextResponse.json({ message: "Invalid Data given" }, { status: 400 });
+    }
+
+    const userID = validateData.data?.userID;
+    const minID = validateData.data?.minID;
+    const auth0ID = validateData.data?.auth0ID;
+
+
+    if (!userID || !minID || !auth0ID) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
-    client = await pool.getConnection();
+    // Verify that the request is coming from a super admin
+    const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+
+    if (superAdminChurchID.error) {
+      return NextResponse.json({ message: superAdminChurchID.error }, { status: 403 });
+    }
+
+    // Compare the churchID of the super admin with the user being altered
+    const compare = await checkMatchingChurches(userID, superAdminChurchID);
+    if (!compare) {
+      return NextResponse.json({ error: "You are not authorized to alter this user" }, { status: 403 });
+    }
+
+    const client = await pool.getConnection();
     await client.beginTransaction(); // Start transaction
 
     // 1. Update user role from super admin (rID = 2) to regular admin (rID = 1)
@@ -54,17 +80,12 @@ export async function POST(req: Request) {
     `;
     await client.execute(updateChurchMemberQuery, [churchId, userID]);
 
-    await client.commit(); // Commit transaction
+    client.commit(); // Commit transaction
     client.release();
     return NextResponse.json({ success: true });
 
   } catch (error) {
     console.error("Error demoting super admin and assigning ministry:", error);
-    // Rollback transaction in case of error
-    if (client) {
-      await client.rollback();
-      client.release();
-    }
     return NextResponse.json(
       { error: "Failed to demote super admin and assign ministry", details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

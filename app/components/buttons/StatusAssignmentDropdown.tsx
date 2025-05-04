@@ -97,7 +97,8 @@ export default function StatusAssignmentDropdown({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             minID: ministry.ministry_id,
-            userID // Pass the current user's auth0ID
+            userID : userID,
+            auth0ID: auth0ID // Pass the current user's auth0ID
           }),
         });
         

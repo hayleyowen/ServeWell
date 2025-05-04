@@ -39,13 +39,13 @@ export async function middleware(req: NextRequest) {
       return response;
     }
 
-    const authid = session.user.sub;
+    const auth0ID = session.user.sub;
 
     // Step 3: Get user role & churchID
-    const userChurch = await userChurchID(authid);
+    const userChurch = await userChurchID(auth0ID);
     const churchID = userChurch[0]?.church_id;
     console.log('User Church ID:', churchID);
-    const userRole = await userStuff(authid);
+    const userRole = await userStuff(auth0ID);
     const role = userRole[0]?.rID;
     console.log('User Role:', role);
 
@@ -54,7 +54,7 @@ export async function middleware(req: NextRequest) {
       if (currentUrl.includes('/ministry')){
         const ministryId = currentUrl.split('/')[2];
         console.log('Ministry ID:', ministryId);
-        const userMinistries = await userMinistry(authid);
+        const userMinistries = await userMinistry(auth0ID);
         const ministryID = userMinistries[0]?.ministry_id;
         console.log('Ministries associated with user church:', ministryID);
         if (ministryId === ministryID.toString()) {
@@ -72,7 +72,7 @@ export async function middleware(req: NextRequest) {
       else if (currentUrl.includes('/church')) {
         const churchId = currentUrl.split('/')[3];
         console.log('Church ID:', churchId);
-        const userChurches = await userChurchID(authid);
+        const userChurches = await userChurchID(auth0ID);
         const churchID = userChurches[0]?.church_id;
         console.log('Churches associated with user church:', churchID);
         if (churchId === churchID.toString()) {

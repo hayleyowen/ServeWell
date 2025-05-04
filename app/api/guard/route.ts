@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
     try {
-        const {authid} = await req.json();
+        const {auth0ID} = await req.json();
         const client = await pool.getConnection();
         const query = `select rID from users where auth0ID = ?;`;
-        const [result] = await client.execute(query, [authid]);
+        const [result] = await client.execute(query, [auth0ID]);
         client.release();
 
         return NextResponse.json(result);

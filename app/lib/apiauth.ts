@@ -1,4 +1,5 @@
 import { userChurchID, userStuff } from "./userstuff";
+import pool from "@/app/lib/database"; // Assuming you have a database connection pool set up
 
 export async function apiSuperAdminVerification(auth0ID: string) {
     try {
@@ -25,5 +26,26 @@ export async function apiSuperAdminVerification(auth0ID: string) {
       return superAdminChurchID;
     } catch (error) {
       console.error("Error in apiSuperAdminVerification:", error);
+    }
+}
+
+export async function checkMatchingChurches(userID: number, superAdminChurchID: number) {
+    // Check for the churchID of the user being demoted
+    const client = await pool.getConnection();
+    try {
+        const userChurchIDQuery = `SELECT churchID FROM users WHERE userID = ?`;
+        const [userChurchIDResult] = await client.query(userChurchIDQuery, [userID]);
+        const userChurchID = userChurchIDResult[0]?.churchID;
+        if (!userChurchID) {
+            console.error("User church ID not found");
+            return false;
+        }
+        if (userChurchID !== superAdminChurchID) {
+            return false;
+        }
+        else {return true;}
+    } catch (error) {
+        console.error("Error checking matching churches:", error);
+        return false;
     }
 }

@@ -1,11 +1,11 @@
-export async function userStuff(authid: string) {
+export async function userStuff(auth0ID: string) {
     try {
         const result = await fetch('http://localhost:3000/api/guard', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({authid}),
+            body: JSON.stringify({auth0ID}),
         });
 
         const data = await result.json();
