@@ -95,64 +95,69 @@ export default function UserHomepage() {
   }
   if (user && churches.length == 0) {
     return (
-            <section className="t-20 min-h-screen flex flex-col">
-              <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  <div className="flex flex-row items-center text-center space-x-6">
-                    <h1 className="text-4xl font-bold text-white">Welcome, {user.nickname}</h1>
-                    <Image src="/Servewell.png" width={500} height={500} alt="Logo"/>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-                    <ChurchCreationButton />
-                    <AssignmentRequestButton />
-                  </div>
-                </div>
-              </div>
-            </section>
-          );
-      }
-      else {
-        return (
-          <section className="t-20 min-h-screen flex flex-col">
-            <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-40">
-              <div className="flex flex-col items-center justify-center pt-8">
-                <h2 className="text-2xl font-bold text-white mb-8">
-                  {churches.length > 0
-                    ? `${churches[0].churchname} Homepage`
-                    : 'Homepage'}
-                </h2>
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
-                    {customMinistries.map((ministry) => (
-                      <a
-                        key={ministry.ministry_id}
-                        href={`/ministry/${ministry.ministry_id}`}
-                        className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                        aria-label={`View details for ministry ${ministry.ministryname}`}
-                      >
-                        <h3 className="text-xl font-bold mb-2">{ministry.ministryname}</h3>
-                      </a>
-                    ))}
-                    {churches.map((church) => (
-                      <a
-                        key={church.church_id}
-                        href={`/user-homepage/church/${church.church_id}`}
-                        className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center"
-                      >
-                        <h3 className="text-xl font-bold mb-2">{church.churchname}</h3>
-                      </a>
-                    ))}
-                    <a
-                      href="/tools"
-                      className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-20 flex items-center justify-center">
-                      <h3 className="text-xl font-bold mb-2">SuperAdmin Tools</h3>
-                    </a>
-                  </div>
-                </div>
+      <section className="t-20 min-h-screen flex flex-col">
+        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-6 md:p-30">
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center text-center space-y-4 md:space-x-6 md:flex-row">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mt-4 sm:mt-6">
+                Welcome, {user.nickname}
+              </h1>
+              <Image
+                src="/Servewell.png"
+                width={300}
+                height={300}
+                alt="Logo"
+                className="w-32 h-32 sm:w-40 sm:h-40 md:w-64 md:h-64 mt-4 sm:mt-0"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 w-full max-w-4xl mt-6">
+              <ChurchCreationButton />
+              <AssignmentRequestButton />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  } else {
+    return (
+      <section className="t-20 min-h-screen flex flex-col">
+        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-6 md:p-40">
+          <div className="flex flex-col items-center justify-center pt-6 sm:pt-8">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-4 sm:mb-6 md:mb-8">
+              {churches.length > 0 ? `${churches[0].churchname} Homepage` : 'Homepage'}
+            </h2>
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="flex flex-wrap gap-4 w-full max-w-4xl justify-center">
+                {customMinistries.map((ministry) => (
+                  <a
+                    key={ministry.ministry_id}
+                    href={`/ministry/${ministry.ministry_id}`}
+                    className="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-16 sm:h-18 md:h-20 flex items-center justify-center"
+                    aria-label={`View details for ministry ${ministry.ministryname}`}
+                  >
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold">{ministry.ministryname}</h3>
+                  </a>
+                ))}
+                {churches.map((church) => (
+                  <a
+                    key={church.church_id}
+                    href={`/user-homepage/church/${church.church_id}`}
+                    className="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-16 sm:h-18 md:h-20 flex items-center justify-center"
+                  >
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold">{church.churchname}</h3>
+                  </a>
+                ))}
+                <a
+                  href="/tools"
+                  className="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105 w-full h-16 sm:h-18 md:h-20 flex items-center justify-center"
+                >
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold">SuperAdmin Tools</h3>
+                </a>
               </div>
             </div>
-          </section>
-        );
-      }
+          </div>
+        </div>
+      </section>
+    );
+  }
   
-}

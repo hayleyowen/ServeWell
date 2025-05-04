@@ -23,7 +23,7 @@ export default function AdminAssignPage() {
 
     const fetchAllAdmins = async () => {
         if (!auth0ID) return;
-        
+
         try {
             // Fetch requesting admins
             const adminResponse = await fetch('/api/admin/request-admin', {
@@ -49,7 +49,7 @@ export default function AdminAssignPage() {
             // Combine and mark super admins
             const combinedAdmins = [
                 ...superAdminData.map((admin: Admin) => ({ ...admin, isSuper: true })),
-                ...adminData
+                ...adminData,
             ];
 
             // Sort to ensure super admins are always on top
@@ -80,40 +80,42 @@ export default function AdminAssignPage() {
 
     return (
         <section className="mt-20 min-h-screen flex flex-col">
-            <div className="mt-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
-                <div className="flex flex-col items-center justify-center pt-8">
-                    <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
+            <div className="mt-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-6 sm:p-10 md:p-20">
+                <div className="flex flex-col items-center justify-center pt-4 sm:pt-8">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-6 sm:mb-8 text-center">
+                        Admin Assignment Page
+                    </h2>
                 </div>
 
-                <div className="items-center justify-center">
-                    <table className="table-auto flex-initial w-full bg-white rounded-lg shadow-md">
+                <div className="overflow-x-auto">
+                    <table className="table-auto w-full bg-white rounded-lg shadow-md">
                         <thead>
                             <tr className="bg-gray-200">
-                                <th className="px-4 py-2">Name</th>
-                                <th className="px-4 py-2">Email</th>
-                                <th className="px-4 py-2">Status</th>
-                                <th className="px-4 py-2">Actions</th>
+                                <th className="px-4 py-2 text-sm sm:text-base">Name</th>
+                                <th className="px-4 py-2 text-sm sm:text-base">Email</th>
+                                <th className="px-4 py-2 text-sm sm:text-base">Status</th>
+                                <th className="px-4 py-2 text-sm sm:text-base">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={[admin.userID, admin.fname]}>
-                                        <td className="px-4 py-2">{admin.fname}</td>
-                                        <td className="px-4 py-2">{admin.email}</td>
+                                    <tr key={admin.userID} className="border-b">
+                                        <td className="px-4 py-2 text-sm sm:text-base">{admin.fname}</td>
+                                        <td className="px-4 py-2 text-sm sm:text-base">{admin.email}</td>
                                         <td className="px-4 py-2">
-                                            <StatusAssignmentDropdown 
+                                            <StatusAssignmentDropdown
                                                 userID={admin.userID}
                                                 fname={admin.fname}
                                                 minID={admin.minID}
-                                                ministryname={admin.isSuper ? "Super Admin" : admin.ministryname}
+                                                ministryname={admin.isSuper ? 'Super Admin' : admin.ministryname}
                                                 auth0ID={auth0ID || ''}
                                                 onUpdate={fetchAllAdmins}
                                                 isSuper={admin.isSuper}
                                             />
                                         </td>
                                         <td className="px-4 py-2 flex justify-center items-center">
-                                            <DemoteButton 
+                                            <DemoteButton
                                                 userID={admin.userID}
                                                 isSuper={admin.isSuper}
                                                 onDemote={fetchAllAdmins}
@@ -123,7 +125,9 @@ export default function AdminAssignPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="p-4 text-gray-500">No administrators found.</td>
+                                    <td colSpan={4} className="p-4 text-gray-500 text-sm sm:text-base">
+                                        No administrators found.
+                                    </td>
                                 </tr>
                             )}
                         </tbody>
