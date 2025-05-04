@@ -121,8 +121,8 @@ export default function UserHomepage() {
   } else {
     return (
       <section className="t-20 min-h-screen flex flex-col">
-        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-6 md:p-40">
-          <div className="flex flex-col items-center justify-center pt-6 sm:pt-8">
+        <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-6 sm:p-40">
+          <div className="flex flex-col items-center justify-center pt-40 sm:pt-8">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-4 sm:mb-6 md:mb-8">
               {churches.length > 0 ? `${churches[0].churchname} Homepage` : 'Homepage'}
             </h2>

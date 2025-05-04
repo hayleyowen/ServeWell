@@ -22,7 +22,7 @@ export default async function ChurchHomepage({ params }: { params: { id: string 
     return (
       <section className="min-h-screen flex flex-col bg-gradient-to-b from-blue-400 to-blue-600">
         <div className="flex-1 flex flex-col p-6 sm:p-40 md:p-40">
-          <div className="flex flex-col items-center justify-center pt-4 sm:pt-8">
+          <div className="flex flex-col items-center justify-center pt-40 sm:pt-8">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center mb-4 sm:mb-8">
               {church[0].churchname} Homepage
             </h2>
