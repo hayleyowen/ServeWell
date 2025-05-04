@@ -3,13 +3,16 @@
 import { useState } from 'react';
 
 interface DeleteChurchButtonProps {
-    churchId: string;
+    churchId: number;
 }
 
 export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps) {
+    console.log("DeleteChurchButton received churchId:", churchId); // Debug log
+
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this church?')) {
             try {
+                console.log("Sending delete request for churchId:", churchId); // Debug log
                 const response = await fetch('/api/delete-church', {
                     method: 'DELETE',
                     headers: {
@@ -23,6 +26,7 @@ export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps
                     window.location.href = '/user-homepage'; // Redirect to the user homepage 
                 } else {
                     const errorData = await response.json();
+                    console.error("Error response from API:", errorData); // Debug log
                     alert(`Error: ${errorData.error}`);
                 }
             } catch (error) {

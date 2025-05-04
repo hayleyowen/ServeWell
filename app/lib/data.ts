@@ -183,6 +183,7 @@ export async function getChurchByID(churchID: number) {
     }
 }
 
+
 // Function to update a church
 export async function updateChurch(churchData: {
     churchName: string;
@@ -237,13 +238,65 @@ export async function deleteChurchByID(id: number) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [result] = await connection.execute<ResultSetHeader>(
-            "DELETE FROM church WHERE church_id = ?",
+
+        // Start a transaction
+        await connection.beginTransaction();
+
+        // Step 1: Set `minID` to NULL in the `users` table for all users associated with ministries in this church
+        await connection.execute(
+            `UPDATE users 
+             SET minID = NULL 
+             WHERE minID IN (SELECT ministry_id FROM ministry WHERE church_id = ?)`,
             [id]
         );
+
+        // Step 2: Delete related records in the `ministry` table
+        await connection.execute(
+            `DELETE FROM ministry WHERE church_id = ?`,
+            [id]
+        );
+
+        // Step 3: Set `churchID` to NULL in the `users` table for related records
+        await connection.execute(
+            `UPDATE users 
+             SET churchID = NULL 
+             WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 4: Set `rID` to NULL in the `users` table for related records
+        await connection.execute(
+            `UPDATE users 
+             SET rID = NULL 
+             WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 5: Delete related records in the `requestingAdmins` table
+        await connection.execute(
+            `DELETE FROM requestingAdmins WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 6: Delete related records in the `media` table
+        await connection.execute(
+            `DELETE FROM media WHERE church_id = ?`,
+            [id]
+        );
+
+        // Step 7: Finally, delete the church
+        const [result] = await connection.execute<ResultSetHeader>(
+            `DELETE FROM church WHERE church_id = ?`,
+            [id]
+        );
+
+        // Commit the transaction
+        await connection.commit();
+
         connection.release();
-        return result.affectedRows > 0;
+        return result.affectedRows > 0; // Returns true if a row was deleted
     } catch (error) {
+        if (connection) await connection.rollback(); // Rollback in case of error
         console.error("Failed to delete church:", error);
         throw new Error("Failed to delete church.");
     } finally {
