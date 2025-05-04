@@ -465,37 +465,40 @@ export async function createMinistry(ministryData: {
 
 // Function to update a ministry
 export async function updateMinistry(ministryData: {
-    ministryName: string;
+    ministryId: number;
     description: string;
-}) {
+    ministryName: string; // Add ministryName to the function signature
+  }) {
     let connection;
     try {
-        connection = await pool.getConnection();
-    
-        // Check if the ministry exists
-        const [existingMinistry] = await connection.execute<RowDataPacket[]>(
-            `SELECT ministry_id FROM ministry WHERE ministryname = ?`,
-            [ministryData.ministryName]
+      connection = await pool.getConnection();
+  
+      // Check if the ministry exists
+      const [existingMinistry] = await connection.execute(
+        `SELECT ministry_id FROM ministry WHERE ministry_id = ?`,
+        [ministryData.ministryId]
+      );
+  
+      if (existingMinistry.length > 0) {
+        // Update the existing ministry
+        await connection.execute(
+          `UPDATE ministry 
+           SET description = ?, ministryname = ? 
+           WHERE ministry_id = ?`,
+          [ministryData.description, ministryData.ministryName, ministryData.ministryId]
         );
-    
-        if (existingMinistry.length > 0) {
-            // Update the existing ministry
-            await connection.execute(
-                `UPDATE ministry SET description = ? WHERE ministryname = ?`,
-                [ministryData.description, ministryData.ministryName]
-            );
-            return { success: true, message: 'Ministry updated successfully' };
-        } else {
-            // Ministry does not exist
-            return { success: false, message: 'Ministry not found' };
-        }
+        return { success: true, message: 'Ministry updated successfully' };
+      } else {
+        // Ministry does not exist
+        return { success: false, message: 'Ministry not found' };
+      }
     } catch (error) {
-        console.error('Failed to update ministry:', error);
-        throw new Error('Failed to update ministry.');
+      console.error('Failed to update ministry:', error);
+      throw new Error('Failed to update ministry.');
     } finally {
-        if (connection) connection.release();
+      if (connection) connection.release();
     }
-}
+  }
 
 // Function to delete a ministry by url_path variable
 export async function deleteMinistryByURLPath(name: string) {
