@@ -1,4 +1,4 @@
-import {insertUser, verifyAdmin} from '@/app/lib/data';
+import {insertUser} from '@/app/lib/data';
 import { NextResponse } from 'next/server';
 import { insertUserSchema } from '@/app/utils/zodSchema';
 
@@ -27,17 +27,6 @@ export async function POST(req: Request) {
         // console.log('User:', nickname, auth0_id, email);
         const result = await insertUser(nickname, auth0_id, email);
         return NextResponse.json({ success: true });
-    } catch(error) {
-        console.error('Detailed error:', error);
-        return NextResponse.json({ success: false }, { status: 500 });
-    }
-}
-
-export async function GET(req) {
-    try {
-        const {auth0_id} = await req.json();
-        const admins = await verifyAdmin(auth0_id);
-        return NextResponse.json(admins);
     } catch(error) {
         console.error('Detailed error:', error);
         return NextResponse.json({ success: false }, { status: 500 });
