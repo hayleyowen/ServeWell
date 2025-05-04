@@ -19,24 +19,6 @@ export default function Home() {
         router.push('/user-homepage');
       }
     }, [user, router]);
-    
-  // // insert new users into users table if they don't already exist
-  // useEffect(() => {
-  //   if (user) {
-  //     const insertUser = async () => {
-  //       try {
-  //         await fetch('/api/admin/insert-admins', {
-  //           method: 'POST',
-  //           headers: { 'Content-Type': 'application/json' },
-  //           body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
-  //         });
-  //       } catch (err) {
-  //         console.error('Failed to insert new user:', err);
-  //       }
-  //     };
-  //     insertUser();
-  //   }
-  // }, [user]);
 
   const auth0_id = user?.sub;
   const [users, setUsers] = useState([]);
