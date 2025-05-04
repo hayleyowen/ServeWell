@@ -186,6 +186,7 @@ export async function getChurchByID(churchID: number) {
 
 // Function to update a church
 export async function updateChurch(churchData: {
+    churchID: number; // Add churchID as a required parameter
     churchName: string;
     denomination: string;
     email: string;
@@ -193,45 +194,46 @@ export async function updateChurch(churchData: {
     address: string;
     postalcode: string;
     city: string;
-}) {
+  }) {
     let connection;
     try {
-        connection = await pool.getConnection();
-    
-        // Check if the church exists
-        const [existingChurch] = await connection.execute(
-            `SELECT church_id FROM church WHERE churchname = ?`,
-            [churchData.churchName]
+      connection = await pool.getConnection();
+  
+      // Check if the church exists using churchID
+      const [existingChurch] = await connection.execute(
+        `SELECT church_id FROM church WHERE church_id = ?`,
+        [churchData.churchID]
+      );
+  
+      if (existingChurch.length > 0) {
+        // Update the existing church
+        await connection.execute(
+          `UPDATE church 
+           SET churchname = ?, denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
+           WHERE church_id = ?`,
+          [
+            churchData.churchName,
+            churchData.denomination,
+            churchData.email,
+            churchData.phone,
+            churchData.address,
+            churchData.postalcode,
+            churchData.city,
+            churchData.churchID, // Use churchID in the WHERE clause
+          ]
         );
-    
-        if (existingChurch.length > 0) {
-            // Update the existing church
-            await connection.execute(
-                `UPDATE church 
-                SET denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
-                WHERE churchname = ?`,
-                [
-                    churchData.denomination,
-                    churchData.email,
-                    churchData.phone,
-                    churchData.address,
-                    churchData.postalcode,
-                    churchData.city,
-                    churchData.churchName,
-                ]
-            );
-            return { success: true, message: 'Church updated successfully' };
-        } else {
-            // Church does not exist
-            return { success: false, message: 'Church not found' };
-        }
+        return { success: true, message: 'Church updated successfully' };
+      } else {
+        // Church does not exist
+        return { success: false, message: 'Church not found' };
+      }
     } catch (error) {
-        console.error('Failed to update church:', error);
-        throw new Error('Failed to update church.');
+      console.error('Failed to update church:', error);
+      throw new Error('Failed to update church.');
     } finally {
-        if (connection) connection.release();
+      if (connection) connection.release();
     }
-}
+  }
 
 // Delete church by ID
 export async function deleteChurchByID(id: number) {
