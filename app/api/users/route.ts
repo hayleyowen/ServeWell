@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-
+import { newUserSchema } from "@/app/utils/zodSchema";
 
 export async function POST(req: Request) {
-    const { authid } = await req.json();
+    const body = await req.json();
+
+    // use zod to validate the request body
+    const validateData = newUserSchema.safeParse(body);
+    if (!validateData.success) {
+        return NextResponse.json({ message: "Invalid Data given" }, { status: 400 });
+    }
+
+    const authid = validateData.data?.authid;
     if (authid == undefined ) {
         return NextResponse.json({ error: "Auth0ID is required" }, { status: 400 });
     }
+
     try {
         const client = await pool.getConnection();
     

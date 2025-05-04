@@ -4,10 +4,11 @@ import { FaTrash } from 'react-icons/fa';
 interface DemoteButtonProps {
     userID: number;
     isSuper?: boolean;
+    auth0ID?: string;
     onDemote?: () => void;
 }
 
-export default function DemoteButton({ userID, isSuper = false, onDemote }: DemoteButtonProps) {
+export default function DemoteButton({ userID, isSuper = false, auth0ID, onDemote }: DemoteButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleDemote = async () => {
@@ -23,7 +24,7 @@ export default function DemoteButton({ userID, isSuper = false, onDemote }: Demo
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ userID }),
+                body: JSON.stringify({ userID : userID, auth0ID: auth0ID }),
             });
 
             if (!response.ok) {

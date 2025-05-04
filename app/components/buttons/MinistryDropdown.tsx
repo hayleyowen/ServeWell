@@ -10,17 +10,15 @@ interface Ministry {
 
 interface MinistryDropdownProps {
   userID: number;
-  onUpdate?: () => void; // Add callback for parent refresh
-  auth0ID: string; // Add auth0ID prop
+  onUpdate?: () => void;
+  auth0ID: string; // Add callback for parent refresh
 }
 
-export default function MinistryDropdown({ userID, onUpdate }: MinistryDropdownProps) {
+export default function MinistryDropdown({ userID, onUpdate, auth0ID }: MinistryDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const {user} = useUser();
-  const auth0ID = user?.sub; // Get auth0ID from user object
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,6 +73,12 @@ export default function MinistryDropdown({ userID, onUpdate }: MinistryDropdownP
 
   async function updateAdminMinistry(ministry: Ministry) {
     setLoading(true);
+    if (!auth0ID) {
+      console.error("auth0ID is not available");
+      setLoading(false);
+      return;
+    }
+    console.log("auth0ID: ", auth0ID);
     try {
       const response = await fetch("/api/admin", {
         method: "POST",

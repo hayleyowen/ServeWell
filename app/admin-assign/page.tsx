@@ -116,6 +116,7 @@ export default function AdminAssignPage() {
                                             <DemoteButton 
                                                 userID={admin.userID}
                                                 isSuper={admin.isSuper}
+                                                auth0ID={auth0ID || ''}
                                                 onDemote={fetchAllAdmins}
                                             />
                                         </td>

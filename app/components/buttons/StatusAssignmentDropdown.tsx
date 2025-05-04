@@ -114,7 +114,7 @@ export default function StatusAssignmentDropdown({
         const response = await fetch("/api/admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userID, minID: ministry.ministry_id }),
+          body: JSON.stringify({ userID, minID: ministry.ministry_id, auth0ID: auth0ID }),
         });
         
         if (!response.ok) {
