@@ -151,7 +151,8 @@ export default function StatusAssignmentDropdown({
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userID       // auth0ID of the logged-in user performing the action
+          userID,
+          auth0ID       // auth0ID of the logged-in user performing the action
         })
       });
 

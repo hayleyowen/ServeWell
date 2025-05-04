@@ -32,3 +32,9 @@ export const insertUserSchema = z.object({
     email: z.string().email("Invalid email format"),
 });
 
+export const promoteAdminSchema = z.object({
+    userID: z.number().int().nonnegative().refine(val => val > 0, { message: "UserID must be a positive integer" }),
+    auth0ID: z.string().nonempty("Auth0ID is required"),
+});
+
+

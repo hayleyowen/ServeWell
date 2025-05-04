@@ -23,6 +23,7 @@ export async function POST(req: Request) {
 
         // there is no need to authenticate the user here
         // because the user is a new user with no role or privileges yet
+        
 
         // console.log('User:', nickname, auth0_id, email);
         const result = await insertUser(nickname, auth0_id, email);
