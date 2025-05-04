@@ -37,4 +37,7 @@ export const promoteAdminSchema = z.object({
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
+export const requestAdminSchema = z.object({
+    auth0ID: z.string().nonempty("Auth0ID is required"),
+});
 

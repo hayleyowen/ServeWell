@@ -2,10 +2,35 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 import { getAllAdmins, showRequestingAdmins } from "@/app/lib/data";
 import { RowDataPacket } from "mysql2/promise";
+import { requestAdminSchema } from "@/app/utils/zodSchema"; // Assuming you have a Zod schema for validation
+import { userStuff } from "@/app/lib/userstuff";
 
 export async function POST(req: Request) {
-  const { auth0ID } = await req.json();
   try {
+    const body = await req.json();
+    console.log("Requesting admins Body:", body); // Log the request body for debugging
+
+    // Server-side validation using Zod
+    const validateData = requestAdminSchema?.safeParse(body);
+    if (!validateData.success) {
+      console.error("Validation error:", validateData.error); // Log validation errors
+      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+    }
+    const auth0ID = validateData.data.auth0ID;
+
+    // Verify the auth0ID is a super admin
+    const userRole = await userStuff(auth0ID);
+    if (userRole.error) {
+      console.log("Error fetching user role:", userRole.error);
+      return NextResponse.json({ error: "Failed to fetch user role" }, { status: 500 });
+    }
+    const role = userRole[0]?.rID;
+    if (role !== 2) {
+      return NextResponse.json({ error: "You are not authorized to perform this action" }, { status: 403 });
+    }
+
+    // now that we know this superadmin is from this church, we can get the requesting admins
+
     const client = await pool.getConnection();
 
    // Get both requesting admins AND regular admins with proper type casting
