@@ -38,7 +38,7 @@ export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps
 
     return (
         <button
-            className="absolute bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition"
+            className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition"
             onClick={handleDelete}
         >
             Delete Church

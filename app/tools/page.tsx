@@ -19,7 +19,6 @@ export default function Settings() {
           if (user?.sub) {
               try {
                   const userChurch = await getUserChurch(user.sub);
-                  console.log("Fetched Church Data:", userChurch); // Debug log
   
                   if (userChurch && userChurch[0]?.church_id) {
                       setChurchId(userChurch[0].church_id); // Set as number
