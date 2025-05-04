@@ -8,7 +8,7 @@ interface Ministry {
 }
 
 interface StatusAssignmentDropdownProps {
-  member_id: number;
+  userID: number;  // userID of the admin to be assigned
   fname: string;
   minID: number | null;
   ministryname: string | null;
@@ -18,7 +18,7 @@ interface StatusAssignmentDropdownProps {
 }
 
 export default function StatusAssignmentDropdown({ 
-  member_id, fname, minID, ministryname,
+  userID, fname, minID, ministryname,
   auth0ID, onUpdate, isSuper = false // Default to false
 }: StatusAssignmentDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
@@ -83,19 +83,21 @@ export default function StatusAssignmentDropdown({
   // Function to assign a ministry - when clicking a ministry in the dropdown
   async function assignMinistry(ministry: Ministry) {
     setLoading(true);
+    console.log("user id of user being assigned:", userID);
     try {
       // Special handling if user is currently a super admin
       // We need to demote them first from super admin (rID=2) to regular admin (rID=1)
       // and assign ministry at the same time
       if (isSuper) {
+        console.log('UserID of user being demoted:', userID);
+        console.log('Ministry ID being assigned:', ministry.ministry_id);
         // Call a new API route that handles demoting and assigning in a single transaction
         const response = await fetch("/api/admin/demote-and-assign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            member_id: member_id, 
             minID: ministry.ministry_id,
-            auth0ID: auth0ID // Pass the current user's auth0ID
+            userID // Pass the current user's auth0ID
           }),
         });
         
@@ -112,7 +114,7 @@ export default function StatusAssignmentDropdown({
         const response = await fetch("/api/admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ memID: member_id, minID: ministry.ministry_id }),
+          body: JSON.stringify({ userID, minID: ministry.ministry_id }),
         });
         
         if (!response.ok) {
@@ -148,8 +150,7 @@ export default function StatusAssignmentDropdown({
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          member_id: member_id, // ID of user being promoted
-          auth0ID: auth0ID       // auth0ID of the logged-in user performing the action
+          userID       // auth0ID of the logged-in user performing the action
         })
       });
 

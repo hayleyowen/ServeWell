@@ -34,7 +34,7 @@ export default function MinistryCreationForm() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ auth0_id: user.sub }),
+          body: JSON.stringify({ auth0ID: user.sub }),
         });
 
         if (!response.ok) {
@@ -130,68 +130,53 @@ export default function MinistryCreationForm() {
 
   if (!user) {
     return (
-      <div className={styles.container}>
-        <div className="text-center text-red-500">
-          Please log in to create a ministry
-        </div>
+      <div className="text-center text-red-500">
+        Please log in to create a ministry
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.topBar}>
-        <h1 className={styles.title}>Create New Ministry</h1>
-      </div>
-      
-      <div className={styles.formContainer}>
-        <div className={styles.formWrapper}>
-          <h2 className={styles.formTitle}>Ministry Details</h2>
-          
-          {error && (
-            <div className="text-red-500 mb-4 text-center">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-green-500 mb-4 text-center font-semibold">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="MinistryName"
-              placeholder="Ministry Name"
-              value={formData.MinistryName}
-              onChange={handleChange}
-              required
-              className={styles.input}
-              disabled={isLoading}
-            />
-
-            <textarea
-              name="Description"
-              placeholder="Ministry Description"
-              value={formData.Description}
-              onChange={handleChange}
-              className={styles.input}
-              rows={4}
-              disabled={isLoading}
-            />
-
-            <button
-              type="submit"
-              className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading || !formData.Church_ID}
-            >
-              {isLoading ? 'Creating...' : 'Create Ministry'}
-            </button>
-          </form>
+    <div className={styles.formWrapper}>
+      <h2 className={styles.formTitle}>Ministry Details</h2>
+      {error && (
+        <div className="text-red-500 mb-4 text-center">
+          {error}
         </div>
-      </div>
+      )}
+      {success && (
+        <div className="text-green-500 mb-4 text-center font-semibold">
+          {success}
+        </div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="MinistryName"
+          placeholder="Ministry Name"
+          value={formData.MinistryName}
+          onChange={handleChange}
+          required
+          className={styles.input}
+          disabled={isLoading}
+        />
+        <textarea
+          name="Description"
+          placeholder="Ministry Description"
+          value={formData.Description}
+          onChange={handleChange}
+          className={styles.input}
+          rows={4}
+          disabled={isLoading}
+        />
+        <button
+          type="submit"
+          className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || !formData.Church_ID}
+        >
+          {isLoading ? 'Creating...' : 'Create Ministry'}
+        </button>
+      </form>
     </div>
   )
 }

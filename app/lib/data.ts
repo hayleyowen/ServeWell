@@ -1,7 +1,6 @@
 "use server";
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-import { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2';
 
 ////////////////////////////////////////
 /////// User-related functions ///////
@@ -10,81 +9,41 @@ import { ResultSetHeader, RowDataPacket, OkPacket } from 'mysql2';
 export async function getUserChurch(auth0ID: string) {
     let connection;
     try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute<RowDataPacket[]>(
-            `SELECT c.church_id, c.churchname 
-             FROM church c
-             INNER JOIN churchmember cm ON c.church_id = cm.church_id
-             WHERE cm.member_id = (SELECT memID FROM users WHERE auth0ID = ?)`,
-            [auth0ID]
-        );
-        connection.release();
+        const result = await fetch(`http://localhost:3000/api/userChurch`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ auth0ID }),
+        });
+        const data = await result.json();
+        console.log("User Church Data:", data);
         return data;
-    } catch (error) {
-        console.error("Failed to fetch user church:", error);
-        throw new Error("Failed to fetch user church.");
+    }
+    catch (error) {
+        console.error("Error fetching user church:", error);
+        return { error: "Failed to fetch user church" };
     } finally {
         if (connection) connection.release();
-    }
-}
-
-export async function getRequestingAdmins(auth0ID: string) {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute(``);
-        connection.release();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch requesting admins:", error);
-        throw new Error("Failed to fetch requesting admins.");
-    } finally {
-        if (connection) connection.release();
-    }
-}    
-
-export async function getUnAssignedAdmins() {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [data] = await connection.execute(
-            `SELECT * FROM admin WHERE ministry_id IS NULL`
-        );
-        connection.release();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch unassigned admins:", error);
-        throw new Error("Failed to fetch unassigned admins.");
-    } finally {
-        if (connection) connection.release();
-    }
-}
+    }    
+}   
 
 export async function showRequestingAdmins(auth0ID: string) {
     let connection;
     try {
         connection = await pool.getConnection();
         const query = `
-            SELECT 
-                cm.fname, 
-                cm.email, 
-                cm.member_id, 
-                u.minID, 
-                cm.church_id,
+            SELECT
+                u.userID, 
+                u.fname, 
+                u.email,
+                u.minID,
                 m.ministryname
-            FROM churchmember cm 
-            INNER JOIN users u ON cm.member_id = u.memID 
-            INNER JOIN requestingAdmins ra ON u.auth0ID = ra.auth0ID 
-            LEFT JOIN ministry m ON u.minID = m.ministry_id
-            WHERE ra.churchID = (
-                SELECT church_id 
-                FROM churchmember 
-                WHERE member_id = (
-                    SELECT memID 
-                    FROM users 
-                    WHERE auth0ID = ?
-                )
-            );`
+            FROM users u
+            LEFT JOIN ministry m on u.minID = m.ministry_id
+            INNER JOIN requestingAdmins ra ON ra.auth0ID = u.auth0ID
+            WHERE ra.churchID = (Select churchID from users where auth0ID = ?);
+        `;
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
         connection.release();
@@ -102,16 +61,10 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
     try {
         const client = await pool.getConnection();
 
-        // create a new member record, if they are a new user
-        const insertMember = `insert ignore into churchmember (fname, email) values (?, ?);`;
-        const values = [nickname, email];
-        const [newMember] = await client.execute<ResultSetHeader>(insertMember, values);
-        const memID = newMember.insertId;
-
         // create a new user record, if they are a new user
-        const insertUser = `insert ignore into users (auth0ID, memID) values (?, ?);`;
-        const values1 = [Auth0_ID, memID];
-        const [newUser] = await client.execute<ResultSetHeader>(insertUser, values1);
+        const insertUser = `insert ignore into users (auth0ID, fname, email) values (?, ?, ?);`;
+        const values1 = [Auth0_ID, nickname, email];
+        const [newUser] = await client.execute(insertUser, values1);
         client.release();
 
         return NextResponse.json({ success: true, affectedRows: newUser.affectedRows });
@@ -188,7 +141,7 @@ export async function createChurch(churchData: {
 
     try {
         connection = await pool.getConnection();
-        const [result] = await connection.execute<ResultSetHeader>(
+        const [result] = await connection.execute(
             `INSERT INTO church (churchname, denomination, email, churchphone, streetaddress, postalcode, city)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -216,12 +169,12 @@ export async function getChurchByID(churchID: number) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [data] = await connection.execute<RowDataPacket[]>(
+        const [data] = await connection.execute(
             `SELECT * FROM church WHERE church_id = ? LIMIT 1`,
             [churchID]
         );
         connection.release();
-        return data[0] || null; // Return the first result or null if not found
+        return data || null; // Return the first result or null if not found
     } catch (error) {
         console.error("Failed to fetch church by ID:", error);
         throw new Error("Failed to fetch church.");
@@ -245,7 +198,7 @@ export async function updateChurch(churchData: {
         connection = await pool.getConnection();
     
         // Check if the church exists
-        const [existingChurch] = await connection.execute<RowDataPacket[]>(
+        const [existingChurch] = await connection.execute(
             `SELECT church_id FROM church WHERE churchname = ?`,
             [churchData.churchName]
         );
@@ -339,7 +292,7 @@ export async function getMinistriesByID(auth0ID: string) {
                 -- If rID is 2, match the church_id
                 (
                     (SELECT rID FROM users WHERE auth0ID = ?) = 2 
-                    AND church_id = (SELECT church_id FROM churchmember WHERE member_id = (SELECT memID FROM users WHERE auth0ID = ?))
+                    AND church_id = (SELECT churchID from users WHERE auth0ID = ?)
                 )
             `,
             [auth0ID, auth0ID, auth0ID, auth0ID]
@@ -559,39 +512,18 @@ export async function createSuperAdmin(data: {
         connection = await pool.getConnection();
         await connection.beginTransaction(); // Start a transaction
 
-        const [churchIdResult] = await connection.execute(
-            "SELECT church_id FROM church ORDER BY church_id DESC LIMIT 1;"
-        );
-
-        const churchId = churchIdResult[0]?.church_id; // Increment the church ID for the new church
-
-        // Insert into churchmember table
-        const [memberResult] = await connection.execute(
-            `
-            INSERT INTO churchmember (fname, mname, lname, email, memberphone, church_id, activity_status)
-            VALUES (?, null, null, ?, null, ?, 'Active')
-            ON DUPLICATE KEY UPDATE 
-                church_id = VALUES(church_id);
-            `,
-                [
-                    data.firstName,
-                    data.email,
-                    churchId
-                ]
-            
-        );
-
-        const member_id = memberResult.insertId;
+        console.log("ChurchID in data.ts", data.church_id);
 
         const [adminResult] = await connection.execute(
             `
-            INSERT INTO users (auth0ID, memID, rID, minID)
-            VALUES (?, ?, 2, NULL)
+            INSERT INTO users (fname, email, auth0ID, rID, minID, churchID)
+            VALUES (?, ?, ?, 2, NULL, ?)
             ON DUPLICATE KEY UPDATE 
                 rID = VALUES(rID),
-                minID = VALUES(minID);
+                minID = VALUES(minID),
+                churchID = VALUES(churchID);
             `,
-            [data.auth0ID, member_id]
+            [data.firstName, data.email, data.auth0ID, data.church_id]
         );
 
         await connection.commit(); // Commit the transaction
@@ -599,7 +531,6 @@ export async function createSuperAdmin(data: {
 
         return {
             success: true,
-            member_id: member_id,
             admin_id: adminResult.insertId
         };
     } catch (error) {
@@ -634,27 +565,24 @@ export async function getAllAdmins(auth0ID: string) {
         connection = await pool.getConnection();
         const query = `
             SELECT 
-                cm.fname, 
-                cm.email, 
-                cm.member_id, 
+                u.userID,
+                u.fname, 
+                u.email, 
+                u.rID,
                 u.minID, 
-                cm.church_id,
+                u.churchID,
                 m.ministryname
-            FROM churchmember cm 
-            INNER JOIN users u ON cm.member_id = u.memID 
+            FROM users u 
             LEFT JOIN ministry m ON u.minID = m.ministry_id
             WHERE u.rID = 1  -- Regular admins (rID = 1)
-            AND cm.church_id = (
-                SELECT church_id 
-                FROM churchmember 
-                WHERE member_id = (
-                    SELECT memID 
-                    FROM users 
-                    WHERE auth0ID = ?
-                )
+            AND u.churchID = (
+                SELECT churchID 
+                FROM users 
+                WHERE auth0ID = ?
             );`
         const values = [auth0ID];
         const [data] = await connection.execute(query, values);
+        console.log("Fetched admins:", data);
         connection.release();
         return data;
     } catch (error) {
@@ -664,4 +592,3 @@ export async function getAllAdmins(auth0ID: string) {
         if (connection) connection.release();
     }
 }
-

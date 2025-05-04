@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import pool from '@/app/lib/database'; 
-import { getRequestingAdmins } from '@/app/lib/data';
+import pool from '@/app/lib/database';
 
 
 export async function POST(req: Request) {
@@ -35,7 +34,9 @@ export async function GET(req: Request) {
         const data = await req.json();
         console.log('Auth0ID:', data.auth0ID);
         const client = await pool.getConnection();
-        const requestingAdmins = await getRequestingAdmins(data.auth0ID);
+        const query = `SELECT * FROM requestingAdmins WHERE auth0ID = ?`;
+        const [requestingAdmins] = await client.query(query, [data.auth0ID]);
+        client.release();
 
         return NextResponse.json({requestingAdmins});
     }

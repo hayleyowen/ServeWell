@@ -49,17 +49,16 @@ export async function GET(request: Request) {
 
     // Find the user's church_id based on auth0ID by joining users and churchmember tables
     const [userRows]: any[] = await client.execute(
-      `SELECT cm.church_id 
+      `SELECT churchID
        FROM users u
-       JOIN churchmember cm ON u.memID = cm.member_id
-       WHERE u.auth0ID = ? 
+       WHERE auth0ID = ? 
        LIMIT 1`,
       [auth0ID]
     );
 
     let churchId;
     if (userRows.length > 0) {
-      churchId = userRows[0].church_id;
+      churchId = userRows[0].churchID;
     } else {
       // Optional: Handle case where user not found or has no church_id
       // For now, let's assume the user is always found and has a church_id
