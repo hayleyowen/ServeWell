@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-module.exports = {
-  images: {
-    domains: ['159.89.32.228'], 
-  },
-};
+// module.exports = {
+//   images: {
+//     domains: ['159.89.32.228'], 
+//   },
+// };
 export default nextConfig;
