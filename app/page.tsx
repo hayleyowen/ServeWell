@@ -68,7 +68,6 @@ export default function Home() {
   }
 
   // if no session (i.e. user is not logged in), show login button
-  // if no session (i.e. user is not logged in), show login button
 if (!user) {
   return (
     <section className="t-20 min-h-screen flex flex-col">

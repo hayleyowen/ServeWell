@@ -44,9 +44,9 @@ export async function POST(req: Request) {
    const combinedAdmins = [...requestingAdmins];
    
    // Add regularAdmins, avoiding duplicates by member_id
-   const existingMemberIds = new Set(combinedAdmins.map(admin => admin.member_id));
+   const existingMemberIds = new Set(combinedAdmins.map(admin => admin.userID));
    for (const admin of regularAdmins) {
-     if (!existingMemberIds.has(admin.member_id)) {
+     if (!existingMemberIds.has(admin.userID)) {
        combinedAdmins.push(admin);
      }
    }

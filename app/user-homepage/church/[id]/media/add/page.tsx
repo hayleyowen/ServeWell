@@ -41,7 +41,7 @@ export default function AddMediaPage({ params }: PageParams) {
       });
 
       if (response.ok) {
-        router.push(`/church/${churchId}/media`);
+        router.push(`/user-homepage/church/${churchId}/media`);
         router.refresh();
       } else {
         throw new Error('Failed to post media');
