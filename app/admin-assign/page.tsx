@@ -23,6 +23,7 @@ export default function AdminAssignPage() {
 
     const fetchAllAdmins = async () => {
         if (!auth0ID) return;
+        console.log('Fetching all admins for auth0ID:', auth0ID);
         
         try {
             // Fetch requesting admins
@@ -81,7 +82,7 @@ export default function AdminAssignPage() {
     return (
         <section className="mt-20 min-h-screen flex flex-col">
             <div className="mt-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
-                <div className="flex flex-col items-center justify-center pt-8">
+                <div className="flex flex-col items-center justify-center pt-20">
                     <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
                 </div>
 
@@ -116,6 +117,7 @@ export default function AdminAssignPage() {
                                             <DemoteButton 
                                                 userID={admin.userID}
                                                 isSuper={admin.isSuper}
+                                                auth0ID={auth0ID || ''}
                                                 onDemote={fetchAllAdmins}
                                             />
                                         </td>

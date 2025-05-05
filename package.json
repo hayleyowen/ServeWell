@@ -51,7 +51,8 @@
     "react-spreadsheet": "^0.9.5",
     "scheduler": "^0.25.0",
     "tippy.js": "^6.3.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

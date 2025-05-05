@@ -1,11 +1,11 @@
-export async function userStuff(authid: string) {
+export async function userStuff(auth0ID: string) {
     try {
         const result = await fetch('http://localhost:3000/api/guard', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({authid}),
+            body: JSON.stringify({auth0ID}),
         });
 
         const data = await result.json();
@@ -15,14 +15,14 @@ export async function userStuff(authid: string) {
         return { error: 'Failed to fetch user role' };
     }
 }
-export async function userChurchID(authid: string) {
+export async function userChurchID(auth0ID: string) {
     try {
         const result = await fetch('http://localhost:3000/api/userChurch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({auth0ID: authid}),
+            body: JSON.stringify({auth0ID}),
         });
         const data = await result.json();
         return data;
@@ -32,14 +32,14 @@ export async function userChurchID(authid: string) {
     }
 }
 
-export async function userMinistry(authid: string) {
+export async function userMinistry(auth0ID: string) {
     try {
         const result = await fetch('http://localhost:3000/api/userMinistry', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({auth0ID :authid}),
+            body: JSON.stringify({auth0ID}),
         });
         const data = await result.json();
         return data;
@@ -65,28 +65,5 @@ export async function userMinistryID(authid: string) {
     catch (error) {
         console.error('Error fetching user ministry ID:', error);
         return { error: 'Failed to fetch user ministry ID' };
-    }
-}
-
-export async function newUser(auth_ID: string) {
-    console.log('Auth ID:', auth_ID);
-    try {
-        const result = await fetch('http://localhost:3000/api/users', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({authid: auth_ID}),
-        });
-
-        const data = await result.json();
-        if (data.length === 0 ) {
-            return false;
-        } else {
-            return true;
-        }
-    } catch (error) {
-        console.error('Error inserting user:', error);
-        return { error: 'Failed to insert user' };
     }
 }

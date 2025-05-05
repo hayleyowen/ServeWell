@@ -1,13 +1,39 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
-import { PoolConnection } from "mysql2/promise"; // Import type for connection
+import { promoteAdminSchema } from "@/app/utils/zodSchema";
+import { apiSuperAdminVerification, checkMatchingChurches } from "@/app/lib/apiauth";
 
 export async function POST(req: Request) {
-  let client: PoolConnection | null = null; // Define client connection variable
+  const client = await pool.getConnection();
 
   try {
-    const { userID } = await req.json();
-    const client = await pool.getConnection();
+    const body = await req.json();
+    console.log("superadmin promote request Body:", body); // Log the request body for debugging
+
+    // Server-side validation using Zod
+    const validateData = promoteAdminSchema.safeParse(body);
+    if (!validateData.success) {
+      console.error("Validation error:", validateData.error); // Log validation errors
+      return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    }
+    const userID = validateData.data.userID;
+    const auth0ID = validateData.data.auth0ID;
+
+    // Check if the user making changes (auth0ID) is a super-admin and belongs to the same church as the user being promoted
+    const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    if (superAdminChurchID.error) {
+      console.error("Superadmin verification error:", superAdminChurchID.error); // Log verification errors
+      return NextResponse.json({ error: "You are not authorized to perform this action" }, { status: 403 });
+    }
+
+    const isSameChurch = await checkMatchingChurches(userID, superAdminChurchID);
+    if (!isSameChurch) {
+      console.error("Church IDs do not match"); // Log church ID mismatch
+      return NextResponse.json({ error: "You are not authorized to perform this action" }, { status: 403 });
+    }
+
+    // signed-in user is a super-admin and belongs to the same church as the user being promoted
+    // Proceed with the promotion to super-admin
 
     // Update user's role to super-admin (rID = 2)
     const updateQuery = `
