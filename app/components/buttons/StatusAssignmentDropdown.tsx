@@ -97,7 +97,8 @@ export default function StatusAssignmentDropdown({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             minID: ministry.ministry_id,
-            userID // Pass the current user's auth0ID
+            userID : userID,
+            auth0ID: auth0ID // Pass the current user's auth0ID
           }),
         });
         
@@ -114,7 +115,7 @@ export default function StatusAssignmentDropdown({
         const response = await fetch("/api/admin", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userID, minID: ministry.ministry_id }),
+          body: JSON.stringify({ userID, minID: ministry.ministry_id, auth0ID: auth0ID }),
         });
         
         if (!response.ok) {
@@ -150,7 +151,8 @@ export default function StatusAssignmentDropdown({
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userID       // auth0ID of the logged-in user performing the action
+          userID,
+          auth0ID       // auth0ID of the logged-in user performing the action
         })
       });
 

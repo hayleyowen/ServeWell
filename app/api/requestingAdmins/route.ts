@@ -1,13 +1,28 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/database';
+import { requestingAdminSchema } from '@/app/utils/zodSchema';
+import { apiSuperAdminVerification } from '@/app/lib/apiauth';
 
 export async function POST(req: Request) {
     try {
         const data = await req.json();
-        console.log('ChurchID & Auth0ID:', data.churchID, data.auth0ID);
+        console.log('Requesting Admin Body:', data);
+
+        // Validate the incoming data using your schema (if applicable)
+        const validateData = requestingAdminSchema.safeParse(data);
+        if (!validateData.success) {
+            return NextResponse.json({ error: validateData.error }, { status: 400 });
+        }
+
+        const churchID = validateData.data.churchID;
+        const auth0ID = validateData.data.auth0ID;
+
+        // this route is public, so no need to verify the user's permissions
+
+        // If the validation passes, proceed with the database operation
         const client = await pool.getConnection();
-        const query = `INSERT INTO requestingAdmins (churchID, auth0ID) VALUES (?, ?)`;
-        const [result] = await client.query(query, [data.churchID, data.auth0ID]);
+        const query = `INSERT IGNORE INTO requestingAdmins (churchID, auth0ID) VALUES (?, ?)`;
+        const [result] = await client.query(query, [churchID, auth0ID]);
         client.release();
 
         return NextResponse.json({

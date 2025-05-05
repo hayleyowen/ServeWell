@@ -74,29 +74,6 @@ export async function insertUser(nickname: string, Auth0_ID: string, email: stri
     }
 }
 
-// for middleware to fetch the logged in user's role
-export async function verifyAdmin(Auth0_ID: string) {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-
-        const [data] = await connection.execute(
-            `SELECT rID FROM users WHERE auth0ID = ?`,
-            [Auth0_ID]
-        );
-        
-        console.log("Data:", data);
-        connection.release();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch admin:", error);
-        throw new Error("Failed to fetch admin.");
-    } finally {
-        if (connection) connection.release();
-    }
-}
-
-
 ////////////////////////////////////////
 /////// Church-related functions ///////
 ////////////////////////////////////////
