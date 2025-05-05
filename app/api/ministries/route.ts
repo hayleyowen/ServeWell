@@ -11,7 +11,15 @@ export async function POST(request: Request) {
     const data = await request.json();
     console.log('Received Ministry registration data:', data);
 
-    const validateData = createMinistrySchema.safeParse(data);
+    const processedData = {
+      MinistryName: data.formData.MinistryName,
+      Description: data.formData.Description,
+      Church_ID: data.formData.Church_ID,
+      auth0ID: data.auth0ID, // Assuming this is passed in the request body  
+    }
+    console.log('Processed data:', processedData);
+
+    const validateData = createMinistrySchema.safeParse(processedData);
     if (!validateData.success) {
       console.error('Validation error:', validateData.error);
       return NextResponse.json(

@@ -50,7 +50,7 @@ export async function middleware(req: NextRequest) {
 
     // Step 4: RBAC
     if (role === 2) {
-      if (currentUrl.includes('/ministry')){
+      if (currentUrl.includes('/ministry/')){
         const ministryId = currentUrl.split('/')[2];
         console.log('Ministry ID:', ministryId);
         const userMinistries = await userMinistry(auth0ID);
@@ -116,7 +116,7 @@ export async function middleware(req: NextRequest) {
         return response;
       }
 
-      if (currentUrl.startsWith('/ministry')) {
+      if (currentUrl.startsWith('/ministry/')) {
         const ministryId = currentUrl.split('/')[2];
         if (ministryId === ministryID.toString()) {
           console.log('Ministry admin accessing authorized ministry route');

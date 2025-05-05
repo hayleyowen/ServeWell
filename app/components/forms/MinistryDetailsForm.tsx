@@ -150,4 +150,5 @@ return (
       {message && <p className="mt-4 text-center text-sm text-gray-700">{message}</p>}
     </form>
   </div>
-);
+  );
+}

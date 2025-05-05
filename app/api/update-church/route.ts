@@ -28,18 +28,8 @@ export async function POST(req: Request) {
     const auth0ID = validateData.data.auth0ID;
 
     // Validate the input
-    if (!churchID || !churchName || !denomination || !email || !phone || !address || !postalcode || !city) {
+    if (!churchID || !churchName || !denomination || !email || !phone || !address || !postalcode || !city || !auth0ID) {
       return NextResponse.json({ error: 'All fields are required, including churchID' }, { status: 400 });
-    }
-
-    // check if auth0ID is a superadmin for that church
-    const userRole = await userStuff(auth0ID);
-    if (userRole.error) {
-      console.log("Error fetching user role:", userRole.error);
-    }
-    const role = userRole[0]?.rID;
-    if (role !== 2) {
-      return { error: "You are not authorized to perform this action" };
     }
 
     // check if auth0ID is a superadmin for that church

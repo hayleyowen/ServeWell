@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 import { demoteAndAssignSchema } from "@/app/utils/zodSchema";
 import { apiSuperAdminVerification, checkMatchingChurches } from "@/app/lib/apiauth";
+import { min } from "lodash";
 
 export async function POST(req: Request) {
   try {
@@ -35,11 +36,22 @@ export async function POST(req: Request) {
     // Compare the churchID of the super admin with the user being altered
     const compare = await checkMatchingChurches(userID, superAdminChurchID);
     if (!compare) {
-      return NextResponse.json({ error: "You are not authorized to alter this user" }, { status: 403 });
+      return NextResponse.json({ error: "You are not in this church" }, { status: 403 });
     }
 
+    // last thing to fix: make sure the user is not being assigned to a ministry that is not in the same church as the super admin
     const client = await pool.getConnection();
     await client.beginTransaction(); // Start transaction
+
+    // 0. Make sure ministry is in the same church as the super admin
+    const ministryQuery = `
+      SELECT church_id FROM ministry WHERE ministry_id = ? LIMIT 1
+    `;
+    const [result1] = await client.execute(ministryQuery, [minID]);
+    const minChurchID = result1[0]?.church_id;
+    if (minChurchID !== superAdminChurchID) {
+      return NextResponse.json({ error: "Trying to assign to ministry not in your church" }, { status: 403 });
+    }  
 
     // 1. Update user role from super admin (rID = 2) to regular admin (rID = 1)
     const updateRoleQuery = `

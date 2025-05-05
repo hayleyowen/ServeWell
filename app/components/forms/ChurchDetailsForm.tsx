@@ -15,6 +15,7 @@ export default function ChurchDetailsForm() {
   const [denomination, setDenomination] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const auth0ID = user?.sub;
 
   useEffect(() => {
     const fetchChurchId = async () => {

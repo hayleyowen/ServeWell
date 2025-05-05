@@ -13,12 +13,13 @@ export async function POST(req: Request) {
       console.error('Validation error:', validateData.error.format());
       return NextResponse.json({ error: 'Invalid input data' }, { status: 400 });
     }
+    const ministryId = validateData.data.ministryId;
     const ministryName = validateData.data.ministryName;
-    const description = validateData.data.Description;
+    const description = validateData.data.description;
     const auth0ID = validateData.data.auth0ID;
 
     // Validate the input
-    if (!ministryId || !description || !ministryName) {
+    if (!ministryId || !description || !ministryName || !auth0ID) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -37,14 +38,14 @@ export async function POST(req: Request) {
 
 
     // IF TIME PERMITS, GET THE MINISTRY ID FROM A DATABASE CALL SOMEHOW
-    // console.log('Ministry ID:', ministries); // Log the ministry ID for debugging
-    // const hasMatchingMinistry = ministries.some((ministry: { ministry_id: number }) => ministry.ministry_id === id);
-    // if (!hasMatchingMinistry) {
-    //     return new Response(JSON.stringify({ error: 'You are not authorized to delete this ministry' }), {
-    //         status: 403,
-    //         headers: { 'Content-Type': 'application/json' },
-    //     });
-    // } 
+    console.log('Ministry ID:', ministries); // Log the ministry ID for debugging
+    const hasMatchingMinistry = ministries.some((ministry: { ministry_id: number }) => ministry.ministry_id === ministryId);
+    if (!hasMatchingMinistry) {
+        return new Response(JSON.stringify({ error: 'You are not authorized to delete this ministry' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    } 
 
     // Call the updateMinistry function from data.ts
     const result = await updateMinistry({

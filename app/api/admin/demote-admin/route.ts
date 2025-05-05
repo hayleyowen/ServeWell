@@ -33,7 +33,7 @@ export async function POST(req: Request) {
    // Compare the churchID of the super admin with the user being altered
     const compare = await checkMatchingChurches(userID, superAdminChurchID);
     if (!compare) {
-      return NextResponse.json({ error: "You are not authorized to alter this user" }, { status: 403 });
+      return NextResponse.json({ error: "This user is not in your church" }, { status: 403 });
     }
 
     await client.beginTransaction(); // Start transaction

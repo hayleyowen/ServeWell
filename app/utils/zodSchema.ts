@@ -76,7 +76,7 @@ export const deleteMediaSchema = z.object({
 export const createMinistrySchema = z.object({
     MinistryName: z.string().min(1, "Ministry name is required"),
     Description: z.string().min(1, "Description is required"),
-    Church_ID: z.string().regex(/^\d+$/, "Must be a valid number").transform((val) => parseInt(val, 10)),
+    Church_ID: z.number().int().nonnegative().refine(val => val > 0, { message: "Church ID must be a positive integer" }),
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
@@ -86,18 +86,19 @@ export const rejectUserSchema = z.object({
 });
 
 export const requestingAdminSchema= z.object({
-    churchID: z.string().regex(/^\d+$/, "Must be a valid number").transform((val) => parseInt(val, 10)),
+    churchID: z.number().int().nonnegative().refine(val => val > 0, { message: "Church ID must be a positive integer" }),
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
 export const createSuperAdminSchema = z.object({
     firstName: z.string().min(1, "First name is required"),
     email: z.string().email("Invalid email format"),
-    church_id: z.string().regex(/^\d+$/, "Must be a valid number").transform((val) => parseInt(val, 10)),
+    church_id: z.number().int().nonnegative().refine(val => val > 0, { message: "Church ID must be a positive integer" }),
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
 export const updateChurchSchema = z.object({
+    churchID: z.number().int().nonnegative().refine(val => val > 0, { message: "Church ID must be a positive integer" }),
     churchName: z.string().min(1, "Church name is required"),
     denomination: z.string().min(1, "Denomination is required"),
     email: z.string().email("Invalid email format"),
@@ -109,8 +110,9 @@ export const updateChurchSchema = z.object({
 });
 
 export const updateMinistrySchema = z.object({
+    ministryId: z.number().int().nonnegative().refine(val => val > 0, { message: "Ministry ID must be a positive integer" }),
     ministryName: z.string().min(1, "Ministry name is required"),
-    Description: z.string().min(1, "Description is required"),
+    description: z.string().min(1, "Description is required"),
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
