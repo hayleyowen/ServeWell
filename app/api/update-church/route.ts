@@ -10,9 +10,10 @@ export async function POST(req: Request) {
 
      const validateData = updateChurchSchema.safeParse(body);
     if (!validateData.success) {
-      console.error('Validation errors:', validateData.error.errors);
+      const errMessage = validateData.error.errors[0].message;
+      console.error('Validation errors:', errMessage);
       return NextResponse.json(
-        { error: 'Invalid data', details: validateData.error.errors },
+        { error: errMessage, details: errMessage },
         { status: 400 }
       );
     }

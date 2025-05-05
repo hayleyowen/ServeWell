@@ -67,11 +67,13 @@ export default function ChurchDetailsForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update church details');
+        alert(errorData.error || 'Failed to update church details');
+        return;
       }
 
       const data = await response.json();
       setMessage(data.message || 'Church details updated successfully');
+      alert (data.message || 'Church details updated successfully');
       // Clear the form fields
       setChurchName('');
       setPhone('');
