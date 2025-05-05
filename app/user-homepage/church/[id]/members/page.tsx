@@ -42,8 +42,8 @@ export default function FinancesTrackingPage() {
     const [emailRecipient, setEmailRecipient] = useState(null);
     const [memberSearchQuery, setMemberSearchQuery] = useState("");
     const pathSegments = pathname.split('/'); 
-    const churchID = pathSegments[2];       
-    const pageType = pathSegments[3];        
+    const churchID = pathSegments[3];       
+    const pageType = pathSegments[4];        
 
     
     useEffect(() => {
@@ -58,8 +58,8 @@ export default function FinancesTrackingPage() {
     
         // ✅ Declare these FIRST
         const pathSegments = pathname.split("/");
-        const church = pathSegments[2] || "defaultMinistry";
-        const pageType = pathSegments[3] || "defaultPageType";
+        const church = pathSegments[3] || "defaultChurch";
+        const pageType = pathSegments[4] || "defaultPageType";
     
         const loadInitialCharts = async () => {
             await fetchStoredFiles(church, pageType);
@@ -178,8 +178,8 @@ export default function FinancesTrackingPage() {
             if (!activeChartData) return;
 
             const pathSegments = pathname.split('/');
-            const church = pathSegments[2] || "defaultMinistry";
-            const pageType = pathSegments[3] || "defaultPageType";
+            const church = pathSegments[3] || "defaultChurch";
+            const pageType = pathSegments[4] || "defaultPageType";
             const tabName = activeChartData.name === "Member Sheet" ? "Member Sheet" : activeChartData.name;
 
             // If it's the Member Sheet, always delete old version first to avoid duplication
@@ -292,8 +292,8 @@ export default function FinancesTrackingPage() {
     
     const deleteChart = async (chartId, tabName) => {
         const pathSegments = pathname.split('/');
-        const church = pathSegments[2] || "defaultMinistry";
-        const pageType = pathSegments[3] || "defaultPageType";
+        const church = pathSegments[3] || "defaultChurch";
+        const pageType = pathSegments[4] || "defaultPageType";
     
         if (!tabName) {
             alert("❌ Tab name is missing.");
@@ -338,10 +338,10 @@ export default function FinancesTrackingPage() {
         console.log("✅ useEffect is running");
     
         const pathSegments = pathname.split('/');
-        const church = pathSegments[2] || "defaultMinistry";
-        const pageType = pathSegments[3] || "defaultPageType";
+        const church = pathSegments[3] || "defaultChurch";
+        const pageType = pathSegments[4] || "defaultPageType";
     
-        console.log(`📢 Fetching files for: Ministry = ${church}, Page Type = ${pageType}`);
+        console.log(`📢 Fetching files for: Church = ${church}, Page Type = ${pageType}`);
     
         fetchStoredFiles(church, pageType);
     }, [router.isReady]);

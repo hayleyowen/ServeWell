@@ -27,8 +27,8 @@ export default function FinancesTrackingPage() {
     const router = useRouter();
     const pathname = usePathname();
     const pathSegments = pathname.split('/'); // ✅ ADD THIS
-    const churchID = pathSegments[2];       // ✅ ADD THIS
-    const pageType = pathSegments[3];         // ✅ ADD THIS
+    const churchID = pathSegments[3];       // ✅ ADD THIS
+    const pageType = pathSegments[4];         // ✅ ADD THIS
 
     // Function to generate initial data with specified rows and columns
     function generateData(rows, cols) {
@@ -125,8 +125,8 @@ export default function FinancesTrackingPage() {
             if (!activeChartData) return;
     
             const pathSegments = pathname.split('/');
-            const church = pathSegments[2] || "defaultMinistry";
-            const pageType = pathSegments[3] || "defaultPageType";
+            const church = pathSegments[3] || "defaultChurch";
+            const pageType = pathSegments[4] || "defaultPageType";
             const tabName = activeChartData.name; // Use the existing tab name
     
             if (!tabName) {
@@ -231,8 +231,8 @@ export default function FinancesTrackingPage() {
 
     const deleteChart = async (chartId, tabName) => {
         const pathSegments = pathname.split('/');
-        const church = pathSegments[2] || "defaultMinistry";
-        const pageType = pathSegments[3] || "defaultPageType";
+        const church = pathSegments[3] || "defaultChurch";
+        const pageType = pathSegments[4] || "defaultPageType";
     
         if (!tabName) {
             alert("❌ Tab name is missing.");
@@ -277,10 +277,10 @@ export default function FinancesTrackingPage() {
         console.log("✅ useEffect is running");
     
         const pathSegments = pathname.split('/');
-        const church = pathSegments[2] || "defaultMinistry";
-        const pageType = pathSegments[3] || "defaultPageType";
+        const church = pathSegments[3] || "defaultChurch";
+        const pageType = pathSegments[4]] || "defaultPageType";
     
-        console.log(`📢 Fetching files for: Ministry = ${church}, Page Type = ${pageType}`);
+        console.log(`📢 Fetching files for: Church = ${church}, Page Type = ${pageType}`);
     
         fetchStoredFiles(church, pageType);
     }, [router.isReady]);

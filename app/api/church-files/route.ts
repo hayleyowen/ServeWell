@@ -8,10 +8,11 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const churchId = searchParams.get("church_id");
         const pageType = searchParams.get("page_type");
+        console.log("ChurchID from URL", churchId)
 
         if (!churchId || !pageType) {
             return NextResponse.json(
-                { success: false, error: "Ministry ID and page type are required" },
+                { success: false, error: "Church ID and page type are required" },
                 { status: 400 }
             );
         }
@@ -22,9 +23,10 @@ export async function GET(req: Request) {
             "SELECT church_id FROM church WHERE church_id = ?",
             [parseInt(churchId, 10)]
         );
+        console.log("ChurchID Selected", churchRows);
 
         if (!churchRows || churchRows.length === 0) {
-            return NextResponse.json({ success: false, message: "Ministry not found" });
+            return NextResponse.json({ success: false, message: "Church not found" });
         }
 
         const [rows] = await connection.execute(
@@ -74,7 +76,7 @@ export async function POST(req: Request) {
         );
 
         if (!churchRows || churchRows.length === 0) {
-            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Church not found" }, { status: 404 });
         }
 
         const arrayBuffer = await file.arrayBuffer();
@@ -118,7 +120,7 @@ export async function DELETE(req: Request) {
         if (!churchRows || churchRows.length === 0) {
             return NextResponse.json({
                 success: false,
-                error: "Ministry not found"
+                error: "Church not found"
             }, { status: 404 });
         }
 

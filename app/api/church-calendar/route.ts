@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 
 // 🔧 Resolve slug to numeric church_id
-async function getMinistryIdBySlug(connection: any, slug: string): Promise<number | null> {
+async function getChurchIdBySlug(connection: any, slug: string): Promise<number | null> {
     if (!isNaN(Number(slug))) {
         return Number(slug); // directly use numeric ID
     }
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
         }
 
         connection = await pool.getConnection();
-        const churchId = await getMinistryIdBySlug(connection, churchSlug);
+        const churchId = await getChurchIdBySlug(connection, churchSlug);
 
         if (!churchId) {
             return NextResponse.json({ success: false, error: "Church not found" }, { status: 404 });
@@ -61,10 +61,10 @@ export async function POST(req: Request) {
         const formattedStart = new Date(start).toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
-        const churchId = await getMinistryIdBySlug(connection, church);
+        const churchId = await getChurchIdBySlug(connection, church);
 
         if (!churchId) {
-            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Church not found" }, { status: 404 });
         }
 
         await connection.execute(
@@ -95,10 +95,10 @@ export async function PUT(req: Request) {
         const formattedStart = new Date(start).toISOString().slice(0, 19).replace("T", " ");
 
         connection = await pool.getConnection();
-        const churchId = await getMinistryIdBySlug(connection, church);
+        const churchId = await getChurchIdBySlug(connection, church);
 
         if (!churchId) {
-            return NextResponse.json({ success: false, error: "Ministry not found" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Church not found" }, { status: 404 });
         }
 
         await connection.execute(
