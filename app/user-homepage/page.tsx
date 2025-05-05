@@ -9,7 +9,7 @@ import { ChurchCreationButton } from '../components/buttons/ChurchCreationButton
 import AssignmentRequestButton from '../components/buttons/AssignmentRequestButton';
 import Image from 'next/image';
 import Spinner from '../components/spinner/spinner';
-import { ImageList } from '@mui/material';
+import { logo } from '@/app/components/images/logo.js'; 
 
 interface Ministry {
   ministry_id: number;
@@ -104,9 +104,9 @@ export default function UserHomepage() {
                 Welcome, {user.nickname}
               </h1>
               <Image
-                src="/Servewell.png"
-                width={300}
-                height={300}
+                src={ logo }
+                width={1000}
+                height={1000}
                 alt="Logo"
                 className="w-32 h-32 sm:w-40 sm:h-40 md:w-64 md:h-64 mt-4 sm:mt-0"
               />
