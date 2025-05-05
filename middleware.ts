@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0/edge';
-import { userStuff, newUser, userMinistry, userMinistryID, userChurchID } from '@/app/lib/userstuff';
-import { MinistryDetailsButton } from './app/components/buttons/MinistryDetailsButton';
+import { userStuff, userMinistry, userMinistryID, userChurchID } from '@/app/lib/userstuff';
 
 export async function middleware(req: NextRequest) {
   try {
