@@ -22,6 +22,7 @@ export default function MinistryCreationForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const auth0ID = user?.sub;
 
   // Fetch user's church ID when component mounts
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function MinistryCreationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    const auth0ID = user?.sub;
     if (!formData.Church_ID) {
       setError('You must be associated with a church to create a ministry');
       return;
@@ -79,7 +80,7 @@ export default function MinistryCreationForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({formData, auth0ID: user?.sub}),
       })
 
       const data = await response.json()

@@ -15,6 +15,7 @@ export default function ChurchDetailsForm() {
   const [denomination, setDenomination] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const auth0ID = user?.sub;
 
   useEffect(() => {
     const fetchChurchId = async () => {
@@ -60,16 +61,19 @@ export default function ChurchDetailsForm() {
           address,
           postalcode,
           city,
+          auth0ID
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update church details');
+        alert(errorData.error || 'Failed to update church details');
+        return;
       }
 
       const data = await response.json();
       setMessage(data.message || 'Church details updated successfully');
+      alert (data.message || 'Church details updated successfully');
       // Clear the form fields
       setChurchName('');
       setPhone('');

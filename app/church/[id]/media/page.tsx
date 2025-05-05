@@ -3,6 +3,7 @@ import '@/app/globals.css';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { use } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 type MediaItem = {
   id: number;
@@ -20,6 +21,8 @@ type PageParams = {
 export default function MediaPage({ params }: PageParams) {
   const resolvedParams = use(params);
   const churchId = resolvedParams.id;
+  const { user } = useUser();
+  const auth0ID = user?.sub;
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'sermon' | 'announcement' | 'worship' | 'other'>('all');
@@ -46,6 +49,10 @@ export default function MediaPage({ params }: PageParams) {
       try {
         const response = await fetch(`/api/media/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ auth0ID, id })
         });
         
         if (response.ok) {

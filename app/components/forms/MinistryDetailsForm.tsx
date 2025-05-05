@@ -12,12 +12,13 @@ export default function MinistryDetailsForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [ministryName, setMinistryName] = useState('');
+  const auth0ID = user?.sub;
 
   useEffect(() => {
     const fetchMinistries = async () => {
-      if (user?.sub) {
+      if (auth0ID) {
         try {
-          const ministriesData = await getMinistriesByID(user.sub);
+          const ministriesData = await getMinistriesByID(auth0ID);
           setMinistries(ministriesData);
         } catch (error) {
           console.error('Error fetching ministries:', error);
@@ -26,7 +27,7 @@ export default function MinistryDetailsForm() {
     };
 
     fetchMinistries();
-  }, [user]);
+  }, [auth0ID]);
 
 
 // Update the handleSubmit function
@@ -45,7 +46,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ministryId: selectedMinistryId, description, ministryName }),
+      body: JSON.stringify({ ministryId: selectedMinistryId, description, ministryName, auth0ID }),
     });
 
     if (!response.ok) {
@@ -149,4 +150,5 @@ return (
       {message && <p className="mt-4 text-center text-sm text-gray-700">{message}</p>}
     </form>
   </div>
-);
+  );
+}

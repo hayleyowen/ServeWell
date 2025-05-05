@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface DeleteChurchButtonProps {
     churchId: number;
 }
 
 export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps) {
+    const { user } = useUser(); // Get the user information from Auth0
+    const auth0ID = user?.sub; // Extract the Auth0 ID from the user object
     console.log("DeleteChurchButton received churchId:", churchId); // Debug log
 
     const handleDelete = async () => {
@@ -18,7 +21,7 @@ export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ id: churchId }),
+                    body: JSON.stringify({ id: churchId, auth0ID }),
                 });
 
                 if (response.ok) {
