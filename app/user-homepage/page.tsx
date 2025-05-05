@@ -102,7 +102,7 @@ export default function UserHomepage() {
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mt-4 sm:mt-6">
                 Welcome, {user.nickname}
               </h1>
-              <Image
+              <img
                 src="/Servewell.png"
                 width={300}
                 height={300}
