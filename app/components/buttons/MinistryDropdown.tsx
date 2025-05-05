@@ -26,9 +26,10 @@ export default function MinistryDropdown({ userID, onUpdate, auth0ID }: Ministry
       if (!auth0ID) return; // Don't fetch if auth0ID is not provided
       try {
         // Pass auth0ID as a query parameter
-        const response = await fetch(`/api/ministries?auth0ID=${encodeURIComponent(auth0ID)}`, {
+        const response = await fetch(`/api/ministries}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ auth0ID }), // Include auth0ID in the request body
         });
 
         // Check if the response was successful

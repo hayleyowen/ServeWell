@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/database'; 
 import { createMinistry } from '@/app/lib/data';
+import { createMinistrySchema } from '@/app/utils/zodSchema'; // Assuming you have a validation schema for ministry creation
+import { apiSuperAdminVerification } from '@/app/lib/apiauth';
 
 export async function POST(request: Request) {
 
@@ -9,10 +11,35 @@ export async function POST(request: Request) {
     const data = await request.json();
     console.log('Received Ministry registration data:', data);
 
+    const validateData = createMinistrySchema.safeParse(data);
+    if (!validateData.success) {
+      console.error('Validation error:', validateData.error);
+      return NextResponse.json(
+        { error: 'Invalid data' },
+        { status: 400 }
+      );
+    }
+
+    const auth0ID = validateData.data.auth0ID;
+    const churchId = validateData.data.Church_ID; // Assuming this is passed in the request body
+    const MinistryName = validateData.data.MinistryName;
+    const Description = validateData.data.Description;
+
+    // now we need to check if the user is a super admin
+    const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    if (superAdminChurchID.error) {
+      return NextResponse.json({ error: superAdminChurchID.error }, { status: 403 });
+    }
+
+    // Check if the church ID from the request matches the super admin's church ID
+    if (superAdminChurchID !== churchId) {
+      return NextResponse.json({ error: 'You are not authorized to create a ministry for this church' }, { status: 403 });
+    }
+
     const result = await createMinistry({
-      MinistryName: data.MinistryName,
-      Description: data.Description,
-      Church_ID: data.Church_ID,
+      MinistryName: validateData.data.MinistryName,
+      Description: validateData.data.Description,
+      Church_ID: validateData.data.Church_ID,
     });
 
     console.log('Created ministry:', result);

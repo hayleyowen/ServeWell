@@ -15,14 +15,14 @@ export async function userStuff(auth0ID: string) {
         return { error: 'Failed to fetch user role' };
     }
 }
-export async function userChurchID(authid: string) {
+export async function userChurchID(auth0ID: string) {
     try {
         const result = await fetch('http://localhost:3000/api/userChurch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({auth0ID: authid}),
+            body: JSON.stringify({auth0ID}),
         });
         const data = await result.json();
         return data;

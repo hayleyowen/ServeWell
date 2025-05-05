@@ -108,7 +108,7 @@ export async function middleware(req: NextRequest) {
     }
 
     if (role === 1) {
-      const userMinistry = await userMinistryID(authid);
+      const userMinistry = await userMinistryID(auth0ID);
       const ministryID = userMinistry[0]?.minID;
 
       if (currentUrl === '/' || currentUrl === '/user-homepage') {
@@ -150,5 +150,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|public|favicon.ico|pages/|api/auth/|).*)'],
+  matcher: ['/((?!$|api|_next|public|favicon.ico|pages/|api/auth/).*)'],
 };
