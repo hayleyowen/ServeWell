@@ -33,12 +33,14 @@ export async function checkMatchingChurches(userID: number, superAdminChurchID: 
     // Check for the churchID of the user being demoted
     const client = await pool.getConnection();
     try {
+      console.log("userID:", userID);
         const userChurchIDQuery = `SELECT churchID FROM users WHERE userID = ?`;
         const [userChurchIDResult] = await client.query(userChurchIDQuery, [userID]);
+        console.log("userChurchIDResult:", userChurchIDResult);
         const userChurchID = userChurchIDResult[0]?.churchID;
-        if (!userChurchID) {
-            console.error("User church ID not found");
-            return false;
+        console.log("userChurchID:", userChurchID);
+        if (userChurchID == null) {
+            return true;
         }
         if (userChurchID !== superAdminChurchID) {
             return false;
