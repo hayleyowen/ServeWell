@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
 import { showRequestingAdmins } from "@/app/lib/data";
+import { updateAdminSchema } from "@/app/utils/zodSchema";
+import { apiSuperAdminVerification } from "@/app/lib/apiauth";
 
 export async function GET(req: Request) {
   const { auth0ID } = await req.json();
@@ -20,15 +22,30 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { memID, minID } = await req.json();
 
-    if (!memID) {
-      return NextResponse.json({ error: "Missing member_id" }, { status: 400 });
+    const body = await req.json();
+    console.log("Request Body: ", body);
+    
+    const validateData = updateAdminSchema.safeParse(body);
+    if (!validateData.success) {
+      return NextResponse.json({ message: "Invalid Data given" }, { status: 400 });
     }
-    if (!minID) {
-      return NextResponse.json({ error: "Missing ministry_id" }, { status: 400 });
-    }  
 
+    const userID = validateData.data.userID;
+    const minID = validateData.data.minID;
+    const auth0ID = validateData.data.auth0ID;
+
+    if (!userID || !minID || !auth0ID) {
+      return NextResponse.json({ message: "A parameter is missing" }, { status: 400 });
+    }
+
+    // now we need to verify that this request is coming from an superadmin
+    const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    if (superAdminChurchID.error) {
+      return NextResponse.json({ message: superAdminChurchID.error }, { status: 403 });
+    }
+
+    // now we need to verify that the ministryID passed in is from the same church as the superadmin
     const client = await pool.getConnection();
 
     // get the church asssociated with the ministryID we have
@@ -37,14 +54,22 @@ export async function POST(req: Request) {
     const [result1] = await client.execute(churchIDQuery, values1);
     const church_id = result1[0].church_id;
 
-    const memberUpdate = `UPDATE churchmember SET church_id = ? WHERE member_id = ?;`;
-    const values2 = [church_id, memID];
-    const [result2] = await client.execute(memberUpdate, values2);
+    // check if the superadmin is from the same church as the ministry passed in
+    if (church_id !== superAdminChurchID) {
+      return NextResponse.json({ message: "You are not authorized to interact with this church" }, { status: 403 });
+    }
 
-    const usersUpdate = `Update users Set minID = ?, rID=1 WHERE memID = ?;`;
-    const values3 = [minID, memID];
-    const [result3] = await client.execute(usersUpdate, values3);
+    // now that the superadmin is verified, we can update the user
+    const userUpdate = `Update users Set minID = ?, rID=1, churchID = ? WHERE userID = ?;`;
+    const values3 = [minID, church_id, userID];
+    const [result3] = await client.execute(userUpdate, values3);
+    
+    // handle error if the update fails
+    if (result3.affectedRows === 0) {
+      return NextResponse.json({ message: "Failed to update user" }, { status: 500 });
+    }
     client.release();
+    
 
     return NextResponse.json({ success: true, affectedRows: result3.affectedRows });
   } catch (error) {

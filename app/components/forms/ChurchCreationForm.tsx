@@ -58,39 +58,41 @@ export default function ChurchCreationForm() {
             const response = await fetch('/api/churches', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(churchData)
+                body: JSON.stringify(churchData),
             });
-
+        
             if (response.ok) {
                 const result = await response.json();
-                console.log('ChurchID = ', result['churchId']); // Debug log
-                setChurchId(result['churchId']);
+                const newchurchId = result['churchId'];
+                console.log('Church =', newchurchId); // Debug log
+                setChurchId(newchurchId); // Update state
                 setRegisteredChurch({
-                    id: result['churchId'],
-                    name: formData.churchName
+                    id: newchurchId,
+                    name: formData.churchName,
                 });
+        
+                // Use newchurchId directly instead of relying on churchId state
+                const superadmin = await fetch('/api/superadmin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: user?.nickname,
+                        email: user?.email,
+                        church_id: newchurchId, // Use newchurchId here
+                        auth0ID: user?.sub,
+                    }),
+                });
+        
+                if (superadmin.ok) {
+                    alert('Church registered successfully!');
+                    window.location.href = '/';
+                } else {
+                    const error = await superadmin.json();
+                    console.error('Registration failed:', error);
+                    alert('Failed to register SuperAdmin.');
+                }
             } else {
                 alert('Failed to register the church.');
-            }
-
-            const superadmin = await fetch('/api/superadmin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    firstName: user?.nickname,
-                    email: user?.email,
-                    church_id: churchId,
-                    auth0ID: user?.sub,
-                })
-            });
-
-            if (superadmin.ok) {
-                alert('Church registered successfully!');
-                window.location.href = '/';
-            } else {
-                const error = await response.json();
-                console.error('Registration failed:', error);
-                alert('Failed to register SuperAdmin.');
             }
         } catch (error) {
             console.error('Error:', error);

@@ -1,9 +1,9 @@
 'use client';
 import '@/app/globals.css';
 import Link from 'next/link';
-import { getMedia } from '@/app/lib/data';
 import { useState, useEffect } from 'react';
-import { unstable_noStore as noStore } from 'next/cache';
+import { use } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 type MediaItem = {
   id: number;
@@ -14,18 +14,28 @@ type MediaItem = {
   description: string;
 };
 
-export default function MediaPage() {
+type PageParams = {
+  params: Promise<{ id: string }>;
+};
+
+export default function MediaPage({ params }: PageParams) {
+  const resolvedParams = use(params);
+  const churchId = resolvedParams.id;
+  const { user } = useUser();
+  const auth0ID = user?.sub;
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'sermon' | 'announcement' | 'worship' | 'other'>('all');
 
   useEffect(() => {
-    fetchMedia();
-  }, []);
+    if (churchId) {
+      fetchMedia();
+    }
+  }, [churchId]);
 
   const fetchMedia = async () => {
     try {
-      const data = await fetch('/api/media').then(res => res.json());
+      const data = await fetch(`/api/media?churchId=${churchId}`).then(res => res.json());
       setMediaItems(data);
     } catch (error) {
       console.error('Error fetching media:', error);
@@ -39,10 +49,13 @@ export default function MediaPage() {
       try {
         const response = await fetch(`/api/media/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ auth0ID, id })
         });
         
         if (response.ok) {
-          // Remove the deleted item from the state
           setMediaItems(prevItems => prevItems.filter(item => item.id !== id));
         } else {
           throw new Error('Failed to delete');
@@ -72,7 +85,7 @@ export default function MediaPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-white">Media Archive</h1>
           <Link 
-            href="/media/add"
+            href={`/church/${churchId}/media/add`}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
           >
             + Add Media

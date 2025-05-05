@@ -22,6 +22,7 @@ export default function MinistryCreationForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const auth0ID = user?.sub;
 
   // Fetch user's church ID when component mounts
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function MinistryCreationForm() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ auth0_id: user.sub }),
+          body: JSON.stringify({ auth0ID: user.sub }),
         });
 
         if (!response.ok) {
@@ -61,7 +62,7 @@ export default function MinistryCreationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    const auth0ID = user?.sub;
     if (!formData.Church_ID) {
       setError('You must be associated with a church to create a ministry');
       return;
@@ -79,7 +80,7 @@ export default function MinistryCreationForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({formData, auth0ID: user?.sub}),
       })
 
       const data = await response.json()
@@ -130,68 +131,53 @@ export default function MinistryCreationForm() {
 
   if (!user) {
     return (
-      <div className={styles.container}>
-        <div className="text-center text-red-500">
-          Please log in to create a ministry
-        </div>
+      <div className="text-center text-red-500">
+        Please log in to create a ministry
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.topBar}>
-        <h1 className={styles.title}>Create New Ministry</h1>
-      </div>
-      
-      <div className={styles.formContainer}>
-        <div className={styles.formWrapper}>
-          <h2 className={styles.formTitle}>Ministry Details</h2>
-          
-          {error && (
-            <div className="text-red-500 mb-4 text-center">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-green-500 mb-4 text-center font-semibold">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="MinistryName"
-              placeholder="Ministry Name"
-              value={formData.MinistryName}
-              onChange={handleChange}
-              required
-              className={styles.input}
-              disabled={isLoading}
-            />
-
-            <textarea
-              name="Description"
-              placeholder="Ministry Description"
-              value={formData.Description}
-              onChange={handleChange}
-              className={styles.input}
-              rows={4}
-              disabled={isLoading}
-            />
-
-            <button
-              type="submit"
-              className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading || !formData.Church_ID}
-            >
-              {isLoading ? 'Creating...' : 'Create Ministry'}
-            </button>
-          </form>
+    <div className={styles.formWrapper}>
+      <h2 className={styles.formTitle}>Ministry Details</h2>
+      {error && (
+        <div className="text-red-500 mb-4 text-center">
+          {error}
         </div>
-      </div>
+      )}
+      {success && (
+        <div className="text-green-500 mb-4 text-center font-semibold">
+          {success}
+        </div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="MinistryName"
+          placeholder="Ministry Name"
+          value={formData.MinistryName}
+          onChange={handleChange}
+          required
+          className={styles.input}
+          disabled={isLoading}
+        />
+        <textarea
+          name="Description"
+          placeholder="Ministry Description"
+          value={formData.Description}
+          onChange={handleChange}
+          className={styles.input}
+          rows={4}
+          disabled={isLoading}
+        />
+        <button
+          type="submit"
+          className={`${styles.button} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || !formData.Church_ID}
+        >
+          {isLoading ? 'Creating...' : 'Create Ministry'}
+        </button>
+      </form>
     </div>
   )
 }

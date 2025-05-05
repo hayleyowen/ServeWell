@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/database'; 
 import { createMinistry } from '@/app/lib/data';
+import { createMinistrySchema } from '@/app/utils/zodSchema'; // Assuming you have a validation schema for ministry creation
+import { apiSuperAdminVerification } from '@/app/lib/apiauth';
 
 export async function POST(request: Request) {
 
@@ -9,10 +11,41 @@ export async function POST(request: Request) {
     const data = await request.json();
     console.log('Received Ministry registration data:', data);
 
+    const processedData = {
+      MinistryName: data.formData.MinistryName,
+      Description: data.formData.Description,
+      Church_ID: data.formData.Church_ID,
+      auth0ID: data.auth0ID, // Assuming this is passed in the request body  
+    }
+    console.log('Processed data:', processedData);
+
+    const validateData = createMinistrySchema.safeParse(processedData);
+    if (!validateData.success) {
+      console.error('Validation error:', validateData.error);
+      return NextResponse.json(
+        { error: 'Invalid data' },
+        { status: 400 }
+      );
+    }
+
+    const auth0ID = validateData.data.auth0ID;
+    const churchId = validateData.data.Church_ID; // Assuming this is passed in the request body
+
+    // now we need to check if the user is a super admin
+    const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    if (superAdminChurchID.error) {
+      return NextResponse.json({ error: superAdminChurchID.error }, { status: 403 });
+    }
+
+    // Check if the church ID from the request matches the super admin's church ID
+    if (superAdminChurchID !== churchId) {
+      return NextResponse.json({ error: 'You are not authorized to create a ministry for this church' }, { status: 403 });
+    }
+
     const result = await createMinistry({
-      MinistryName: data.MinistryName,
-      Description: data.Description,
-      Church_ID: data.Church_ID,
+      MinistryName: validateData.data.MinistryName,
+      Description: validateData.data.Description,
+      Church_ID: validateData.data.Church_ID,
     });
 
     console.log('Created ministry:', result);
@@ -49,17 +82,16 @@ export async function GET(request: Request) {
 
     // Find the user's church_id based on auth0ID by joining users and churchmember tables
     const [userRows]: any[] = await client.execute(
-      `SELECT cm.church_id 
+      `SELECT churchID
        FROM users u
-       JOIN churchmember cm ON u.memID = cm.member_id
-       WHERE u.auth0ID = ? 
+       WHERE auth0ID = ? 
        LIMIT 1`,
       [auth0ID]
     );
 
     let churchId;
     if (userRows.length > 0) {
-      churchId = userRows[0].church_id;
+      churchId = userRows[0].churchID;
     } else {
       // Optional: Handle case where user not found or has no church_id
       // For now, let's assume the user is always found and has a church_id

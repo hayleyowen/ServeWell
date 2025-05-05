@@ -18,24 +18,6 @@ export default function Home() {
         router.push('/user-homepage');
       }
     }, [user, router]);
-    
-  // // insert new users into users table if they don't already exist
-  // useEffect(() => {
-  //   if (user) {
-  //     const insertUser = async () => {
-  //       try {
-  //         await fetch('/api/admin/insert-admins', {
-  //           method: 'POST',
-  //           headers: { 'Content-Type': 'application/json' },
-  //           body: JSON.stringify({ nickname: user.nickname, auth0_id: user.sub, email: user.email }),
-  //         });
-  //       } catch (err) {
-  //         console.error('Failed to insert new user:', err);
-  //       }
-  //     };
-  //     insertUser();
-  //   }
-  // }, [user]);
 
   const auth0_id = user?.sub;
   const [users, setUsers] = useState([]);
@@ -43,15 +25,19 @@ export default function Home() {
     if (!auth0_id) {
       return;
     }
+    if (isLoading) {
+      return;
+    }
 
     const fetchUsers = async () => {
+      if (!isLoading){
         try {
             const response = await fetch('/api/userChurch', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ auth0_id }),
+                body: JSON.stringify({ auth0ID: auth0_id }),
             });
 
             if (!response.ok) {
@@ -67,10 +53,18 @@ export default function Home() {
         } catch (error) {
             console.error('Error fetching user church:', error);
         }
+      }  
     };
 
     fetchUsers();
-}, [auth0_id]); 
+}, [auth0_id, isLoading]); 
+
+  if (isLoading) {
+    return null;
+  }
+  if (user) {
+    return null;
+  }
 
   // if no session (i.e. user is not logged in), show login button
   // if no session (i.e. user is not logged in), show login button

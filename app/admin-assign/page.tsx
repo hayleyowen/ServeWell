@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface Admin {
-    member_id: number;
+    userID: number;
     fname: string;
     email: string;
     minID: number | null;
@@ -23,9 +23,10 @@ export default function AdminAssignPage() {
 
     const fetchAllAdmins = async () => {
         if (!auth0ID) return;
+        console.log('Fetching all admins for auth0ID:', auth0ID);
         
         try {
-            // Fetch regular admins
+            // Fetch requesting admins
             const adminResponse = await fetch('/api/admin/request-admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -59,6 +60,7 @@ export default function AdminAssignPage() {
                 return 0;
             });
 
+            console.log('Fetched admins:', sortedAdmins);
             setAllAdmins(sortedAdmins);
         } catch (error) {
             console.error('Error fetching admins:', error);
@@ -80,7 +82,7 @@ export default function AdminAssignPage() {
     return (
         <section className="mt-20 min-h-screen flex flex-col">
             <div className="mt-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
-                <div className="flex flex-col items-center justify-center pt-8">
+                <div className="flex flex-col items-center justify-center pt-20">
                     <h2 className="text-2xl font-bold text-white mb-8">Admin Assignment Page</h2>
                 </div>
 
@@ -97,12 +99,12 @@ export default function AdminAssignPage() {
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={admin.member_id}>
+                                    <tr key={[admin.userID, admin.fname]}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
                                             <StatusAssignmentDropdown 
-                                                member_id={admin.member_id}
+                                                userID={admin.userID}
                                                 fname={admin.fname}
                                                 minID={admin.minID}
                                                 ministryname={admin.isSuper ? "Super Admin" : admin.ministryname}
@@ -113,8 +115,9 @@ export default function AdminAssignPage() {
                                         </td>
                                         <td className="px-4 py-2 flex justify-center items-center">
                                             <DemoteButton 
-                                                member_id={admin.member_id}
+                                                userID={admin.userID}
                                                 isSuper={admin.isSuper}
+                                                auth0ID={auth0ID || ''}
                                                 onDemote={fetchAllAdmins}
                                             />
                                         </td>

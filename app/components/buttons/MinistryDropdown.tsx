@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { useState, useEffect, useRef } from "react";
 
 interface Ministry {
@@ -8,12 +9,12 @@ interface Ministry {
 }
 
 interface MinistryDropdownProps {
-  member_id: number;
-  onUpdate?: () => void; // Add callback for parent refresh
-  auth0ID: string; // Add auth0ID prop
+  userID: number;
+  onUpdate?: () => void;
+  auth0ID: string; // Add callback for parent refresh
 }
 
-export default function MinistryDropdown({ member_id, onUpdate, auth0ID }: MinistryDropdownProps) {
+export default function MinistryDropdown({ userID, onUpdate, auth0ID }: MinistryDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [selectedMinistry, setSelectedMinistry] = useState<Ministry | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -25,9 +26,10 @@ export default function MinistryDropdown({ member_id, onUpdate, auth0ID }: Minis
       if (!auth0ID) return; // Don't fetch if auth0ID is not provided
       try {
         // Pass auth0ID as a query parameter
-        const response = await fetch(`/api/ministries?auth0ID=${encodeURIComponent(auth0ID)}`, {
+        const response = await fetch(`/api/ministries}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ auth0ID }), // Include auth0ID in the request body
         });
 
         // Check if the response was successful
@@ -72,11 +74,17 @@ export default function MinistryDropdown({ member_id, onUpdate, auth0ID }: Minis
 
   async function updateAdminMinistry(ministry: Ministry) {
     setLoading(true);
+    if (!auth0ID) {
+      console.error("auth0ID is not available");
+      setLoading(false);
+      return;
+    }
+    console.log("auth0ID: ", auth0ID);
     try {
       const response = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memID: member_id, minID: ministry.ministry_id }),
+        body: JSON.stringify({ userID: userID, minID: ministry.ministry_id, auth0ID: auth0ID }), // Include auth0ID in the request body
       });
 
       if (response.ok) {

@@ -1,107 +1,152 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@auth0/nextjs-auth0/edge'
-import { userStuff, newUser, userMinistryID } from '@/app/lib/userstuff'
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@auth0/nextjs-auth0/edge';
+import { userStuff, userMinistry, userMinistryID, userChurchID } from '@/app/lib/userstuff';
 
 export async function middleware(req: NextRequest) {
-
   try {
+    const currentUrl = req.nextUrl.pathname;
+    const previousUrl = req.cookies.get('prevUrl')?.value;
 
-    // Step 1: Make sure the User is logged in thru Auth0 by checking for a valid session
+    console.log('Current URL:', currentUrl);
+    console.log('Previous URL (cookie):', previousUrl);
+
+    // Step 1: Check for appSession
     const appSession = !!req.cookies.get('appSession')?.value;
-    if (appSession == false) {
-      console.log('No appSession cookie, redirecting to login page...');
-      return NextResponse.redirect(new URL('/api/auth/login', req.url));
+    if (!appSession) {
+      console.log('No appSession cookie, redirecting to login...');
+      const response = NextResponse.redirect(new URL('/', req.url));
+      response.cookies.set('prevUrl', currentUrl); // track before redirect
+      return response;
     }
 
-    // Step 2: Retrieve the user's session data
+    // Step 2: Get session
     const session = await getSession(req, NextResponse.next());
-    if (!session) {
-      console.log('No session found, redirecting to login page...');
-      return NextResponse.redirect(new URL('/api/auth/login', req.url));
+
+    const currTime = Date.now() / 1000; // Convert to seconds
+    const sessionExpiration1hr = session?.accessTokenExpiresAt - 82800; // Adjust for timezone offset
+    //const sessionExpiration1min = sessionExpiration1hr - 3540;
+    const timeRemaining = Math.floor((sessionExpiration1hr - currTime) / 60); // Convert to minutes
+    const secondsRemaining = Math.floor((sessionExpiration1hr - currTime) % 60); // Remaining seconds
+    console.log('Time Remaining:', timeRemaining, "minutes and", secondsRemaining, "seconds"); 
+
+
+    if (!session || sessionExpiration1hr < currTime) {
+      req.cookies.delete('appSession');
+      console.log('No session found, redirecting to login...');
+      const response = NextResponse.redirect(new URL('/', req.url));
+      response.cookies.set('prevUrl', currentUrl);
+      return response;
     }
 
-    const authid = session.user.sub;
+    const auth0ID = session.user.sub;
 
-    // Step 3: Fetch the user's role from the db
-    const userRole = await userStuff(authid);
+    // Step 3: Get user role & churchID
+    const userChurch = await userChurchID(auth0ID);
+    const churchID = userChurch[0]?.church_id;
+    console.log('User Church ID:', churchID);
+    const userRole = await userStuff(auth0ID);
     const role = userRole[0]?.rID;
     console.log('User Role:', role);
 
-    // Step 4: RBAC - Role Based Access Control
-
-    // rID 2 = Super Admin - access to all routes
+    // Step 4: RBAC
     if (role === 2) {
-      console.log('User is a super admin, allowing access...');
-      return NextResponse.next();
+      if (currentUrl.includes('/ministry/')){
+        const ministryId = currentUrl.split('/')[2];
+        console.log('Ministry ID:', ministryId);
+        const userMinistries = await userMinistry(auth0ID);
+        const hasMatchingMinistry = userMinistries.some((ministry: { ministry_id: number }) => ministry.ministry_id.toString() === ministryId);
+        if (hasMatchingMinistry) {
+          console.log('Super admin accessing authorized ministry route');
+          const response = NextResponse.next();
+          response.cookies.set('prevUrl', currentUrl);
+          return response;
+        }
+        console.log('Super admin trying access ministry route not in their church');
+        const redirectUrl = new URL(previousUrl || '/', req.url);
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.set('prevUrl', currentUrl);  
+        return response;
+      }
+      else if (currentUrl.includes('/church')) {
+        const churchId = currentUrl.split('/')[3];
+        console.log('Church ID:', churchId);
+        const userChurches = await userChurchID(auth0ID);
+        const churchID = userChurches[0]?.church_id;
+        console.log('Churches associated with user church:', churchID);
+        if (churchId === churchID.toString()) {
+          console.log('Super admin accessing authorized church route');
+          const response = NextResponse.next();
+          response.cookies.set('prevUrl', currentUrl);
+          return response;
+        } else {
+          console.log('Super admin trying access church route not their church');
+          const redirectUrl = new URL(previousUrl || '/', req.url);
+          const response = NextResponse.redirect(redirectUrl);
+          response.cookies.set('prevUrl', currentUrl);  
+          return response;
+        }
+
+      }
     }
-    // rID 0 = Base User - can only see homepage and can create a church
+
     if (role === 0) {
-      console.log('User is a base user, checking access...');
       const baseUserRoutes = ['/', '/church-creation', '/user-homepage'];
-      if (baseUserRoutes.includes(req.nextUrl.pathname)) {
-        console.log('Base user trying to access allowed route...');
-        return NextResponse.next();
+      if (baseUserRoutes.includes(currentUrl)) {
+        console.log('Base user accessing allowed route');
+        const response = NextResponse.next();
+        response.cookies.set('prevUrl', currentUrl);
+        return response;
       } else {
-        console.log('Base user trying to access restricted route, redirecting...');
-        return NextResponse.redirect(new URL('/', req.url));
+        console.log('Base user restricted');
+        const redirectUrl = new URL(previousUrl || '/', req.url);
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.set('prevUrl', currentUrl);
+        return response;
       }
     }
 
-    // rID 1 = Ministry Admin - can only see their ministry's routes and the user-homepage
     if (role === 1) {
-      console.log('User is a ministry admin, checking access...');
-
-      // if they are trying to access the user homepage, allow access
-      if (req.nextUrl.pathname === '/' || req.nextUrl.pathname === '/user-homepage') {
-        console.log('Ministry admin trying to access user homepage...');
-        return NextResponse.next();
-      }
-
-      // get the specific minID for the signed-in user
-      const userMinistry = await userMinistryID(authid);
+      const userMinistry = await userMinistryID(auth0ID);
       const ministryID = userMinistry[0]?.minID;
 
-      // if they are trying to access their ministry's routes, allow access
-      if (req.nextUrl.pathname.startsWith('/ministry')) {
-        console.log('Ministry admin trying to access ministry route...');
+      if (currentUrl === '/' || currentUrl === '/user-homepage') {
+        console.log('Ministry admin accessing homepage');
+        const response = NextResponse.next();
+        response.cookies.set('prevUrl', currentUrl);
+        return response;
+      }
 
-        // this would retrieve the ID of the ministry that is trying to be accessed
-        const ministryId = req.nextUrl.pathname.split('/')[2];
-        console.log('Ministry ID from URL:', ministryId);
-
-        // now do a check to see if the ministryId matches the user's ministry ID
-        if (
-          req.nextUrl.pathname.startsWith(`/ministry/${ministryId}`) &&
-          ministryId === ministryID.toString()
-        ) {
-          return NextResponse.next();
+      if (currentUrl.startsWith('/ministry/')) {
+        const ministryId = currentUrl.split('/')[2];
+        if (ministryId === ministryID.toString()) {
+          console.log('Ministry admin accessing authorized ministry route');
+          const response = NextResponse.next();
+          response.cookies.set('prevUrl', currentUrl);
+          return response;
         } else {
-          console.log('Ministry admin trying to access an unauthorized ministry, redirecting...');
-          return NextResponse.redirect(new URL('/', req.url));
+          console.log('Ministry admin unauthorized ministry access');
+          const redirectUrl = new URL(previousUrl || '/', req.url);
+          const response = NextResponse.redirect(redirectUrl);
+          response.cookies.set('prevUrl', currentUrl);
+          return response;
         }
       }
-      // if they are trying to access any other route, redirect them to the homepage
-      else {
-        return NextResponse.redirect(new URL('/', req.url));
-      }
+
+      console.log('Ministry admin accessing other restricted route');
+      const redirectUrl = new URL(previousUrl || '/', req.url);
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.set('prevUrl', currentUrl);
+      return response;
     }
-    // // the else case is for when the user has a role that is not within our defined roles
-    // else {
-    //   console.log('User role not recognized, redirecting to homepage...');
-    //   return NextResponse.redirect(new URL('/', req.url));
-    // }
 
   } catch (error) {
-    console.error('Error in middleware:', error);
-
-    // if there's an error, maybe I should direct to a generic error page
-    // however, we currently don't have one
-    return NextResponse.redirect(new URL('/', req.url));
+    console.error('Middleware error:', error);
+    const response = NextResponse.redirect(new URL('/', req.url));
+    response.cookies.set('prevUrl', req.nextUrl.pathname);
+    return response;
   }
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next|favicon.ico|pages/|api/auth/|).*)' 
-  ],
+  matcher: ['/((?!$|api|_next|public|favicon.ico|pages/|api/auth/).*)'],
 };

@@ -32,7 +32,7 @@ export default function RootLayout({
         <UserProvider>
           <TopNav />
           <main className="flex-grow">{children}</main>
-          <footer className="flex justify-center py-4 bg-white bg-opacity-20 backdrop-blur-md">
+          <footer className="flex justify-center py-4 bg-white bg-opacity-100 backdrop-blur-md">
             <div className="flex space-x-4">
               <Link
                 href="https://github.com/seanb0/ServeWell/wiki/Usage"
