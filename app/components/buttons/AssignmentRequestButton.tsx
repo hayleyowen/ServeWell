@@ -17,22 +17,36 @@ export default function AssignmentRequestButton() {
   const { user } = useUser();
   const auth0ID = user?.sub;
 
+  // Fetch churches and the user's existing request on component mount
   useEffect(() => {
-    async function fetchChurches() {
+    if (!auth0ID) return; // Ensure auth0ID is defined before running the effect
+
+    async function fetchData() {
       try {
-        const response = await fetch("/api/churches", {
+        // Fetch all churches
+        const churchesResponse = await fetch("/api/churches", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-        const data = await response.json();
-        setChurches(data);
+        const churchesData = await churchesResponse.json();
+        setChurches(churchesData);
+
+        // Fetch the user's existing request
+        const requestResponse = await fetch(`/api/requestingAdmins?auth0ID=${auth0ID}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const requestData = await requestResponse.json();
+        if (requestData?.church) {
+          setSelectedChurch(requestData.church); // Set the selected church if a request exists
+        }
       } catch (error) {
-        console.error("Failed to load churches", error);
+        console.error("Failed to fetch data:", error);
       }
     }
 
-    fetchChurches();
-  }, []);
+    fetchData();
+  }, [auth0ID]); // Dependency array remains stable because auth0ID is checked
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

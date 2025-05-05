@@ -29,14 +29,29 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
     try {
-        const data = await req.json();
-        console.log('Auth0ID:', data.auth0ID);
+        const { searchParams } = new URL(req.url);
+        const auth0ID = searchParams.get('auth0ID');
+
+        if (!auth0ID) {
+            return NextResponse.json(
+                { error: 'Missing auth0ID' },
+                { status: 400 }
+            );
+        }
+
+        console.log('Auth0ID:', auth0ID);
         const client = await pool.getConnection();
-        const query = `SELECT * FROM requestingAdmins WHERE auth0ID = ?`;
-        const [requestingAdmins] = await client.query(query, [data.auth0ID]);
+        const query = `SELECT c.church_id, c.churchname FROM requestingAdmins ra
+                       INNER JOIN church c ON ra.churchID = c.church_id
+                       WHERE ra.auth0ID = ? LIMIT 1`;
+        const [rows] = await client.query(query, [auth0ID]);
         client.release();
 
-        return NextResponse.json({ requestingAdmins });
+        if (rows.length === 0) {
+            return NextResponse.json({ church: null });
+        }
+
+        return NextResponse.json({ church: rows[0] });
     } catch (error) {
         console.error('Detailed error:', error);
         return NextResponse.json(
