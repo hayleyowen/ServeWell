@@ -73,7 +73,7 @@ if (!user) {
       <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-2">
-            <img src="/Servewell.png" width={400} height={400} alt="Logo" />
+            <Image src="/logo.png" width={400} height={400} alt="Logo" />
             <div className="p-8 text-center text-white max-w-6xl">
               <p className="text-lg leading-relaxed">
                 <span className="font-bold">Empower Your Church to Thrive with ServeWell — the Church Management Software Designed for Small Churches. </span>
