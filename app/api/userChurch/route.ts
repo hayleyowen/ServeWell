@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/database";
+import { userChurchSchema } from "@/app/utils/zodSchema";
 
 export async function POST(req: Request) {
     const client = await pool.getConnection();
     try {
-        const { auth0ID } = await req.json();
+        const body = await req.json();
+        console.log("UserChurch Body:", body);
+
+        const validateData = userChurchSchema.safeParse(body);
+        if (!validateData.success) {
+            console.error("Validation error:", validateData.error.format());
+            return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+        }
+
+        const auth0ID = validateData.data.auth0ID;
         
         if (!auth0ID) {
             return NextResponse.json({ error: "Auth0 ID is required" }, { status: 400 });
         }
+
+        // this is used in middleware so do not authorize here
 
         // Fetch user church information
         await client.beginTransaction(); // Start transaction

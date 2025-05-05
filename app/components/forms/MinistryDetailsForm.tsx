@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export default function MinistryDetailsForm() {
   const [ministryName, setMinistryName] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const { user } = useUser(); // Get the user object from Auth0
+  const auth0ID = user?.sub; // Extract the Auth0 ID from the user object
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +21,7 @@ export default function MinistryDetailsForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ministryName, description }),
+        body: JSON.stringify({ ministryName, description, auth0ID }),
       });
   
       if (!response.ok) {

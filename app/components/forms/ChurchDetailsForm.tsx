@@ -1,5 +1,6 @@
 'use client';
 
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { useState } from 'react';
 
 export default function ChurchDetailsForm() {
@@ -11,6 +12,8 @@ export default function ChurchDetailsForm() {
   const [denomination, setDenomination] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
+  const {user} = useUser();
+  const auth0ID = user?.sub;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +33,7 @@ export default function ChurchDetailsForm() {
           address,
           postalcode,
           city,
+          auth0ID
         }),
       });
 

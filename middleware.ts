@@ -55,9 +55,8 @@ export async function middleware(req: NextRequest) {
         const ministryId = currentUrl.split('/')[2];
         console.log('Ministry ID:', ministryId);
         const userMinistries = await userMinistry(auth0ID);
-        const ministryID = userMinistries[0]?.ministry_id;
-        console.log('Ministries associated with user church:', ministryID);
-        if (ministryId === ministryID.toString()) {
+        const hasMatchingMinistry = userMinistries.some((ministry: { ministry_id: number }) => ministry.ministry_id.toString() === ministryId);
+        if (hasMatchingMinistry) {
           console.log('Super admin accessing authorized ministry route');
           const response = NextResponse.next();
           response.cookies.set('prevUrl', currentUrl);

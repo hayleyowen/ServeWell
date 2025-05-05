@@ -22,8 +22,6 @@ export async function POST(request: Request) {
 
     const auth0ID = validateData.data.auth0ID;
     const churchId = validateData.data.Church_ID; // Assuming this is passed in the request body
-    const MinistryName = validateData.data.MinistryName;
-    const Description = validateData.data.Description;
 
     // now we need to check if the user is a super admin
     const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
