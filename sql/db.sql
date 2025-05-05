@@ -60,9 +60,11 @@ CREATE TABLE uploaded_files (
     file_data LONGBLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tab_name VARCHAR(255) NOT NULL,
-    ministry_id INT NOT NULL,
+    ministry_id INT NOT NULL DEFAULT 1,
     page_type VARCHAR(255) NOT NULL,
-    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id),
+    church_id INT NOT NULL,
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
 
@@ -82,11 +84,12 @@ CREATE TABLE calendar_events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     start DATETIME NOT NULL,
-    ministry_id INT NOT NULL,
+    ministry_id INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description VARCHAR(255) NULL,
-    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id)
-
+    church_id INT NOT NULL,
+    FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id),
+    FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
 -- Inserting data into the tables for testing

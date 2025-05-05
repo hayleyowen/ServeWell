@@ -1,20 +1,33 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/database'; 
 import { createChurch } from '@/app/lib/data';
+import { createChurchSchema } from '@/app/utils/zodSchema';
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    // console.log('Received data:', data.postalCode);
+    console.log('Received Church Info at the API:', data);
 
+    const validateData = createChurchSchema.safeParse(data);
+    if (!validateData.success) {
+      console.error('Validation error:', validateData.error); // Log validation errors
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    }
+
+    if (!validateData.data.churchName || !validateData.data.denomination || !validateData.data.email || !validateData.data.phone || !validateData.data.address || !validateData.data.postalCode || !validateData.data.city) {
+      console.error('Missing required fields:', validateData.data); // Log missing fields
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+    }
+    
+    // No need to authorize here, as this is a public endpoint
     const result = await createChurch({
-      churchName: data.churchName,
-      denomination: data.denomination,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-      postalcode: data.postalCode,
-      city: data.city,
+      churchName: validateData.data.churchName,
+      denomination: validateData.data.denomination,
+      email: validateData.data.email,
+      phone: validateData.data.phone,
+      address: validateData.data.address,
+      postalcode: validateData.data.postalCode,
+      city: validateData.data.city,
     })
 
     console.log('Created church:', result.insertedId);

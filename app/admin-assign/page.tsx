@@ -23,6 +23,7 @@ export default function AdminAssignPage() {
 
     const fetchAllAdmins = async () => {
         if (!auth0ID) return;
+        console.log('Fetching all admins for auth0ID:', auth0ID);
         
         try {
             // Fetch requesting admins
@@ -116,6 +117,7 @@ export default function AdminAssignPage() {
                                             <DemoteButton 
                                                 userID={admin.userID}
                                                 isSuper={admin.isSuper}
+                                                auth0ID={auth0ID || ''}
                                                 onDemote={fetchAllAdmins}
                                             />
                                         </td>
