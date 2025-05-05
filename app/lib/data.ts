@@ -160,8 +160,10 @@ export async function getChurchByID(churchID: number) {
     }
 }
 
+
 // Function to update a church
 export async function updateChurch(churchData: {
+    churchID: number; // Add churchID as a required parameter
     churchName: string;
     denomination: string;
     email: string;
@@ -169,58 +171,111 @@ export async function updateChurch(churchData: {
     address: string;
     postalcode: string;
     city: string;
-}) {
+  }) {
     let connection;
     try {
-        connection = await pool.getConnection();
-    
-        // Check if the church exists
-        const [existingChurch] = await connection.execute(
-            `SELECT church_id FROM church WHERE churchname = ?`,
-            [churchData.churchName]
+      connection = await pool.getConnection();
+  
+      // Check if the church exists using churchID
+      const [existingChurch] = await connection.execute(
+        `SELECT church_id FROM church WHERE church_id = ?`,
+        [churchData.churchID]
+      );
+  
+      if (existingChurch.length > 0) {
+        // Update the existing church
+        await connection.execute(
+          `UPDATE church 
+           SET churchname = ?, denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
+           WHERE church_id = ?`,
+          [
+            churchData.churchName,
+            churchData.denomination,
+            churchData.email,
+            churchData.phone,
+            churchData.address,
+            churchData.postalcode,
+            churchData.city,
+            churchData.churchID, // Use churchID in the WHERE clause
+          ]
         );
-    
-        if (existingChurch.length > 0) {
-            // Update the existing church
-            await connection.execute(
-                `UPDATE church 
-                SET denomination = ?, email = ?, churchphone = ?, streetaddress = ?, postalcode = ?, city = ? 
-                WHERE churchname = ?`,
-                [
-                    churchData.denomination,
-                    churchData.email,
-                    churchData.phone,
-                    churchData.address,
-                    churchData.postalcode,
-                    churchData.city,
-                    churchData.churchName,
-                ]
-            );
-            return { success: true, message: 'Church updated successfully' };
-        } else {
-            // Church does not exist
-            return { success: false, message: 'Church not found' };
-        }
+        return { success: true, message: 'Church updated successfully' };
+      } else {
+        // Church does not exist
+        return { success: false, message: 'Church not found' };
+      }
     } catch (error) {
-        console.error('Failed to update church:', error);
-        throw new Error('Failed to update church.');
+      console.error('Failed to update church:', error);
+      throw new Error('Failed to update church.');
     } finally {
-        if (connection) connection.release();
+      if (connection) connection.release();
     }
-}
+  }
 
 // Delete church by ID
 export async function deleteChurchByID(id: number) {
     let connection;
     try {
         connection = await pool.getConnection();
-        const [result] = await connection.execute<ResultSetHeader>(
-            "DELETE FROM church WHERE church_id = ?",
+
+        // Start a transaction
+        await connection.beginTransaction();
+
+        // Step 1: Set `minID` to NULL in the `users` table for all users associated with ministries in this church
+        await connection.execute(
+            `UPDATE users 
+             SET minID = NULL 
+             WHERE minID IN (SELECT ministry_id FROM ministry WHERE church_id = ?)`,
             [id]
         );
+
+        // Step 2: Delete related records in the `ministry` table
+        await connection.execute(
+            `DELETE FROM ministry WHERE church_id = ?`,
+            [id]
+        );
+
+        // Step 3: Set `churchID` to NULL in the `users` table for related records
+        await connection.execute(
+            `UPDATE users 
+             SET churchID = NULL 
+             WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 4: Set `rID` to NULL in the `users` table for related records
+        await connection.execute(
+            `UPDATE users 
+             SET rID = NULL 
+             WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 5: Delete related records in the `requestingAdmins` table
+        await connection.execute(
+            `DELETE FROM requestingAdmins WHERE churchID = ?`,
+            [id]
+        );
+
+        // Step 6: Delete related records in the `media` table
+        await connection.execute(
+            `DELETE FROM media WHERE church_id = ?`,
+            [id]
+        );
+
+        // Step 7: Finally, delete the church
+        const [result] = await connection.execute<ResultSetHeader>(
+            `DELETE FROM church WHERE church_id = ?`,
+            [id]
+        );
+
+        // Commit the transaction
+        await connection.commit();
+
         connection.release();
-        return result.affectedRows > 0;
+        return result.affectedRows > 0; // Returns true if a row was deleted
     } catch (error) {
+        if (connection) await connection.rollback(); // Rollback in case of error
         console.error("Failed to delete church:", error);
         throw new Error("Failed to delete church.");
     } finally {
@@ -387,37 +442,40 @@ export async function createMinistry(ministryData: {
 
 // Function to update a ministry
 export async function updateMinistry(ministryData: {
-    ministryName: string;
+    ministryId: number;
     description: string;
-}) {
+    ministryName: string; // Add ministryName to the function signature
+  }) {
     let connection;
     try {
-        connection = await pool.getConnection();
-    
-        // Check if the ministry exists
-        const [existingMinistry] = await connection.execute<RowDataPacket[]>(
-            `SELECT ministry_id FROM ministry WHERE ministryname = ?`,
-            [ministryData.ministryName]
+      connection = await pool.getConnection();
+  
+      // Check if the ministry exists
+      const [existingMinistry] = await connection.execute(
+        `SELECT ministry_id FROM ministry WHERE ministry_id = ?`,
+        [ministryData.ministryId]
+      );
+  
+      if (existingMinistry.length > 0) {
+        // Update the existing ministry
+        await connection.execute(
+          `UPDATE ministry 
+           SET description = ?, ministryname = ? 
+           WHERE ministry_id = ?`,
+          [ministryData.description, ministryData.ministryName, ministryData.ministryId]
         );
-    
-        if (existingMinistry.length > 0) {
-            // Update the existing ministry
-            await connection.execute(
-                `UPDATE ministry SET description = ? WHERE ministryname = ?`,
-                [ministryData.description, ministryData.ministryName]
-            );
-            return { success: true, message: 'Ministry updated successfully' };
-        } else {
-            // Ministry does not exist
-            return { success: false, message: 'Ministry not found' };
-        }
+        return { success: true, message: 'Ministry updated successfully' };
+      } else {
+        // Ministry does not exist
+        return { success: false, message: 'Ministry not found' };
+      }
     } catch (error) {
-        console.error('Failed to update ministry:', error);
-        throw new Error('Failed to update ministry.');
+      console.error('Failed to update ministry:', error);
+      throw new Error('Failed to update ministry.');
     } finally {
-        if (connection) connection.release();
+      if (connection) connection.release();
     }
-}
+  }
 
 // Function to delete a ministry by url_path variable
 export async function deleteMinistryByURLPath(name: string) {

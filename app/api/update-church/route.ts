@@ -16,7 +16,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
+    
+    const churchID = validateData.data.churchID;
     const churchName = validateData.data.churchName;
     const denomination = validateData.data.denomination;
     const email = validateData.data.email;
@@ -27,8 +28,18 @@ export async function POST(req: Request) {
     const auth0ID = validateData.data.auth0ID;
 
     // Validate the input
-    if (!churchName || !denomination || !email || !phone || !address || !postalcode || !city) {
-      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+    if (!churchID || !churchName || !denomination || !email || !phone || !address || !postalcode || !city) {
+      return NextResponse.json({ error: 'All fields are required, including churchID' }, { status: 400 });
+    }
+
+    // check if auth0ID is a superadmin for that church
+    const userRole = await userStuff(auth0ID);
+    if (userRole.error) {
+      console.log("Error fetching user role:", userRole.error);
+    }
+    const role = userRole[0]?.rID;
+    if (role !== 2) {
+      return { error: "You are not authorized to perform this action" };
     }
 
     // check if auth0ID is a superadmin for that church
@@ -43,6 +54,7 @@ export async function POST(req: Request) {
 
     // Call the updateChurch function
     const result = await updateChurch({
+      churchID, // Pass churchID to the function
       churchName,
       denomination,
       email,

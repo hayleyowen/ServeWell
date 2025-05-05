@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const auth0ID = validateData.data.auth0ID;
 
     // Validate the input
-    if (!ministryName || !description) {
+    if (!ministryId || !description || !ministryName) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -48,8 +48,9 @@ export async function POST(req: Request) {
 
     // Call the updateMinistry function from data.ts
     const result = await updateMinistry({
-      ministryName,
+      ministryId,
       description,
+      ministryName, // Pass the ministryName to the function
     });
 
     // Return the result

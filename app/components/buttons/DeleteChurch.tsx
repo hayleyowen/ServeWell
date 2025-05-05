@@ -4,15 +4,18 @@ import { useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
 interface DeleteChurchButtonProps {
-    churchId: string;
+    churchId: number;
 }
 
 export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps) {
     const { user } = useUser(); // Get the user information from Auth0
     const auth0ID = user?.sub; // Extract the Auth0 ID from the user object
+    console.log("DeleteChurchButton received churchId:", churchId); // Debug log
+
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this church?')) {
             try {
+                console.log("Sending delete request for churchId:", churchId); // Debug log
                 const response = await fetch('/api/delete-church', {
                     method: 'DELETE',
                     headers: {
@@ -26,6 +29,7 @@ export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps
                     window.location.href = '/user-homepage'; // Redirect to the user homepage 
                 } else {
                     const errorData = await response.json();
+                    console.error("Error response from API:", errorData); // Debug log
                     alert(`Error: ${errorData.error}`);
                 }
             } catch (error) {
@@ -37,7 +41,7 @@ export default function DeleteChurchButton({ churchId }: DeleteChurchButtonProps
 
     return (
         <button
-            className="absolute bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition"
+            className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition"
             onClick={handleDelete}
         >
             Delete Church

@@ -1,9 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { useState } from 'react';
+import { getUserChurch } from '@/app/lib/data';
 
 export default function ChurchDetailsForm() {
+  const { user } = useUser();
+  const [churchID, setChurchID] = useState<number | null>(null);
   const [churchName, setChurchName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -12,12 +15,35 @@ export default function ChurchDetailsForm() {
   const [denomination, setDenomination] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
-  const {user} = useUser();
-  const auth0ID = user?.sub;
+
+  useEffect(() => {
+    const fetchChurchId = async () => {
+      if (user?.sub) {
+        try {
+          const userChurch = await getUserChurch(user.sub);
+
+          if (userChurch && userChurch[0]?.church_id) {
+            setChurchID(userChurch[0].church_id); // Set as number
+          } else {
+            console.warn('No churchID found in the response');
+          }
+        } catch (error) {
+          console.error('Error fetching church ID:', error);
+        }
+      }
+    };
+
+    fetchChurchId();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null); // Clear any previous messages
+
+    if (!churchID) {
+      setMessage('Unable to update church details. Church ID is missing.');
+      return;
+    }
 
     try {
       const response = await fetch('/api/update-church', {
@@ -26,6 +52,7 @@ export default function ChurchDetailsForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          churchID, // Include churchID in the payload
           churchName,
           denomination,
           email,
@@ -52,7 +79,6 @@ export default function ChurchDetailsForm() {
       setCity('');
       setDenomination('');
       setEmail('');
-
     } catch (error: any) {
       console.error('Error updating church details:', error);
       setMessage(error.message || 'An error occurred');
