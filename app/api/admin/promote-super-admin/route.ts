@@ -21,6 +21,7 @@ export async function POST(req: Request) {
 
     // Check if the user making changes (auth0ID) is a super-admin and belongs to the same church as the user being promoted
     const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    console.log("superAdminChurchID:", superAdminChurchID);
     if (superAdminChurchID.error) {
       console.error("Superadmin verification error:", superAdminChurchID.error); // Log verification errors
       return NextResponse.json({ error: "You are not authorized to perform this action" }, { status: 403 });
@@ -38,11 +39,11 @@ export async function POST(req: Request) {
     // Update user's role to super-admin (rID = 2)
     const updateQuery = `
       UPDATE users 
-      SET rID = 2 , minID = NULL
+      SET rID = 2 , minID = NULL, churchID = ?
       WHERE userID = ?
     `;
     
-    await client.execute(updateQuery, [userID]);
+    await client.execute(updateQuery, [superAdminChurchID, userID]);
     
     // Remove from requestingAdmins table since they're now a super-admin
     const deleteQuery = `
