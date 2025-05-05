@@ -104,7 +104,7 @@ export default function UserHomepage() {
                 Welcome, {user.nickname}
               </h1>
               <Image
-                src="/logo.png"
+                src="/Servewell.png"
                 width={300}
                 height={300}
                 alt="Logo"

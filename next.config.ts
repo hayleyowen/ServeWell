@@ -4,11 +4,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    unoptimized: true, // ✅ Disables built-in image optimization
+  },
 };
 
-// module.exports = {
-//   images: {
-//     domains: ['159.89.32.228'], 
-//   },
-// };
+
 export default nextConfig;
