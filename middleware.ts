@@ -30,10 +30,16 @@ export async function middleware(req: NextRequest) {
     console.log('Time Remaining:', timeRemaining, "minutes and", secondsRemaining, "seconds"); 
 
 
-    if (!session || sessionExpiration1hr < currTime) {
-      req.cookies.delete('appSession');
+    if (!session) {
       console.log('No session found, redirecting to login...');
       const response = NextResponse.redirect(new URL('/', req.url));
+      response.cookies.set('prevUrl', currentUrl);
+      return response;
+    }
+    if (sessionExpiration1hr < currTime) {
+      req.cookies.delete('appSession');
+      console.log('Session expired, redirecting to login...');
+      const response = NextResponse.redirect(new URL('/api/auth/logout', req.url));
       response.cookies.set('prevUrl', currentUrl);
       return response;
     }
