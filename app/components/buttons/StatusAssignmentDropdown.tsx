@@ -15,11 +15,14 @@ interface StatusAssignmentDropdownProps {
   auth0ID: string; // Logged-in super admin's auth0ID
   onUpdate?: () => void; // Callback for parent refresh
   isSuper?: boolean; // Add isSuper flag
+  currentUserEmail?: string; // Email of the current user
+  email?: string; // Email of this admin
 }
 
 export default function StatusAssignmentDropdown({ 
   userID, fname, minID, ministryname,
-  auth0ID, onUpdate, isSuper = false // Default to false
+  auth0ID, onUpdate, isSuper = false, // Default to false
+  currentUserEmail, email
 }: StatusAssignmentDropdownProps) {
   const [ministries, setMinistries] = useState<Ministry[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +30,9 @@ export default function StatusAssignmentDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentStatusText = ministryname || "Unassigned";
+  
+  // Check if this dropdown is for the current user
+  const isSelf = isSuper && currentUserEmail && email && currentUserEmail === email;
 
   // Fetch ministries relevant to the logged-in super admin's church
   useEffect(() => {
@@ -175,11 +181,26 @@ export default function StatusAssignmentDropdown({
 
   // Determine button style based on assignment or super admin status
   const buttonClass = isSuper
-    ? "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors" // Super Admin (Blue)
+    ? `px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center ${isSelf ? 'opacity-80 cursor-not-allowed' : 'hover:bg-blue-600 transition-colors'}` // Super Admin (Blue)
     : minID !== null
       ? "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors" // Assigned style (Blue)
       : "px-4 py-2 bg-blue-500 text-white rounded-lg inline-block text-center hover:bg-blue-600 transition-colors"; // Unassigned style (Blue)
 
+  // If this is the current user and they're a super admin, show a non-interactive button
+  if (isSelf) {
+    return (
+      <div className="inline-block">
+        <div 
+          className={buttonClass}
+          title="You cannot change your own role"
+        >
+          {currentStatusText}
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise, show the normal dropdown
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button

@@ -20,6 +20,7 @@ export default function AdminAssignPage() {
     const [allAdmins, setAllAdmins] = useState<Admin[]>([]);
     const { user } = useUser();
     const auth0ID = user?.sub;
+    const currentUserEmail = user?.email || '';
 
     const fetchAllAdmins = async () => {
         if (!auth0ID) return;
@@ -99,7 +100,7 @@ export default function AdminAssignPage() {
                         <tbody className="text-center">
                             {allAdmins.length > 0 ? (
                                 allAdmins.map((admin) => (
-                                    <tr key={[admin.userID, admin.fname]}>
+                                    <tr key={admin.userID.toString()}>
                                         <td className="px-4 py-2">{admin.fname}</td>
                                         <td className="px-4 py-2">{admin.email}</td>
                                         <td className="px-4 py-2">
@@ -111,6 +112,8 @@ export default function AdminAssignPage() {
                                                 auth0ID={auth0ID || ''}
                                                 onUpdate={fetchAllAdmins}
                                                 isSuper={admin.isSuper}
+                                                currentUserEmail={currentUserEmail}
+                                                email={admin.email}
                                             />
                                         </td>
                                         <td className="px-4 py-2 flex justify-center items-center">
