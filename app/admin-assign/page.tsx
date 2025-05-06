@@ -122,6 +122,8 @@ export default function AdminAssignPage() {
                                                 isSuper={admin.isSuper}
                                                 auth0ID={auth0ID || ''}
                                                 onDemote={fetchAllAdmins}
+                                                currentUserEmail={currentUserEmail}
+                                                email={admin.email}
                                             />
                                         </td>
                                     </tr>
