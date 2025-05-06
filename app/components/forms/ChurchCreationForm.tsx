@@ -60,7 +60,7 @@ export default function ChurchCreationForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(churchData),
             });
-        
+
             if (response.ok) {
                 const result = await response.json();
                 const newchurchId = result['churchId'];
@@ -92,7 +92,8 @@ export default function ChurchCreationForm() {
                     alert('Failed to register SuperAdmin.');
                 }
             } else {
-                alert('Failed to register the church.');
+                const churchError = await response.json();
+                alert(churchError.message || 'Failed to register church.');
             }
         } catch (error) {
             console.error('Error:', error);

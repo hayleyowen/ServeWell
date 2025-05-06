@@ -278,7 +278,7 @@ export default function FinancesTrackingPage() {
     
         const pathSegments = pathname.split('/');
         const church = pathSegments[3] || "defaultChurch";
-        const pageType = pathSegments[4]] || "defaultPageType";
+        const pageType = pathSegments[4] || "defaultPageType";
     
         console.log(`📢 Fetching files for: Church = ${church}, Page Type = ${pageType}`);
     
