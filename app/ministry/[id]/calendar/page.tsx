@@ -73,47 +73,53 @@ export default function CalendarPage() {
     
     const saveEvent = async () => {
         if (!newEvent.title || !newEvent.start || !newEvent.start.includes("T")) {
-            console.error("❌ Missing required fields:", newEvent);
+            setSnackOpen(true);
+            return; // ✅ Exit early if required fields are missing
+        }
+    
+        let adjustedStart;
+    
+        try {
+            adjustedStart = new Date(newEvent.start);
+            adjustedStart.setHours(adjustedStart.getHours() - 5);
+        } catch (error) {
+            console.error("❌ Invalid date format:", error);
             setSnackOpen(true);
             return;
         }
     
-        // ⏱️ Adjust time by subtracting 5 hours
-        const adjustedStart = new Date(newEvent.start);
-        adjustedStart.setHours(adjustedStart.getHours() - 5);
-    
         const method = isEditing ? "PUT" : "POST";
     
-        const res = await fetch(`/api/calendar?ministryId=${ministryId}`, {
-            method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                id: isEditing ? newEvent.id : undefined,
-                title: newEvent.title, 
-                start: adjustedStart.toISOString(), 
-                ministry: ministryId,
-                description: newEvent.description || ""
-            }),
-        });
-        
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error("❌ Failed to save event:", errorText);
-            return;
-        }
-    
         try {
+            const res = await fetch(`/api/calendar?ministryId=${ministryId}`, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    id: isEditing ? newEvent.id : undefined,
+                    title: newEvent.title, 
+                    start: adjustedStart.toISOString(), 
+                    ministry: ministryId,
+                    description: newEvent.description || ""
+                }),
+            });
+    
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("❌ Failed to save event:", errorText);
+                return;
+            }
+    
             const data = await res.json();
             if (data.success) {
-                router.refresh(); // ✅ Refresh Next.js cache
-                fetchEvents(); // ✅ Manually re-fetch to update state
+                router.refresh();
+                fetchEvents();
             }
         } catch (error) {
-            console.error("❌ Error parsing response JSON:", error);
+            console.error("❌ Unexpected error saving event:", error);
         }
     
         handleClose();
-    };
+    };    
     
     const deleteEvent = async () => {
         if (!newEvent.id) {
