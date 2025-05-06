@@ -18,7 +18,6 @@ export default function AddMediaPage({ params }: PageParams) {
     type: 'sermon',
     youtubeUrl: '',
     date: '',
-    description: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,8 +60,8 @@ export default function AddMediaPage({ params }: PageParams) {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 p-40">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+    <main className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 p-4 sm:p-6 md:p-8 flex items-center justify-center">
+      <div className="max-w-2xl w-full mx-auto bg-white rounded-lg shadow-lg p-6 my-8 sm:my-10 md:my-12">
         <h1 className="text-2xl font-bold text-center mb-6">Add New Media</h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,20 +125,6 @@ export default function AddMediaPage({ params }: PageParams) {
               value={formData.date}
               onChange={handleChange}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
