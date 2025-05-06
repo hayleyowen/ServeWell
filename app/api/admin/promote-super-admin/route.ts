@@ -21,6 +21,7 @@ export async function POST(req: Request) {
 
     // Check if the user making changes (auth0ID) is a super-admin and belongs to the same church as the user being promoted
     const superAdminChurchID = await apiSuperAdminVerification(auth0ID);
+    console.log("superAdminChurchID:", superAdminChurchID);
     if (superAdminChurchID.error) {
       console.error("Superadmin verification error:", superAdminChurchID.error); // Log verification errors
       return NextResponse.json({ error: "You are not authorized to perform this action" }, { status: 403 });
@@ -35,29 +36,36 @@ export async function POST(req: Request) {
     // signed-in user is a super-admin and belongs to the same church as the user being promoted
     // Proceed with the promotion to super-admin
 
-    // Update user's role to super-admin (rID = 2)
-    const updateQuery = `
-      UPDATE users 
-      SET rID = 2 , minID = NULL
-      WHERE userID = ?
-    `;
-    
-    await client.execute(updateQuery, [userID]);
-    
-    // Remove from requestingAdmins table since they're now a super-admin
-    const deleteQuery = `
-      DELETE FROM requestingAdmins 
-      WHERE auth0ID = (
-        SELECT auth0ID 
-        FROM users 
-        WHERE userID = ?
-      )
-    `;
-    
-    await client.execute(deleteQuery, [userID]);
+    // Start transaction
+    await client.beginTransaction();
 
-    client.release();
-    return NextResponse.json({ success: true });
+    try {
+      // Update user's role to super-admin (rID = 2) and ensure churchID is set
+      const updateQuery = `
+        UPDATE users 
+        SET rID = 2, minID = NULL, churchID = ?
+        WHERE userID = ?
+      `;
+      await client.execute(updateQuery, [superAdminChurchID, userID]);
+
+      // Remove from requestingAdmins table since they're now a super-admin
+      const deleteQuery = `
+        DELETE FROM requestingAdmins 
+        WHERE auth0ID = (
+          SELECT auth0ID 
+          FROM users 
+          WHERE userID = ?
+        )
+      `;
+      await client.execute(deleteQuery, [userID]);
+
+      await client.commit();
+      client.release();
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      await client.rollback();
+      throw error;
+    }
 
   } catch (error) {
     console.error("Error promoting to super-admin:", error);

@@ -85,7 +85,7 @@ export default function MediaPage({ params }: PageParams) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-white">Media Archive</h1>
           <Link 
-            href={`/church/${churchId}/media/add`}
+            href={`/user-homepage/church/${churchId}/media/add`}
             className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
           >
             + Add Media
