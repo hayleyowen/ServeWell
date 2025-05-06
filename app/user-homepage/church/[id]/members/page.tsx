@@ -576,6 +576,10 @@ export default function FinancesTrackingPage() {
             alert("This member doesn't have an email address.");
             return;
         }
+
+        if(memberName === "Name") {
+            return
+        }
         
         // Close the member list modal and open email service selection modal
         setMemberListOpen(false);
@@ -1019,7 +1023,8 @@ export default function FinancesTrackingPage() {
                                     <button 
                                         key={index}
                                         onClick={() => handleContactMember(member.rowIndex)}
-                                        className="w-full text-left p-3 hover:bg-blue-50 flex justify-between items-center"
+                                        className={`w-full text-left p-3 flex justify-between items-center ${member.name !== "Name" ? "hover:bg-blue-50" : "cursor-default"}`}
+                                        disabled={member.name === "Name"}
                                     >
                                         <span>{member.name}</span>
                                         <span className="text-gray-500 text-sm">{member.email}</span>
