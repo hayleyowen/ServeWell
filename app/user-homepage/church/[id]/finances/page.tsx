@@ -40,7 +40,7 @@ export default function FinancesTrackingPage() {
     const createNewChart = () => {
         if (!chartName) {
             const nextChartNumber = charts.length + 1;
-            setChartName(`Finance Chart ${nextChartNumber}`);
+            setChartName(`Finance Sheet ${nextChartNumber}`);
         }
         const newChart = {
             id: Date.now(),
@@ -75,7 +75,7 @@ export default function FinancesTrackingPage() {
             if (!activeChart) {
                 // Generate automatic chart name
                 const nextChartNumber = charts.length + 1;
-                const newChartName = `Finance Chart ${nextChartNumber}`;
+                const newChartName = `Finance Sheet ${nextChartNumber}`;
                 const newChart = {
                     id: Date.now(),
                     name: newChartName,
@@ -176,9 +176,9 @@ export default function FinancesTrackingPage() {
     };      
 
     const updateChartData = (chartId, spreadsheetData) => {
-        console.log("📊 Received Data in updateChartData:", spreadsheetData);  // Confirm input
+        console.log("📊 Received Data in updateSheetData:", spreadsheetData);  // Confirm input
         if (spreadsheetData.length < 2) {
-            console.warn("⚠️ Not enough data to update chart.");
+            console.warn("⚠️ Not enough data to update sheet.");
             return;
         }
     
@@ -194,7 +194,7 @@ export default function FinancesTrackingPage() {
         console.log("📊 Datasets:", datasets);
     
         setCharts(prevCharts => {
-            console.log("📌 Previous Charts Before Update:", prevCharts); // Debugging previous state
+            console.log("📌 Previous Sheets Before Update:", prevCharts); // Debugging previous state
     
             const updatedCharts = prevCharts.map(chart =>
                 chart.id === chartId
@@ -214,7 +214,7 @@ export default function FinancesTrackingPage() {
                     : chart
             );
     
-            console.log("✅ Updated Charts:", updatedCharts); // Debugging updated state
+            console.log("✅ Updated Sheets:", updatedCharts); // Debugging updated state
             return updatedCharts;
         });
     };
@@ -336,7 +336,7 @@ export default function FinancesTrackingPage() {
     
                         resolve({
                             id: Date.now() + index,
-                            name: file.tabName || `Finance Chart ${index + 1}`,
+                            name: file.tabName || `Finance Sheet ${index + 1}`,
                             data: formattedData,
                             chartType: "pie",
                             chartData: null,
@@ -440,7 +440,7 @@ export default function FinancesTrackingPage() {
                                     ?
                                 </div>
                                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
-                                    To make a chart, type a name into the "Chart Name" box and hit create. To be able to use the graphs the first row is used to determine how the graphs are labeled.
+                                    To make a chart, type a name into the "Sheet Name" box and hit create. To be able to use the graphs the first row is used to determine how the graphs are labeled.
                                 </div>
                             </div>
                         </div>
@@ -469,10 +469,10 @@ export default function FinancesTrackingPage() {
                             type="text"
                             value={chartName}
                             onChange={(e) => setChartName(e.target.value)}
-                            placeholder="Chart Name"
+                            placeholder="Sheet Name"
                             className="border p-2"
                         />
-                        <button onClick={createNewChart} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Create Chart</button>
+                        <button onClick={createNewChart} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Create Sheet</button>
                     </div>
                     <div className="tabs-container border-b pb-2 h-12 flex-shrink-0">
                         {charts.map((chart) => (
