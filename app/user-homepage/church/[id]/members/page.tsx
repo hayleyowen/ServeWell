@@ -44,7 +44,6 @@ export default function FinancesTrackingPage() {
     const pathSegments = pathname.split('/'); 
     const churchID = pathSegments[3];       
     const pageType = pathSegments[4];        
-
     
     useEffect(() => {
         const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
@@ -254,7 +253,7 @@ export default function FinancesTrackingPage() {
         console.log("📊 Datasets:", datasets);
     
         setCharts(prevCharts => {
-            console.log("📌 Previous Charts Before Update:", prevCharts); // Debugging previous state
+            console.log("📌 Previous Sheets Before Update:", prevCharts); // Debugging previous state
     
             const updatedCharts = prevCharts.map(chart =>
                 chart.id === chartId
@@ -274,7 +273,7 @@ export default function FinancesTrackingPage() {
                     : chart
             );
     
-            console.log("✅ Updated Charts:", updatedCharts); // Debugging updated state
+            console.log("✅ Updated Sheets:", updatedCharts); // Debugging updated state
             return updatedCharts;
         });
     };
@@ -397,7 +396,7 @@ export default function FinancesTrackingPage() {
     
                         resolve({
                             id: Date.now() + index,
-                            name: file.tabName || `Member Chart ${index + 1}`,
+                            name: file.tabName || `Member Sheet ${index + 1}`,
                             data: formattedData,
                             chartType: "pie",
                             chartData: null,
@@ -716,7 +715,7 @@ export default function FinancesTrackingPage() {
                             ?
                         </div>
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
-                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Chart Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
+                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Sheet Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
                         </div>
                         </div>
                     </div>
@@ -766,7 +765,7 @@ export default function FinancesTrackingPage() {
                             type="text"
                             value={chartName}
                             onChange={(e) => setChartName(e.target.value)}
-                            placeholder="Chart Name"
+                            placeholder="Sheet Name"
                             className="border p-2 rounded-md"
                         />
                         <button 
@@ -774,7 +773,7 @@ export default function FinancesTrackingPage() {
                             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                             disabled={!chartName.trim()} // Prevents empty chart names
                         >
-                            Create Chart
+                            Create Sheet
                         </button>
                     </div>
                     {/* Chart Tabs */}
