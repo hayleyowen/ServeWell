@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useEffect, useState } from 'react';
+import { logo } from '@/app/components/images/logo.js'; 
 
 
 export default function Home() {
@@ -67,14 +68,13 @@ export default function Home() {
   }
 
   // if no session (i.e. user is not logged in), show login button
-  // if no session (i.e. user is not logged in), show login button
 if (!user) {
   return (
     <section className="t-20 min-h-screen flex flex-col">
       <div className="t-15 flex-1 flex flex-col bg-gradient-to-b from-blue-400 to-blue-600 p-30">
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-2">
-            <Image src="/Servewell.png" width={400} height={400} alt="Logo" />
+            <img src={logo} width={400} height={400} alt="Logo" />
             <div className="p-8 text-center text-white max-w-6xl">
               <p className="text-lg leading-relaxed">
                 <span className="font-bold">Empower Your Church to Thrive with ServeWell — the Church Management Software Designed for Small Churches. </span>
