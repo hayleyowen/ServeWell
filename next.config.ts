@@ -4,8 +4,11 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  allowedDevOrigins: ['http://159.89.32.228:3000'], 
+  // output:"export",
+  // images: { unoptimized: true } 
 };
 
-
+// module.exports = {
+//   output: "standalone",
+// } 
 export default nextConfig;
