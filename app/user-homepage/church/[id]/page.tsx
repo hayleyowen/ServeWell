@@ -28,7 +28,7 @@ export default async function ChurchHomepage({ params }: { params: { id: string 
             </h2>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
+            <div className="text-center grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl">
               <a href={`/user-homepage/church/${churchId}/members`} className="bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
                 <h3 className="text-lg sm:text-xl font-bold mb-2">Member Tracking</h3>
               </a>

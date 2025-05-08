@@ -63,7 +63,7 @@ CREATE TABLE uploaded_files (
     ministry_id INT NOT NULL DEFAULT 1,
     page_type VARCHAR(255) NOT NULL,
     FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id),
-    church_id INT NOT NULL,
+    church_id INT NOT NULL DEFAULT 1,
     FOREIGN KEY (church_id) REFERENCES church(church_id)
 );
 
@@ -87,7 +87,7 @@ CREATE TABLE calendar_events (
     ministry_id INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description VARCHAR(255) NULL,
-    church_id INT NOT NULL,
+    church_id INT NOT NULL DEFAULT 1,
     FOREIGN KEY (ministry_id) REFERENCES ministry(ministry_id),
     FOREIGN KEY (church_id) REFERENCES church(church_id)
 );

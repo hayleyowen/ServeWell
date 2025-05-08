@@ -10,8 +10,9 @@ export async function POST(request: Request) {
 
     const validateData = createChurchSchema.safeParse(data);
     if (!validateData.success) {
-      console.error('Validation error:', validateData.error); // Log validation errors
-      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
+      const errMessage = validateData.error.errors[0].message;
+      console.error('Validation error:', errMessage); // Log validation errors
+      return NextResponse.json({ message: errMessage }, { status: 400 });
     }
 
     if (!validateData.data.churchName || !validateData.data.denomination || !validateData.data.email || !validateData.data.phone || !validateData.data.address || !validateData.data.postalCode || !validateData.data.city) {

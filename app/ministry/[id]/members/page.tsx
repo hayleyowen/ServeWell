@@ -125,7 +125,7 @@ export default function FinancesTrackingPage() {
             if (!activeChart) {
                 // Generate automatic chart name
                 const nextChartNumber = charts.length + 1;
-                const newChartName = `Member Chart ${nextChartNumber}`;
+                const newChartName = `Member Sheet ${nextChartNumber}`;
                 const newChart = {
                     id: Date.now(),
                     name: newChartName,
@@ -236,9 +236,9 @@ export default function FinancesTrackingPage() {
         
     
     const updateChartData = (chartId, spreadsheetData) => {
-        console.log("📊 Received Data in updateChartData:", spreadsheetData);  // Confirm input
+        console.log("📊 Received Data in updateSheetData:", spreadsheetData);  // Confirm input
         if (spreadsheetData.length < 2) {
-            console.warn("⚠️ Not enough data to update chart.");
+            console.warn("⚠️ Not enough data to update sheet.");
             return;
         }
     
@@ -254,7 +254,7 @@ export default function FinancesTrackingPage() {
         console.log("📊 Datasets:", datasets);
     
         setCharts(prevCharts => {
-            console.log("📌 Previous Charts Before Update:", prevCharts); // Debugging previous state
+            console.log("📌 Previous Sheets Before Update:", prevCharts); // Debugging previous state
     
             const updatedCharts = prevCharts.map(chart =>
                 chart.id === chartId
@@ -274,7 +274,7 @@ export default function FinancesTrackingPage() {
                     : chart
             );
     
-            console.log("✅ Updated Charts:", updatedCharts); // Debugging updated state
+            console.log("✅ Updated Sheets:", updatedCharts); // Debugging updated state
             return updatedCharts;
         });
     };
@@ -397,7 +397,7 @@ export default function FinancesTrackingPage() {
     
                         resolve({
                             id: Date.now() + index,
-                            name: file.tabName || `Member Chart ${index + 1}`,
+                            name: file.tabName || `Member Sheet ${index + 1}`,
                             data: formattedData,
                             chartType: "pie",
                             chartData: null,
@@ -498,30 +498,67 @@ export default function FinancesTrackingPage() {
         }
 
         const currentChart = charts.find(chart => chart.id === activeChart);
+        if (!currentChart) return;
         
         if (!searchQuery.trim()) {
             // If no search query, show all data
-            setFilteredData(currentChart.data);
+            setFilteredData([]);
             return;
         }
 
         const searchTerm = searchQuery.toLowerCase();
         
-        // Filter and highlight matching data
-        const filtered = currentChart.data.filter(row =>
-            row.some(cell => 
-                cell.value?.toString().toLowerCase().includes(searchTerm)
-            )
-        ).map(row =>
-            row.map(cell => ({
-                ...cell,
-                className: cell.value?.toString().toLowerCase().includes(searchTerm)
-                    ? "bg-yellow-200"
-                    : ""
-            }))
-        );
+        // Find all matches and track which rows contain matches
+        const matchingRows = new Set();
+        const matches = [];
+        
+        currentChart.data.forEach((row, rowIndex) => {
+            let rowHasMatch = false;
+            
+            row.forEach((cell, cellIndex) => {
+                if (cell.value && String(cell.value).toLowerCase().includes(searchTerm)) {
+                    matches.push({ rowIndex, cellIndex });
+                    rowHasMatch = true;
+                }
+            });
+            
+            if (rowHasMatch) {
+                matchingRows.add(rowIndex);
+            }
+        });
 
-        setFilteredData(filtered);
+        console.log("Search matches found:", matches.length, "in", matchingRows.size, "rows");
+        
+        if (matches.length > 0) {
+            // Create new data with only matching rows
+            const newData = [];
+            
+            // First, add the header row
+            if (currentChart.data.length > 0) {
+                newData.push([...currentChart.data[0]]);
+            }
+            
+            // Then add only the matching rows
+            currentChart.data.forEach((row, rowIndex) => {
+                if (matchingRows.has(rowIndex)) {
+                    // Create a deep copy of the row
+                    const newRow = JSON.parse(JSON.stringify(row));
+                    
+                    // Highlight matching cells
+                    matches.forEach(match => {
+                        if (match.rowIndex === rowIndex) {
+                            newRow[match.cellIndex].className = "highlighted-cell";
+                        }
+                    });
+                    
+                    newData.push(newRow);
+                }
+            });
+            
+            setFilteredData(newData);
+        } else {
+            setFilteredData([]);
+        }
     }, [searchQuery, activeChart, charts]);
     
 
@@ -538,6 +575,10 @@ export default function FinancesTrackingPage() {
         if (!memberEmail) {
             alert("This member doesn't have an email address.");
             return;
+        }
+
+        if(memberName === "Name") {
+            return
         }
         
         // Close the member list modal and open email service selection modal
@@ -675,7 +716,7 @@ export default function FinancesTrackingPage() {
                             ?
                         </div>
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 bg-opacity-90 text-white text-xs rounded-md p-2 w-48 text-center z-20 shadow-lg">
-                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Chart Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
+                            The permenant tab exist to help create a template for the use of the email system. To make a chart, type a name into the "Sheet Name" box and hit create. To use the "search" feature go to the magnifier icon and type to the name of the member you want.
                         </div>
                         </div>
                     </div>
@@ -683,20 +724,30 @@ export default function FinancesTrackingPage() {
                             {/* Search Bar */}
                             <div className="relative flex items-center">
                                 <button
-                                    onClick={() => setShowSearch(!showSearch)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    onClick={() => {
+                                        if (showSearch) {
+                                            // If we're closing search, also clear search query and filtered data
+                                            setSearchQuery("");
+                                            setFilteredData([]);
+                                        }
+                                        setShowSearch(!showSearch);
+                                    }}
+                                    className={`p-2 rounded-full transition-colors ${searchQuery ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+                                    title={searchQuery ? `Filtering: "${searchQuery}"` : "Search members"}
                                 >
-                                    <FaSearch className="text-gray-600" />
+                                    <FaSearch className={searchQuery ? "text-blue-600" : "text-gray-600"} />
                                 </button>
                                 {showSearch && (
-                                    <input
-                                        type="text"
-                                        placeholder="Search members..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="absolute right-10 w-64 p-2 border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        autoFocus
-                                    />
+                                    <div className="absolute right-10 z-10 flex items-center">
+                                        <input
+                                            type="text"
+                                            placeholder="Search members..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-64 p-2 border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            autoFocus
+                                        />
+                                    </div>
                                 )}
                             </div>
     
@@ -715,7 +766,7 @@ export default function FinancesTrackingPage() {
                             type="text"
                             value={chartName}
                             onChange={(e) => setChartName(e.target.value)}
-                            placeholder="Chart Name"
+                            placeholder="Sheet Name"
                             className="border p-2 rounded-md"
                         />
                         <button 
@@ -723,7 +774,7 @@ export default function FinancesTrackingPage() {
                             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                             disabled={!chartName.trim()} // Prevents empty chart names
                         >
-                            Create Chart
+                            Create Sheet
                         </button>
                     </div>
                     {/* Chart Tabs */}
@@ -866,43 +917,57 @@ export default function FinancesTrackingPage() {
                                 {/* Existing spreadsheet code */}
                                 {activeChart && (
                                     <Spreadsheet
-                                        data={charts.find(chart => chart.id === activeChart)?.data || []}
+                                        data={
+                                            searchQuery && filteredData.length > 0
+                                                ? filteredData
+                                                : charts.find(chart => chart.id === activeChart)?.data || []
+                                        }
                                         onChange={(newData) => {
                                             const chart = charts.find(chart => chart.id === activeChart);
+                                            if (!chart) return;
+                                            
                                             const isMemberSheet = chart.name === "Member Sheet";
 
                                             let updatedData = [...newData];
 
                                             // 🔒 Enforce permanent header row
                                             if (isMemberSheet) {
-                                            const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
-                                            updatedData[0] = defaultHeader.map(label => ({ value: label }));
+                                                const defaultHeader = ["Name", "Email", "Phone Number", "Address"];
+                                                updatedData[0] = defaultHeader.map(label => ({ value: label }));
                                             }
 
-                                            const hasDataInLastRow = updatedData[updatedData.length - 1].some(cell => cell.value !== "");
+                                            const hasDataInLastRow = updatedData[updatedData.length - 1]?.some(cell => cell?.value !== "");
 
                                             if (hasDataInLastRow) {
-                                            const newRow = Array(updatedData[0]?.length || 4).fill({ value: "" });
-                                            updatedData.push(newRow);
+                                                const newRow = Array(updatedData[0]?.length || 4).fill({ value: "" });
+                                                updatedData.push(newRow);
                                             }
 
                                             // ✅ Only allow new columns if NOT Member Sheet
                                             if (!isMemberSheet) {
-                                            const hasDataInLastCol = updatedData.some(row => row[row.length - 1]?.value !== "");
-                                            if (hasDataInLastCol) {
-                                                updatedData = updatedData.map(row => [...row, { value: "" }]);
-                                            }
+                                                const hasDataInLastCol = updatedData.some(row => row[row.length - 1]?.value !== "");
+                                                if (hasDataInLastCol) {
+                                                    updatedData = updatedData.map(row => [...row, { value: "" }]);
+                                                }
                                             }
 
+                                            // Clear search when editing to prevent state conflicts
+                                            if (searchQuery) {
+                                                setShowSearch(false);
+                                                setSearchQuery("");
+                                                setFilteredData([]);
+                                            }
+                                            
+                                            // Then update chart data
                                             setCharts(prevCharts =>
-                                            prevCharts.map(c =>
-                                                c.id === activeChart ? { ...c, data: updatedData } : c
-                                            )
+                                                prevCharts.map(c =>
+                                                    c.id === activeChart ? { ...c, data: updatedData } : c
+                                                )
                                             );
 
                                             updateChartData(activeChart, updatedData);
                                         }}
-                                        />
+                                    />
                                 )}
                             </div>
                         )}
@@ -958,7 +1023,8 @@ export default function FinancesTrackingPage() {
                                     <button 
                                         key={index}
                                         onClick={() => handleContactMember(member.rowIndex)}
-                                        className="w-full text-left p-3 hover:bg-blue-50 flex justify-between items-center"
+                                        className={`w-full text-left p-3 flex justify-between items-center ${member.name !== "Name" ? "hover:bg-blue-50" : "cursor-default"}`}
+                                        disabled={member.name === "Name"}
                                     >
                                         <span>{member.name}</span>
                                         <span className="text-gray-500 text-sm">{member.email}</span>
