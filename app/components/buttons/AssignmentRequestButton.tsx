@@ -129,7 +129,7 @@ export default function AssignmentRequestButton() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 h-40 overflow-y-auto">
           {churches.length > 0 ? (
             churches.map((church) => (
               <div
