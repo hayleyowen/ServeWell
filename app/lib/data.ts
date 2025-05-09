@@ -517,6 +517,14 @@ export async function deleteMinistryByID(id: number) {
     let connection;
     try {
         connection = await pool.getConnection();
+
+        // Prevent foreign key constraint errors by setting minID to NULL in the users table
+        const [nullMin] = await connection.execute(
+            `UPDATE users SET minID = NULL WHERE minID = ?`,
+            [id]
+        );
+
+        // Delete the ministry
         const [result] = await connection.execute<ResultSetHeader>(
             "DELETE FROM ministry WHERE ministry_id = ?",
             [id]

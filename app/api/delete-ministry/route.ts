@@ -20,8 +20,18 @@ export async function DELETE(req: Request) {
         const id = validateData.data.id;
         const auth0ID = validateData.data.auth0ID;
 
+
+
         if (!id || !auth0ID) {
-            return new Response(JSON.stringify({ error: 'Ministry ID is required' }), {
+            return new Response(JSON.stringify({ error: 'Ministry ID and Auth0ID are required' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const minID = parseInt(id, 10); // Convert the ministry ID to an integer
+        if (isNaN(minID)) {
+            return new Response(JSON.stringify({ error: 'Invalid ministry ID' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -40,7 +50,7 @@ export async function DELETE(req: Request) {
         // Check if the ministry ID belongs to the user's church
         const ministries = await userMinistry(auth0ID); 
         console.log('Ministry ID:', ministries); // Log the ministry ID for debugging
-        const hasMatchingMinistry = ministries.some((ministry: { ministry_id: number }) => ministry.ministry_id === id);
+        const hasMatchingMinistry = ministries.some((ministry: { ministry_id: number }) => ministry.ministry_id === minID);
         if (!hasMatchingMinistry) {
             return new Response(JSON.stringify({ error: 'You are not authorized to delete this ministry' }), {
                 status: 403,
@@ -48,7 +58,7 @@ export async function DELETE(req: Request) {
             });
         } 
 
-        const success = await deleteMinistryByID(id);
+        const success = await deleteMinistryByID(minID);
         if (success) {
             return new Response(JSON.stringify({ message: 'Ministry deleted successfully' }), {
                 status: 200,
