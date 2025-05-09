@@ -81,7 +81,7 @@ export default function CalendarPage() {
     
         try {
             adjustedStart = new Date(newEvent.start);
-            adjustedStart.setHours(adjustedStart.getHours() - 5);
+            adjustedStart.setHours(adjustedStart.getHours());
         } catch (error) {
             console.error("❌ Invalid date format:", error);
             setSnackOpen(true);
