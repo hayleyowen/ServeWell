@@ -224,8 +224,8 @@ export async function deleteChurchByID(id: number) {
         // Step 1: Set `minID` to NULL in the `users` table for all users associated with ministries in this church
         await connection.execute(
             `UPDATE users 
-             SET minID = NULL 
-             WHERE minID IN (SELECT ministry_id FROM ministry WHERE church_id = ?)`,
+             SET minID = NULL, rID = 0 
+             WHERE churchID = ?`,
             [id]
         );
 
