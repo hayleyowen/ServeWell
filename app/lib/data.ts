@@ -225,7 +225,7 @@ export async function deleteChurchByID(id: number) {
         await connection.execute(
             `UPDATE users 
              SET minID = NULL 
-             WHERE minID IN (SELECT ministry_id FROM ministry WHERE church_id = ?)`,
+             WHERE churchID = ?`,
             [id]
         );
 
@@ -246,7 +246,7 @@ export async function deleteChurchByID(id: number) {
         // Step 4: Set `rID` to NULL in the `users` table for related records
         await connection.execute(
             `UPDATE users 
-             SET rID = NULL 
+             SET rID = 0 
              WHERE churchID = ?`,
             [id]
         );
