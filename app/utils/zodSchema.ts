@@ -60,7 +60,7 @@ export const deleteChurchSchema = z.object({
 });
 
 export const deleteMinistrySchema = z.object({
-    id: z.number().int().nonnegative().refine(val => val > 0, { message: "Ministry ID must be a positive integer" }),
+    id: z.string().nonempty("Ministry ID is required"),
     auth0ID: z.string().nonempty("Auth0ID is required"),
 });
 
